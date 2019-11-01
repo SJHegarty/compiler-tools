@@ -1,12 +1,14 @@
 package localgoat.lang.ui;
 
 import localgoat.lang.struct.CodeTree;
+import localgoat.util.ui.ListTreeWrapper;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class LangTree extends JTree{
@@ -71,6 +73,17 @@ public class LangTree extends JTree{
 		public boolean equals(Object o){
 			return (o == this) || ((o instanceof CodeTreeWrapper) && ((CodeTreeWrapper)o).wrapped.equals(wrapped));
 		}
+	}
+
+	public void setCodeTrees(List<CodeTree> trees){
+		setModel(
+			new DefaultTreeModel(
+				new ListTreeWrapper<>(
+					trees,
+					tree -> new CodeTreeWrapper(tree)
+				)
+			)
+		);
 	}
 
 	public void setCodeTree(CodeTree tree){

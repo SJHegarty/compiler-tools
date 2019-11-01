@@ -1,4 +1,5 @@
 import localgoat.lang.struct.CodeTree;
+import localgoat.lang.struct.ContentTree;
 import localgoat.lang.ui.LangPane;
 import localgoat.lang.ui.LangTree;
 import localgoat.lang.ui.StrippedListener;
@@ -17,9 +18,15 @@ public class Main{
 
 		pane.getDocument().addDocumentListener(
 			(StrippedListener)() -> {
-				var code = new CodeTree(pane.getText());
-				tree.setCodeTree(code);
-				recpane.setText(code.reconstruct());
+				var contentTree = new ContentTree(pane.getText());
+				var code = contentTree.getCode();
+				if(code.size() == 1){
+					tree.setCodeTree(code.get(0));
+				}
+				else{
+					tree.setCodeTrees(code);
+				}
+				recpane.setText(contentTree.reconstruct());
 			}
 		);
 
@@ -33,9 +40,4 @@ public class Main{
 		frame.setVisible(true);
 	}
 
-	static class ContentTree{
-		ContentTree(String text){
-			//var lines =
-		}
-	}
 }

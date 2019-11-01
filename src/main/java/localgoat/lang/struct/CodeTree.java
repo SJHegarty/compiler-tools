@@ -16,17 +16,6 @@ public class CodeTree{
 	public final List<CodeTree> children;
 	final boolean sound;
 
-	public CodeTree(String text){
-		this(
-			null,
-			Stream.of(text.split("\r?\n"))
-				.map(line -> new CodeLine(line))
-				.filter(code -> !code.content.equals(""))
-				.collect(
-					Collectors.toCollection(ArrayDeque::new)
-				)
-		);
-	}
 
 	CodeTree(CodeTree parent, Queue<CodeLine> lines){
 		this.parent = parent;
@@ -62,32 +51,6 @@ public class CodeTree{
 		}
 		else{
 			sound = true;
-		}
-	}
-
-	public String reconstruct(){
-		final var builder = new StringBuilder();
-		reconstruct(0, builder);
-		return builder.substring(1);
-	}
-
-	public void reconstruct(int indent, StringBuilder builder){
-		builder.append("\n");
-		final Runnable indenter = () -> {
-			for(int i = 0; i < indent; i++){
-				builder.append("\t");
-			}
-		};
-		indenter.run();
-		builder.append(head.content);
-		final int indentc = indent + 1;
-		for(var c: children){
-			c.reconstruct(indentc, builder);
-		}
-		if(closed && sound){
-			builder.append("\n");
-			indenter.run();
-			builder.append("}");
 		}
 	}
 
