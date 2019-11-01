@@ -50,7 +50,7 @@ public class LangPane extends JTextPane{
 				SwingUtilities.invokeLater(
 					() -> {
 						int index = getCaretPosition() - 1;
-						doc.setCharacterAttributes(index, 1, attributes[index & 1], false);
+						//doc.setCharacterAttributes(index, 1, attributes[index & 1], false);
 					}
 				);
 			}

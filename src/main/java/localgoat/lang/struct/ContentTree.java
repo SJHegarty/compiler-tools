@@ -72,7 +72,7 @@ public class ContentTree{
 		for(var c: tree.children){
 			reconstruct(c, lines);
 		}
-		if(tree.closed && tree.sound){
+		if(tree.type == CodeTree.BlockType.CLOSED){
 			lines.add(tree.tail.reconstruct());
 		}
 	}

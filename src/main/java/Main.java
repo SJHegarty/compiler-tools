@@ -10,6 +10,8 @@ public class Main{
 	public static void main(String... args){
 		final var frame = new JFrame();
 		final var pane = new LangPane();
+		final var recpane = new LangPane();
+		recpane.setEditable(false);
 		final var tree = new LangTree();
 		final var content = new Container();
 
@@ -29,12 +31,14 @@ public class Main{
 					tree.setCodeTrees(code);
 				}
 
+				recpane.setText(reconstruction);
 			}
 		);
 
 		content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
 		content.add(new JScrollPane(pane));
-		content.add(new JScrollPane(tree));
+		content.add(new JScrollPane(recpane));
+		//content.add(new JScrollPane(tree));
 		frame.getContentPane().add(content);
 
 		frame.setSize(800, 600);

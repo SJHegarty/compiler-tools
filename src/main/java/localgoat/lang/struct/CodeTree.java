@@ -10,12 +10,19 @@ import java.util.List;
 public class CodeTree{
 
 	public static final String CONTRACTION_DELIMITOR = " :: ";
+
+	enum BlockType{
+		CLOSED,
+		NOTHING,
+		UNCLOSED,
+		UNSOUND;
+	}
+	final BlockType type;
 	public final CodeLine head;
 	public final CodeLine tail;
-	final boolean closed;
 	public final CodeTree parent;
 	public final List<CodeTree> children;
-	final boolean sound;
+
 
 
 	CodeTree(CodeTree parent, Deque<CodeLine> lines){
@@ -24,9 +31,8 @@ public class CodeTree{
 		if(lines.isEmpty()){
 			this.head = null;
 			this.tail = null;
-			this.closed = false;
+			this.type = BlockType.NOTHING;
 			this.children = Collections.emptyList();
-			this.sound = false;
 			return;
 		}
 
@@ -36,7 +42,6 @@ public class CodeTree{
 
 
 		this.children = Collections.unmodifiableList(children);
-
 
 		var split = head.content().split(" :: ", 2);
 		if(split.length == 2){
@@ -52,32 +57,30 @@ public class CodeTree{
 			}
 			children.add(new CodeTree(this, lines));
 			this.tail = null;
-			this.closed = false;
-			this.sound = true;
+			this.type = BlockType.UNCLOSED;
 		}
 		else{
 			this.head = head;
-			this.closed = head.content().endsWith("{");
 
 			while(lines.size() != 0 && lines.peek().tabcount > depth){
 				children.add(new CodeTree(this, lines));
 			}
 
-			if(closed){
+			if(head.content().endsWith("{")){
 				final var line = lines.peek();
 				if(line == null || line.tabcount != depth || !line.content().equals("}")){
 					tail = null;
-					sound = false;
+					type = BlockType.UNSOUND;
 				}
 				else{
 					tail = line;
-					sound = true;
+					type = BlockType.CLOSED;
 					lines.poll();
 				}
 			}
 			else{
 				tail = null;
-				sound = true;
+				type = BlockType.UNCLOSED;
 			}
 		}
 	}
