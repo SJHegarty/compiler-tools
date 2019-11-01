@@ -2,7 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="d60d08b8-2f42-4902-90c8-73de51d58ace" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/localgoat/lang/struct/CodeTree.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/localgoat/lang/struct/CodeTree.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/localgoat/lang/struct/ContentTree.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/localgoat/lang/struct/ContentTree.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/localgoat/lang/ui/LangPane.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/localgoat/lang/ui/LangPane.java" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -87,7 +89,8 @@
       <workItem from="1572498514886" duration="264000" />
       <workItem from="1572498919123" duration="3828000" />
       <workItem from="1572547663076" duration="21193000" />
-      <workItem from="1572619190183" duration="2603000" />
+      <workItem from="1572619190183" duration="10353000" />
+      <workItem from="1572647843374" duration="2989000" />
     </task>
     <servers />
   </component>
@@ -106,16 +109,5 @@
         </entry>
       </map>
     </option>
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/localgoat/lang/struct/ContentTree.java</url>
-          <line>36</line>
-          <option name="timeStamp" value="10" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
   </component>
 </project>

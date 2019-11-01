@@ -38,7 +38,7 @@ public class Main{
 		content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
 		content.add(new JScrollPane(pane));
 		content.add(new JScrollPane(recpane));
-		//content.add(new JScrollPane(tree));
+		content.add(new JScrollPane(tree));
 		frame.getContentPane().add(content);
 
 		frame.setSize(800, 600);

@@ -22,22 +22,23 @@ public class LangTree extends JTree{
 
 		@Override
 		public TreeNode getChildAt(int childIndex){
-			return new CodeTreeWrapper(wrapped.children.get(childIndex));
+			return new CodeTreeWrapper(wrapped.children().get(childIndex));
 		}
 
 		@Override
 		public int getChildCount(){
-			return wrapped.children.size();
+			return wrapped.children().size();
 		}
 
 		@Override
 		public TreeNode getParent(){
-			return new CodeTreeWrapper(wrapped.parent);
+			throw new UnsupportedOperationException();
+			//return new CodeTreeWrapper(wrapped.parent());
 		}
 
 		@Override
 		public int getIndex(TreeNode node){
-			return wrapped.children.indexOf(((CodeTreeWrapper)node).wrapped);
+			return wrapped.children().indexOf(((CodeTreeWrapper)node).wrapped);
 		}
 
 		@Override
@@ -47,13 +48,13 @@ public class LangTree extends JTree{
 
 		@Override
 		public boolean isLeaf(){
-			return wrapped.children.isEmpty();
+			return wrapped.children().isEmpty();
 		}
 
 		@Override
 		public Enumeration<? extends TreeNode> children(){
 			return Collections.enumeration(
-				wrapped.children.stream()
+				wrapped.children().stream()
 					.map(child -> new CodeTreeWrapper(child))
 					.collect(Collectors.toList())
 			);

@@ -27,7 +27,7 @@ public class ContentTree{
 		var trees = new ArrayList<CodeTree>();
 		this.trees = Collections.unmodifiableList(trees);
 		while(!queue.isEmpty()){
-			trees.add(new CodeTree(null, queue));
+			trees.add(new CodeTree(queue));
 		}
 
 		this.ignored = codelines.stream()
@@ -45,7 +45,6 @@ public class ContentTree{
 		for(var code: trees){
 			reconstruct(code, lines);
 		}
-		int index = 0;
 		for(var line: ignored){
 			lines.add(line.lineindex, line.reconstruct());
 		}
@@ -55,25 +54,37 @@ public class ContentTree{
 	}
 
 	private void reconstruct(CodeTree tree, List<String> lines){
-		if(tree.children.size() == 1){
-			var head = tree.head;
-			var child = tree.children.get(0);
-			var headc = child.head;
-			if(head.lineindex == headc.lineindex){
-				final int line = lines.size();
-				reconstruct(child, lines);
-				lines.set(line, head.reconstruct() + CodeTree.CONTRACTION_DELIMITOR + lines.get(line).substring(headc.tabcount));
-				return;
+		switch(tree.type){
+			case CONTINUATION:{
+				tree.children().forEach(child -> reconstruct(child, lines));
+				break;
 			}
-		}
+			case NOTHING:{
+				break;
+			}
+			default:{
+				final var children = tree.children();
+				if(children.size() == 1){
+					var head = tree.head;
+					var child = children.get(0);
+					var headc = child.head;
+					if(head.lineindex == headc.lineindex){
+						final int line = lines.size();
+						reconstruct(child, lines);
+						lines.set(line, head.reconstruct() + CodeTree.CONTRACTION_DELIMITOR + lines.get(line).substring(headc.tabcount));
+						return;
+					}
+				}
 
-		lines.add(tree.head.reconstruct());
+				lines.add(tree.head.reconstruct());
 
-		for(var c: tree.children){
-			reconstruct(c, lines);
-		}
-		if(tree.type == CodeTree.BlockType.CLOSED){
-			lines.add(tree.tail.reconstruct());
+				for(var c : children){
+					reconstruct(c, lines);
+				}
+				if(tree.type == CodeTree.BlockType.CLOSED || tree.type == CodeTree.BlockType.CONTINUED){
+					lines.add(tree.tail.reconstruct());
+				}
+			}
 		}
 	}
 

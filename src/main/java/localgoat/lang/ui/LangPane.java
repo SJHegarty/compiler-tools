@@ -3,8 +3,6 @@ package localgoat.lang.ui;
 import localgoat.util.ui.document.InsertListener;
 
 import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
