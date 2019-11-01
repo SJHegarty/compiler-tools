@@ -11,6 +11,7 @@ import java.util.stream.Stream;
 public class CodeTree{
 
 	public final CodeLine head;
+	public final CodeLine tail;
 	final boolean closed;
 	public final CodeTree parent;
 	public final List<CodeTree> children;
@@ -22,6 +23,7 @@ public class CodeTree{
 
 		if(lines.isEmpty()){
 			this.head = null;
+			this.tail = null;
 			this.closed = false;
 			this.children = Collections.emptyList();
 			this.sound = false;
@@ -32,7 +34,7 @@ public class CodeTree{
 		final int depth = head.tabcount;
 		final var children = new ArrayList<CodeTree>();
 
-		this.closed = head.content.endsWith("{");
+		this.closed = head.getContent().endsWith("{");
 		this.children = Collections.unmodifiableList(children);
 
 		while(lines.size() != 0 && lines.peek().tabcount > depth){
@@ -41,20 +43,23 @@ public class CodeTree{
 
 		if(closed){
 			final var line = lines.peek();
-			if(line == null || line.tabcount != depth || !line.content.equals("}")){
+			if(line == null || line.tabcount != depth || !line.getContent().equals("}")){
+				tail = null;
 				sound = false;
 			}
 			else{
+				tail = line;
 				sound = true;
 				lines.poll();
 			}
 		}
 		else{
+			tail = null;
 			sound = true;
 		}
 	}
 
 	public String toString(){
-		return head.content;
+		return head.reconstruct();
 	}
 }

@@ -61,7 +61,7 @@ public class LangTree extends JTree{
 
 		@Override
 		public String toString(){
-			return wrapped.head == null ? null : wrapped.head.content;
+			return wrapped.head == null ? null : wrapped.head.reconstruct();
 		}
 
 		@Override

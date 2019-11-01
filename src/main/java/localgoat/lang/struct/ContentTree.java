@@ -4,11 +4,8 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 public class ContentTree{
 
@@ -22,7 +19,7 @@ public class ContentTree{
 			.collect(Collectors.toList());
 
 		var queue = codelines.stream()
-			.filter(code -> !code.content.equals(""))
+			.filter(code -> !code.getContent().equals(""))
 			.collect(
 				Collectors.toCollection(ArrayDeque::new)
 			);
@@ -34,7 +31,7 @@ public class ContentTree{
 		}
 
 		this.ignored = codelines.stream()
-			.filter(line -> line.content.equals(""))
+			.filter(line -> line.getContent().equals(""))
 			.collect(Collectors.toList());
 
 	}
@@ -46,7 +43,7 @@ public class ContentTree{
 	public String reconstruct(){
 		final List<String> lines = new ArrayList<>();
 		for(var code: trees){
-			reconstruct(code, 0, lines);
+			reconstruct(code, lines);
 		}
 		for(var line: ignored){
 			lines.add(line.lineindex, line.reconstruct());
@@ -56,24 +53,15 @@ public class ContentTree{
 		return builder.substring(1);
 	}
 
-	private void reconstruct(CodeTree tree, int indent, List<String> lines){
-		final Consumer<String> indenter = (suffix) -> {
-			var builder = new StringBuilder();
-			for(int i = 0; i < indent; i++){
-				builder.append("\t");
-			}
-			builder.append(suffix);
-			lines.add(builder.toString());
-		};
+	private void reconstruct(CodeTree tree, List<String> lines){
 
-		indenter.accept(tree.head.content);
+		lines.add(tree.head.reconstruct());
 
-		final int indentc = indent + 1;
 		for(var c: tree.children){
-			reconstruct(c, indentc, lines);
+			reconstruct(c, lines);
 		}
 		if(tree.closed && tree.sound){
-			indenter.accept("}");
+			lines.add(tree.tail.reconstruct());
 		}
 	}
 
