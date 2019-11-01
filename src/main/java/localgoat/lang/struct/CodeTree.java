@@ -1,15 +1,15 @@
 package localgoat.lang.struct;
 
-import java.util.ArrayDeque;
+import localgoat.util.StringUtils;
+
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.List;
-import java.util.Queue;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class CodeTree{
 
+	public static final String CONTRACTION_DELIMITOR = " :: ";
 	public final CodeLine head;
 	public final CodeLine tail;
 	final boolean closed;
@@ -18,7 +18,7 @@ public class CodeTree{
 	final boolean sound;
 
 
-	CodeTree(CodeTree parent, Queue<CodeLine> lines){
+	CodeTree(CodeTree parent, Deque<CodeLine> lines){
 		this.parent = parent;
 
 		if(lines.isEmpty()){
@@ -29,33 +29,56 @@ public class CodeTree{
 			this.sound = false;
 			return;
 		}
-		this.head = lines.poll();
 
-		final int depth = head.tabcount;
+		final var head = lines.poll();
 		final var children = new ArrayList<CodeTree>();
+		final int depth = head.tabcount;
 
-		this.closed = head.getContent().endsWith("{");
+
 		this.children = Collections.unmodifiableList(children);
 
-		while(lines.size() != 0 && lines.peek().tabcount > depth){
-			children.add(new CodeTree(this, lines));
-		}
 
-		if(closed){
-			final var line = lines.peek();
-			if(line == null || line.tabcount != depth || !line.getContent().equals("}")){
-				tail = null;
-				sound = false;
+		var split = head.content().split(" :: ", 2);
+		if(split.length == 2){
+			final var tabs = StringUtils.repeating('\t', head.tabcount);
+			final int index = head.lineindex;
+			{
+				var line = tabs + head.prefix() + split[0];
+				this.head = new CodeLine(line, index);
 			}
-			else{
-				tail = line;
-				sound = true;
-				lines.poll();
+			{
+				var line = tabs + split[1] + head.suffix();
+				lines.push(new CodeLine(line, index));
 			}
+			children.add(new CodeTree(this, lines));
+			this.tail = null;
+			this.closed = false;
+			this.sound = true;
 		}
 		else{
-			tail = null;
-			sound = true;
+			this.head = head;
+			this.closed = head.content().endsWith("{");
+
+			while(lines.size() != 0 && lines.peek().tabcount > depth){
+				children.add(new CodeTree(this, lines));
+			}
+
+			if(closed){
+				final var line = lines.peek();
+				if(line == null || line.tabcount != depth || !line.content().equals("}")){
+					tail = null;
+					sound = false;
+				}
+				else{
+					tail = line;
+					sound = true;
+					lines.poll();
+				}
+			}
+			else{
+				tail = null;
+				sound = true;
+			}
 		}
 	}
 

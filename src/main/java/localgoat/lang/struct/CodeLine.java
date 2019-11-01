@@ -35,8 +35,16 @@ public class CodeLine{
 		this.suffix = m.group("suffix");
 	}
 
-	public String getContent(){
+	public String content(){
 		return content;
+	}
+
+	public String prefix(){
+		return prefix;
+	}
+
+	public String suffix(){
+		return suffix;
 	}
 
 	public String reconstruct(){
