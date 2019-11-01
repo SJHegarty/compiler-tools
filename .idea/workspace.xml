@@ -2,13 +2,14 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="d60d08b8-2f42-4902-90c8-73de51d58ace" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/localgoat/util/StringUtils.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/localgoat/util/ui/ListTreeWrapper.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/localgoat/util/ui/document/InsertListener.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/localgoat/lang/struct/CodeLine.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/localgoat/lang/struct/CodeLine.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/Main.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/localgoat/lang/struct/CodeTree.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/localgoat/lang/struct/CodeTree.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/localgoat/lang/struct/ContentTree.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/localgoat/lang/struct/ContentTree.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/localgoat/lang/ui/LangPane.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/localgoat/lang/ui/LangPane.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/localgoat/lang/ui/LangTree.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/localgoat/lang/ui/LangTree.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/localgoat/lang/ui/StrippedListener.java" beforeDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -20,6 +21,7 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Class" />
+        <option value="Interface" />
       </list>
     </option>
   </component>
@@ -91,6 +93,7 @@
       <workItem from="1572498514886" duration="264000" />
       <workItem from="1572498919123" duration="3828000" />
       <workItem from="1572547663076" duration="21193000" />
+      <workItem from="1572619190183" duration="1813000" />
     </task>
     <servers />
   </component>
@@ -102,7 +105,9 @@
       <map>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="COLUMN_ORDER" />
+            </State>
           </value>
         </entry>
       </map>
