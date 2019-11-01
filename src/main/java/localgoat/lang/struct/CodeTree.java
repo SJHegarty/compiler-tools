@@ -1,7 +1,5 @@
 package localgoat.lang.struct;
 
-import Main;
-
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -11,26 +9,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class CodeTree{
-	public static class CodeLine{
-		public final int tabcount;
-		public final String content;
-
-		CodeLine(String line){
-			int tabcount = 0;
-			for(; tabcount < line.length() && line.charAt(tabcount) == '\t'; tabcount++);
-			this.tabcount = tabcount;
-			this.content = line.substring(tabcount);
-		}
-
-		public String regenerate(){
-			var builder = new StringBuilder();
-			for(int i = 0; i < tabcount; i++){
-				builder.append('\t');
-			}
-			builder.append(content);
-			return builder.toString();
-		}
-	}
 
 	public final CodeLine head;
 	final boolean closed;
@@ -41,7 +19,7 @@ public class CodeTree{
 	public CodeTree(String text){
 		this(
 			null,
-			(Queue<CodeLine>) Stream.of(text.split("\r?\n"))
+			Stream.of(text.split("\r?\n"))
 				.map(line -> new CodeLine(line))
 				.filter(code -> !code.content.equals(""))
 				.collect(
@@ -84,6 +62,32 @@ public class CodeTree{
 		}
 		else{
 			sound = true;
+		}
+	}
+
+	public String reconstruct(){
+		final var builder = new StringBuilder();
+		reconstruct(0, builder);
+		return builder.substring(1);
+	}
+
+	public void reconstruct(int indent, StringBuilder builder){
+		builder.append("\n");
+		final Runnable indenter = () -> {
+			for(int i = 0; i < indent; i++){
+				builder.append("\t");
+			}
+		};
+		indenter.run();
+		builder.append(head.content);
+		final int indentc = indent + 1;
+		for(var c: children){
+			c.reconstruct(indentc, builder);
+		}
+		if(closed && sound){
+			builder.append("\n");
+			indenter.run();
+			builder.append("}");
 		}
 	}
 

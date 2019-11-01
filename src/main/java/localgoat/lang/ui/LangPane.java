@@ -1,84 +1,34 @@
 package localgoat.lang.ui;
 
-import localgoat.lang.struct.CodeTree;
-
 import javax.swing.*;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeNode;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.stream.Collectors;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyleContext;
+import javax.swing.text.TabSet;
+import javax.swing.text.TabStop;
+import java.awt.Font;
+import java.util.stream.IntStream;
 
 public class LangPane extends JTextPane{
 
 	public LangPane(){
-		getDocument().addDocumentListener(
-			(StrippedListener)() -> {
-				var code = new CodeTree(getText());
-				class CodeTreeWrapper implements TreeNode{
-					private final CodeTree wrapped;
+		final int charcount = 4;
+		final var font = new Font(Font.MONOSPACED, Font.BOLD, 12);
+		final int tabsize = charcount * getFontMetrics(font).charWidth('w');
 
-					CodeTreeWrapper(CodeTree wrapped){
-						this.wrapped = wrapped;
-					}
+		var tabs = new TabSet(
+			IntStream.range(0, 100)
+				.mapToObj(i -> new TabStop(i * tabsize))
+				.toArray(TabStop[]::new)
+		);
+		var paraSet = StyleContext.getDefaultStyleContext()
+			.addAttribute(
+				SimpleAttributeSet.EMPTY,
+				StyleConstants.TabSet,
+				tabs
+			);
 
-					@Override
-					public TreeNode getChildAt(int childIndex){
-						return new CodeTreeWrapper(wrapped.children.get(childIndex));
-					}
-
-					@Override
-					public int getChildCount(){
-						return wrapped.children.size();
-					}
-
-					@Override
-					public TreeNode getParent(){
-						return new CodeTreeWrapper(wrapped.parent);
-					}
-
-					@Override
-					public int getIndex(TreeNode node){
-						return wrapped.children.indexOf(((CodeTreeWrapper)node).wrapped);
-					}
-
-					@Override
-					public boolean getAllowsChildren(){
-						return true;
-					}
-
-					@Override
-					public boolean isLeaf(){
-						return wrapped.children.isEmpty();
-					}
-
-					@Override
-					public Enumeration<? extends TreeNode> children(){
-						return Collections.enumeration(
-							wrapped.children.stream()
-								.map(child -> new CodeTreeWrapper(child))
-								.collect(Collectors.toList())
-						);
-					}
-
-					@Override
-					public String toString(){
-						return wrapped.head == null ? null : wrapped.head.content;
-					}
-
-					@Override
-					public int hashCode(){
-						return wrapped.hashCode() ^ 0xabcdef12;
-					}
-
-					@Override
-					public boolean equals(Object o){
-						return (o == this) || ((o instanceof CodeTreeWrapper) && ((CodeTreeWrapper)o).wrapped.equals(wrapped));
-					}
-				}
-				tree.setModel(
-					new DefaultTreeModel(new CodeTreeWrapper(code))
-				);
-			}
-		);	}
+		setFont(font);
+		setParagraphAttributes(paraSet, false);
+	}
 }
