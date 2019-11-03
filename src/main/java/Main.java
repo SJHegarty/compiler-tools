@@ -11,18 +11,25 @@ public class Main{
 		final var frame = new JFrame();
 		final var pane = new LangPane();
 		final var recpane = new LangPane();
-		recpane.setEditable(false);
+		final var actualised = new LangPane();
 		final var tree = new LangTree();
-		final var content = new Container();
+
+		recpane.setEditable(false);
+		actualised.setEditable(false);
+		final var tabs = new JTabbedPane();
+		tabs.add("Literal", new JScrollPane(pane));
+		tabs.add("Reconstruction", new JScrollPane(recpane));
+		tabs.add("Effective", new JScrollPane(actualised));
+		tabs.add("Tree", new JScrollPane(tree));
+		//final var recpane = new LangPane();
+		//recpane.setEditable(false);
 
 		pane.getDocument().addDocumentListener(
 			(InsertListener)(e) -> {
 				var text = pane.getText().replaceAll("\r\n", "\n");
 				var contentTree = new ContentTree(text);
-				var reconstruction = contentTree.reconstruct();
-				if(!text.equals(reconstruction)){
-					throw new IllegalStateException();
-				}
+				recpane.setText(contentTree.reconstruct());
+				actualised.setText(contentTree.effective());
 				var code = contentTree.getCode();
 				if(code.size() == 1){
 					tree.setCodeTree(code.get(0));
@@ -31,15 +38,12 @@ public class Main{
 					tree.setCodeTrees(code);
 				}
 
-				recpane.setText(reconstruction);
+				//recpane.setText(reconstruction);
 			}
 		);
 
-		content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
-		content.add(new JScrollPane(pane));
-		content.add(new JScrollPane(recpane));
-		content.add(new JScrollPane(tree));
-		frame.getContentPane().add(content);
+		//content.add(new JScrollPane(recpane));
+		frame.getContentPane().add(tabs);
 
 		frame.setSize(800, 600);
 		frame.setVisible(true);

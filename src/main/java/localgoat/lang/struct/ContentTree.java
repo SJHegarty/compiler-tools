@@ -43,7 +43,7 @@ public class ContentTree{
 	public String reconstruct(){
 		final List<String> lines = new ArrayList<>();
 		for(var code: trees){
-			reconstruct(code, lines);
+			code.reconstruct(lines);
 		}
 		for(var line: ignored){
 			lines.add(line.lineindex, line.reconstruct());
@@ -53,39 +53,14 @@ public class ContentTree{
 		return builder.substring(1);
 	}
 
-	private void reconstruct(CodeTree tree, List<String> lines){
-		switch(tree.type){
-			case CONTINUATION:{
-				tree.children().forEach(child -> reconstruct(child, lines));
-				break;
-			}
-			case NOTHING:{
-				break;
-			}
-			default:{
-				final var children = tree.children();
-				if(children.size() == 1){
-					var head = tree.head;
-					var child = children.get(0);
-					var headc = child.head;
-					if(head.lineindex == headc.lineindex){
-						final int line = lines.size();
-						reconstruct(child, lines);
-						lines.set(line, head.reconstruct() + CodeTree.CONTRACTION_DELIMITOR + lines.get(line).substring(headc.tabcount));
-						return;
-					}
-				}
-
-				lines.add(tree.head.reconstruct());
-
-				for(var c : children){
-					reconstruct(c, lines);
-				}
-				if(tree.type == CodeTree.BlockType.CLOSED || tree.type == CodeTree.BlockType.CONTINUED){
-					lines.add(tree.tail.reconstruct());
-				}
-			}
+	public String effective(){
+		final List<String> lines = new ArrayList<>();
+		for(var code: trees){
+			code.reconstruct(lines);
 		}
+		final var builder = new StringBuilder();
+		lines.forEach(line -> builder.append("\n").append(line));
+		return builder.substring(1);
 	}
 
 }
