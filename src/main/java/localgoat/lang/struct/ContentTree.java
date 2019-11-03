@@ -4,6 +4,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -18,8 +19,9 @@ public class ContentTree{
 			.mapToObj(index -> new CodeLine(lines[index], index))
 			.collect(Collectors.toList());
 
+		final Predicate<CodeLine> ignored = code -> code.first(t -> !t.ignored()) == null;
 		var queue = codelines.stream()
-			.filter(code -> !code.content().equals(""))
+			.filter(ignored.negate())
 			.collect(
 				Collectors.toCollection(ArrayDeque::new)
 			);
@@ -31,7 +33,7 @@ public class ContentTree{
 		}
 
 		this.ignored = codelines.stream()
-			.filter(line -> line.content().equals(""))
+			.filter(ignored)
 			.collect(Collectors.toList());
 
 	}
@@ -50,6 +52,7 @@ public class ContentTree{
 		}
 		final var builder = new StringBuilder();
 		lines.forEach(line -> builder.append("\n").append(line));
+		System.err.println(new Exception().getStackTrace()[0]);
 		return builder.substring(1);
 	}
 

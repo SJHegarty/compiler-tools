@@ -1,5 +1,7 @@
 package localgoat.lang.struct;
 
+import localgoat.lang.struct.handlers.SymbolHandler;
+
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -50,7 +52,7 @@ public class CodeTree{
 			final var tokens = head.contentTokens();
 			for(int i = 0; i < tokens.size(); i++){
 				final var t = tokens.get(i);
-				if(t.type == TokenType.SYMBOL && t.value.equals(CodeLine.CONTINUATION_SYMBOL)){
+				if(t.type == TokenType.SYMBOL && t.value.equals(SymbolHandler.LINE_CONTINUATION)){
 					splitIndex = i;
 					break block;
 				}
@@ -96,19 +98,24 @@ public class CodeTree{
 				children.add(new CodeTree(lines));
 			}
 
-			if(head.content().endsWith("{")){
+			final Token headEnd = head.last(t -> !t.ignored());
+			if(headEnd != null && headEnd.value.equals(SymbolHandler.OPENING_BRACKET)){
 				final var line = lines.peek();
 				handled:{
 					unhandled:{
 						if(line == null || line.depth() != depth){
 							break unhandled;
 						}
-						switch(line.content()){
-							case "}&":{
+						final Token lineEnd = line.last(t -> !t.ignored());
+						if(lineEnd == null){
+							break unhandled;
+						}
+						switch(lineEnd.value){
+							case SymbolHandler.CONTINUING_BRACKET:{
 								this.type = BlockType.CONTINUED;
 								break;
 							}
-							case "}":{
+							case SymbolHandler.CLOSING_BRACKET:{
 								this.type = BlockType.CLOSED;
 								break;
 							}

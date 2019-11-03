@@ -21,4 +21,8 @@ public class Token{
 	public String toString(){
 		return value();
 	}
+
+	public boolean ignored(){
+		return type.ignored;
+	}
 }
