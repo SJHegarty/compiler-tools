@@ -2,6 +2,7 @@ package localgoat.lang.struct;
 
 import localgoat.util.StringUtils;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
@@ -46,17 +47,44 @@ public class CodeTree{
 		final var head = lines.poll();
 		final int depth = head.tabcount();
 
-		var split = head.content().split(" :: ", 2);
-		if(split.length == 2){
-
+		final int splitIndex;
+		block:{
+			final var tokens = head.contentTokens();
+			for(int i = 0; i < tokens.size(); i++){
+				final var t = tokens.get(i);
+				if(t.type == TokenType.SYMBOL && t.value.equals(CodeLine.CONTINUATION_SYMBOL)){
+					splitIndex = i;
+					break block;
+				}
+			}
+			splitIndex = -1;
+		}
+		if(splitIndex != -1){
+			final var tokens = head.contentTokens();
 			final int index = head.lineindex;
 			{
-				var line = head.prefix() + split[0];
-				this.head = new CodeLine(line, index);
+				final var deque = new ArrayDeque<Token>();
+				IntStream.range(0, splitIndex - 1).forEach(
+					i -> deque.add(tokens.get(i))
+				);
+				while(!deque.isEmpty() && deque.peekLast().type.ignored){
+					deque.pollLast();
+				}
+				var builder = new StringBuilder().append(head.prefix());
+				deque.forEach(token -> builder.append(token));
+				this.head = new CodeLine(builder.toString(), index);
 			}
 			{
-				var line = head.prefix() + split[1] + head.suffix();
-				lines.push(new CodeLine(line, index));
+				final var queue = new ArrayDeque<Token>();
+				IntStream.range(splitIndex + 1, tokens.size()).forEach(
+					i -> queue.add(tokens.get(i))
+				);
+				while(queue.peekFirst().type.ignored){
+					queue.pollFirst();
+				}
+				var builder = new StringBuilder().append(head.prefix());
+				queue.forEach(token -> builder.append(token));
+				lines.push(new CodeLine(builder.toString(), index));
 			}
 			children.add(new CodeTree(lines));
 			//TODO: if children.get(0).type == CONTINUED add validation error - unsupported confusing syntax

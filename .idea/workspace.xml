@@ -2,10 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="d60d08b8-2f42-4902-90c8-73de51d58ace" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/localgoat/lang/struct/CodeLine.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/localgoat/lang/struct/CodeLine.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/localgoat/lang/struct/ContentTree.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/localgoat/lang/struct/ContentTree.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/localgoat/lang/struct/TokenType.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/localgoat/lang/struct/TokenType.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/localgoat/lang/struct/CodeTree.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/localgoat/lang/struct/CodeTree.java" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -121,7 +119,7 @@
       <workItem from="1572619190183" duration="10353000" />
       <workItem from="1572647843374" duration="5214000" />
       <workItem from="1572657658254" duration="1831000" />
-      <workItem from="1572720062603" duration="24477000" />
+      <workItem from="1572720062603" duration="26108000" />
     </task>
     <servers />
   </component>
@@ -146,7 +144,7 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/localgoat/lang/struct/CodeTree.java</url>
-          <line>162</line>
+          <line>190</line>
           <option name="timeStamp" value="8" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">

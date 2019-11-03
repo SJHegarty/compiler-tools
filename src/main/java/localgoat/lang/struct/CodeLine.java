@@ -39,6 +39,7 @@ public class CodeLine{
 	private static final boolean SYMBOL_CHARS[];
 	private static final int MAX_SYMBOL_LENGTH;
 
+	public static final String CONTINUATION_SYMBOL = "::";
 	static{
 		SYMBOLS = new HashSet<>();
 		SYMBOLS.addAll(
@@ -52,7 +53,7 @@ public class CodeLine{
 				"$",
 				"{",
 				"}",
-				"::",
+				CONTINUATION_SYMBOL,
 				"->",
 				"!=",
 				"?=",
@@ -362,14 +363,19 @@ public class CodeLine{
 		}
 	}
 
-	public String content(){
+	public List<Token> contentTokens(){
 		var deque = new ArrayDeque<>(tokens);
 		deque.pollFirst();
 		for(;!deque.isEmpty() && deque.peekFirst().type.ignored; deque.pollFirst());
 		for(;!deque.isEmpty() && deque.peekLast().type.ignored; deque.pollLast());
+		return Collections.unmodifiableList(
+			new ArrayList<>(deque)
+		);
+	}
 
+	public String content(){
 		var builder = new StringBuilder();
-		for(Token t: deque){
+		for(Token t: contentTokens()){
 			builder.append(t);
 		}
 		return builder.toString();
