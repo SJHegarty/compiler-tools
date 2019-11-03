@@ -1,6 +1,6 @@
-package localgoat.lang.struct;
+package localgoat.lang.compiler;
 
-import localgoat.lang.struct.handlers.SymbolHandler;
+import localgoat.lang.compiler.handlers.SymbolHandler;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;

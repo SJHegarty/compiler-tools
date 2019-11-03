@@ -1,18 +1,14 @@
-package localgoat.lang.struct;
+package localgoat.lang.compiler;
 
-import localgoat.lang.struct.handlers.Handler;
-import localgoat.lang.struct.handlers.IdentifierHandler;
-import localgoat.lang.struct.handlers.KeyHandler;
-import localgoat.lang.struct.handlers.StringHandler;
-import localgoat.lang.struct.handlers.SymbolHandler;
-import localgoat.lang.struct.handlers.WhitespaceHandler;
-import localgoat.util.functional.CharPredicate;
+import localgoat.lang.compiler.handlers.Handler;
+import localgoat.lang.compiler.handlers.IdentifierHandler;
+import localgoat.lang.compiler.handlers.KeyHandler;
+import localgoat.lang.compiler.handlers.StringHandler;
+import localgoat.lang.compiler.handlers.SymbolHandler;
+import localgoat.lang.compiler.handlers.WhitespaceHandler;
 
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;

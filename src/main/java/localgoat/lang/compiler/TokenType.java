@@ -1,4 +1,4 @@
-package localgoat.lang.struct;
+package localgoat.lang.compiler;
 
 public enum TokenType{
 	KEYWORD(false),

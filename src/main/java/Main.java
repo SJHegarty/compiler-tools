@@ -1,10 +1,9 @@
-import localgoat.lang.struct.ContentTree;
+import localgoat.lang.compiler.ContentTree;
 import localgoat.lang.ui.LangPane;
 import localgoat.lang.ui.LangTree;
 import localgoat.util.ui.document.InsertListener;
 
 import javax.swing.*;
-import java.awt.Container;
 
 public class Main{
 	public static void main(String... args){

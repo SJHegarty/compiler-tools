@@ -1,7 +1,7 @@
-package localgoat.lang.struct.handlers;
+package localgoat.lang.compiler.handlers;
 
-import localgoat.lang.struct.Token;
-import localgoat.lang.struct.TokenType;
+import localgoat.lang.compiler.Token;
+import localgoat.lang.compiler.TokenType;
 import localgoat.util.io.CharSource;
 
 public class IdentifierHandler implements Handler{

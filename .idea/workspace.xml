@@ -88,11 +88,11 @@
       </method>
     </configuration>
     <configuration name="CodeLine" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="localgoat.lang.struct.CodeLine" />
+      <option name="MAIN_CLASS_NAME" value="localgoat.lang.compiler.CodeLine" />
       <module name="lang" />
       <extension name="coverage">
         <pattern>
-          <option name="PATTERN" value="localgoat.lang.struct.*" />
+          <option name="PATTERN" value="localgoat.lang.compiler.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>

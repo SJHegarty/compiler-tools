@@ -1,4 +1,4 @@
-package localgoat.lang.struct;
+package localgoat.lang.compiler;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;

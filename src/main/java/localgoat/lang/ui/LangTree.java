@@ -1,6 +1,6 @@
 package localgoat.lang.ui;
 
-import localgoat.lang.struct.CodeTree;
+import localgoat.lang.compiler.CodeTree;
 import localgoat.util.ui.ListTreeWrapper;
 
 import javax.swing.*;
