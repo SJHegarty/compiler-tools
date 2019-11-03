@@ -1,7 +1,5 @@
 package localgoat.lang.struct;
 
-import localgoat.util.StringUtils;
-
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -45,7 +43,7 @@ public class CodeTree{
 
 		this.children = new ArrayList<>();
 		final var head = lines.poll();
-		final int depth = head.tabcount();
+		final int depth = head.depth();
 
 		final int splitIndex;
 		block:{
@@ -79,7 +77,7 @@ public class CodeTree{
 				IntStream.range(splitIndex + 1, tokens.size()).forEach(
 					i -> queue.add(tokens.get(i))
 				);
-				while(queue.peekFirst().type.ignored){
+				while(!queue.isEmpty() && queue.peekFirst().type.ignored){
 					queue.pollFirst();
 				}
 				var builder = new StringBuilder().append(head.prefix());
@@ -94,7 +92,7 @@ public class CodeTree{
 		else{
 			this.head = head;
 
-			while(lines.size() != 0 && lines.peek().tabcount() > depth){
+			while(lines.size() != 0 && lines.peek().depth() > depth){
 				children.add(new CodeTree(lines));
 			}
 
@@ -102,7 +100,7 @@ public class CodeTree{
 				final var line = lines.peek();
 				handled:{
 					unhandled:{
-						if(line == null || line.tabcount() != depth){
+						if(line == null || line.depth() != depth){
 							break unhandled;
 						}
 						switch(line.content()){
@@ -172,6 +170,42 @@ public class CodeTree{
 		return builder.toString();
 	}
 
+	public void effective(List<String> lines){
+		effective(lines, head.depth());
+	}
+
+	private void effective(List<String> lines, int depth){
+		switch(type){
+			case CONTINUATION:{
+				children.forEach(child -> child.effective(lines, depth));
+				break;
+			}
+			case NOTHING:{
+				break;
+			}
+			default:{
+				var indent = new StringBuilder();
+
+				for(int i = 0; i < depth; i++){
+					indent.append('\t');
+				}
+
+				final boolean continuation = children.size() == 1 && children.get(0).head.lineindex == head.lineindex;
+				lines.add(indent + head.content() + (continuation? "{":""));
+				final int childDepth = depth + 1;
+				for(var c: children){
+					c.effective(lines, childDepth);
+				}
+				if(type == BlockType.CLOSED || type == BlockType.CONTINUED){
+					lines.add(indent + tail.content());
+				}
+				else if(continuation){
+					lines.add(indent + "}");
+				}
+			}
+		}
+	}
+
 	public void reconstruct(List<String> lines){
 		switch(type){
 			case CONTINUATION:{
@@ -188,7 +222,7 @@ public class CodeTree{
 					if(head.lineindex == headc.lineindex){
 						final int line = lines.size();
 						child.reconstruct(lines);
-						lines.set(line, head.reconstruct() + CodeTree.CONTRACTION_DELIMITOR + lines.get(line).substring(headc.tabcount()));
+						lines.set(line, head.reconstruct() + CodeTree.CONTRACTION_DELIMITOR + lines.get(line).substring(headc.depth()));
 						return;
 					}
 				}

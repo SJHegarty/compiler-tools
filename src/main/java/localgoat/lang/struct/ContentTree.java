@@ -34,7 +34,6 @@ public class ContentTree{
 			.filter(line -> line.content().equals(""))
 			.collect(Collectors.toList());
 
-		System.err.println(new Exception().getStackTrace()[0]);
 	}
 
 	public List<CodeTree> getCode(){
@@ -57,7 +56,7 @@ public class ContentTree{
 	public String effective(){
 		final List<String> lines = new ArrayList<>();
 		for(var code: trees){
-			code.reconstruct(lines);
+			code.effective(lines);
 		}
 		final var builder = new StringBuilder();
 		lines.forEach(line -> builder.append("\n").append(line));

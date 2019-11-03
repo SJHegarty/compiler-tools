@@ -2,8 +2,13 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="d60d08b8-2f42-4902-90c8-73de51d58ace" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/src/main/java/localgoat/util/ui/document/AllListener.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/localgoat/lang/struct/CodeLine.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/localgoat/lang/struct/CodeLine.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/localgoat/lang/struct/CodeTree.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/localgoat/lang/struct/CodeTree.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/localgoat/lang/struct/ContentTree.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/localgoat/lang/struct/ContentTree.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/localgoat/lang/struct/TokenType.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/localgoat/lang/struct/TokenType.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/localgoat/lang/ui/LangPane.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/localgoat/lang/ui/LangPane.java" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -15,8 +20,8 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Enum" />
-        <option value="Interface" />
         <option value="Class" />
+        <option value="Interface" />
       </list>
     </option>
   </component>
@@ -38,6 +43,7 @@
     <property name="aspect.path.notification.shown" value="true" />
     <property name="last_directory_selection" value="$PROJECT_DIR$/src/main/java/localgoat/lang/struct" />
     <property name="last_opened_file_path" value="C:/Program Files/Git/bin/git.exe" />
+    <property name="nodejs_package_manager_path" value="npm" />
     <property name="project.structure.last.edited" value="Modules" />
     <property name="project.structure.proportion" value="0.15" />
     <property name="project.structure.side.proportion" value="0.2" />
@@ -119,7 +125,7 @@
       <workItem from="1572619190183" duration="10353000" />
       <workItem from="1572647843374" duration="5214000" />
       <workItem from="1572657658254" duration="1831000" />
-      <workItem from="1572720062603" duration="26108000" />
+      <workItem from="1572720062603" duration="31701000" />
     </task>
     <servers />
   </component>
@@ -142,11 +148,6 @@
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/localgoat/lang/struct/CodeTree.java</url>
-          <line>190</line>
-          <option name="timeStamp" value="8" />
-        </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/localgoat/lang/struct/ContentTree.java</url>
           <line>36</line>

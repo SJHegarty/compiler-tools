@@ -8,32 +8,29 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class CodeLine{
 
-	/*private static final Pattern LINE_PATTERN;// = Pattern.compile();
-
-	static{
-		final var builder = new StringBuilder();
-		builder.append("(?<tabs>\\t*)");
-		builder.append("(?<prefix>\\s*)");
-		builder.append("(?<content>[^\\s]*(.*[^\\s]+)*)");
-		builder.append("(?<suffix>\\s*)");
-		LINE_PATTERN = Pattern.compile(builder.toString());
-	}*/
-
 	public static final int TAB_WIDTH = 4;
+
+	private static final CharPredicate LOWER;
+	private static final CharPredicate UPPER;
+	private static final CharPredicate NUMERICAL;
+	private static final CharPredicate SYMBOLIC;
 
 	private static final char STRING_HEAD = '\"';
 	private static final char KEY_HEAD = '$';
 	private static final String KEY_HEAD_STRING = KEY_HEAD + "";
 	private static final Token HANGING_KEY_HEAD = new Token(KEY_HEAD_STRING, TokenType.HANGING);
 
+	private static final Handler[] HANDLERS;
 	private static final Set<String> SYMBOLS;
 	private static final Set<String> SYMBOL_PREFIXES;
 	private static final boolean SYMBOL_CHARS[];
@@ -47,12 +44,16 @@ public class CodeLine{
 				"^",
 				"~",
 				"!",
+				"&",
+				"|",
 				"-",
 				"+",
+				"/",
+				"*",
 				":",
-				"$",
 				"{",
 				"}",
+				"}&",
 				CONTINUATION_SYMBOL,
 				"->",
 				"!=",
@@ -80,14 +81,58 @@ public class CodeLine{
 				SYMBOL_PREFIXES.add(symbol.substring(0, i + 1));
 			}
 		}
-	}
-	private static final CharPredicate LOWER = c -> 'a' <= c && c <= 'z';
-	private static final CharPredicate UPPER = c -> 'A' <= c && c <= 'Z';
-	private static final CharPredicate NUMERICAL = c -> '0' <= c && c <= '9';
-	private static final CharPredicate SYMBOLIC = c -> (c < SYMBOL_CHARS.length) && SYMBOL_CHARS[c];
 
-	private static Token extractIndent(CharSource source){
-		return new Token(extractWhitespace(source).value, TokenType.INDENT);
+		LOWER = c -> 'a' <= c && c <= 'z';
+		UPPER = c -> 'A' <= c && c <= 'Z';
+		NUMERICAL = c -> '0' <= c && c <= '9';
+		SYMBOLIC = c -> (c < SYMBOL_CHARS.length) && SYMBOL_CHARS[c];
+
+		HANDLERS = new Handler[]{
+			new KeyHandler(),
+			new IdentifierHandler(),
+			new SymbolHandler(),
+			new WhitespaceHandler(),
+			new StringHandler(),
+		};
+		@SuppressWarnings("unchecked")
+		Map.Entry<Character, Handler[]>[] collisions = (Map.Entry<Character, Handler[]>[])IntStream.range(0, 0xff)
+			.mapToObj(i -> (char)i)
+			.collect(
+				Collectors.toMap(
+					character -> character,
+					character -> {
+						char c = character;
+						return Stream.of(HANDLERS)
+							.filter(handler -> handler.handles(c))
+							.toArray(Handler[]::new);
+					},
+					(v0, v1) -> {
+						throw new IllegalStateException();
+					},
+					LinkedHashMap::new
+				)
+			)
+			.entrySet().stream()
+			.filter(e -> e.getValue().length > 1)
+			.toArray(Map.Entry[]::new);
+
+		if(collisions.length != 0){
+			var builder = new StringBuilder();
+			for(var collision: collisions){
+				builder
+					.append(Handler.class.getSimpleName())
+					.append(" collision for character \'")
+					.append(collision.getKey())
+					.append("\'.");
+
+				builder.append("\n{");
+				for(var handler: collision.getValue()){
+					builder.append("\n\t").append(handler.getClass().getName());
+				}
+				builder.append("\n}");
+			}
+			throw new IllegalStateException(builder.toString());
+		}
 	}
 
 	private static Token extractWhitespace(CharSource source){
@@ -111,10 +156,10 @@ public class CodeLine{
 	}
 
 	private static Token extractKeysymbol(CharSource source){
-		if(source.read() != KEY_HEAD){
+		if(source.read() != '$'){
 			exceptInvalid();
 		}
-		return new Token(KEY_HEAD_STRING + extractSymbol(source), TokenType.SYMBOL);
+		return new Token("$"  + extractSymbol(source), TokenType.KEYSYMBOL);
 	}
 
 	private static Token extractSymbol(CharSource source){
@@ -225,13 +270,6 @@ public class CodeLine{
 		Token extract(CharSource source);
 	}
 
-	private static Handler[] HANDLERS = new Handler[]{
-		new KeyHandler(),
-		new IdentifierHandler(),
-		new SymbolHandler(),
-		new WhitespaceHandler(),
-		new StringHandler()
-	};
 
 	CodeLine(String line, int index){
 		this.lineindex = index;
@@ -239,7 +277,7 @@ public class CodeLine{
 		this.tokens = Collections.unmodifiableList(tokens);
 
 		try(var source = new CharSource(line)){
-			tokens.add(extractIndent(source));
+			tokens.add(extractWhitespace(source));
 
 			outer: for(;;){
 				final char c = source.peek();
@@ -411,7 +449,7 @@ public class CodeLine{
 		return builder.toString();
 	}
 
-	public int tabcount(){
+	public int depth(){
 		int sum = 0;
 		for(char c: tokens.get(0).value.toCharArray()){
 			switch(c){

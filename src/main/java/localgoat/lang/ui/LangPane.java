@@ -1,5 +1,6 @@
 package localgoat.lang.ui;
 
+import localgoat.util.ui.document.AllListener;
 import localgoat.util.ui.document.InsertListener;
 
 import javax.swing.*;
@@ -44,7 +45,7 @@ public class LangPane extends JTextPane{
 		};
 
 		doc.addDocumentListener(
-			(InsertListener)(e) -> {
+			(AllListener)(e) -> {
 				SwingUtilities.invokeLater(
 					() -> {
 						int index = getCaretPosition() - 1;
