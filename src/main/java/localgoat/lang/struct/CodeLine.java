@@ -29,6 +29,7 @@ public class CodeLine{
 
 	public static final int TAB_WIDTH = 4;
 
+	private static final char STRING_HEAD = '\"';
 	private static final char KEY_HEAD = '$';
 	private static final String KEY_HEAD_STRING = KEY_HEAD + "";
 	private static final Token HANGING_KEY_HEAD = new Token(KEY_HEAD_STRING, TokenType.HANGING);
@@ -215,53 +216,21 @@ public class CodeLine{
 		return new Token(builder.toString(), type);
 	};
 
-	private static final BiFunction<CharSource, StringBuilder, Token> GARBAGE_EXTRACTOR = (source, builder) -> {
-		for(;;){
-			final char value = source.peek();
-			if(value == CharSource.STREAM_END || Character.isWhitespace(value)){
-				break;
-			}
-			builder.append(value);
-			source.read();
-		}
-		return new Token(builder.toString(), TokenType.HANGING);
-	};
-
-
-
-	/*private static final Function<CharSource, Token> KEY_EXTRACTOR = (source) -> {
-
-	}*/
-
-
-
-
-
-
-	private static final BiConsumer<CharSource, StringBuilder> KEYWORD_EXTRACTOR = (source, builder) -> {
-		if(source.read() != KEY_HEAD){
-			throw new IllegalArgumentException();
-		}
-		builder.append(KEY_HEAD);
-		//IDENTIFIER_EXTRACTOR.accept(source, builder);
-	};
-
-	private static String extract(CharSource source, BiConsumer<CharSource, StringBuilder> extractor){
-		return extract(source, extractor, "");
-	}
-
-	private static String extract(CharSource source, BiConsumer<CharSource, StringBuilder> extractor, String prefix){
-		final var builder = new StringBuilder().append(prefix);
-		extractor.accept(source, builder);
-		return builder.toString();
-	}
-
 	public final int lineindex;
 	public final List<Token> tokens;
-	/*public final int tabcount;
-	private final String prefix;
-	private final String content;
-	private final String suffix;*/
+
+	private interface Handler{
+		boolean handles(char head);
+		Token extract(CharSource source);
+	}
+
+	private static Handler[] HANDLERS = new Handler[]{
+		new KeyHandler(),
+		new IdentifierHandler(),
+		new SymbolHandler(),
+		new WhitespaceHandler(),
+		new StringHandler()
+	};
 
 	CodeLine(String line, int index){
 		this.lineindex = index;
@@ -271,43 +240,124 @@ public class CodeLine{
 		try(var source = new CharSource(line)){
 			tokens.add(extractIndent(source));
 
-			for(;;){
-				final char[] chars = source.peek(2);
-				if(chars.length == 0){
+			outer: for(;;){
+				final char c = source.peek();
+				if(c == CharSource.STREAM_END){
 					break;
 				}
-				if(chars[0] == KEY_HEAD){
-					if(chars.length == 2){
-						if(LOWER.test(chars[1])){
-							tokens.add(extractKeyword(source));
-							continue;
-						}
-						if(SYMBOLIC.test(chars[1])){
-							tokens.add(extractKeysymbol(source));
-						}
+				for(var handler: HANDLERS){
+					if(handler.handles(c)){
+						tokens.add(handler.extract(source));
+						continue outer;
 					}
-					source.read();
-					tokens.add(HANGING_KEY_HEAD);
-					continue;
-				}
-				if(LOWER.test(chars[0])){
-					tokens.add(extractIdentifier(source));
-					continue;
-				}
-				if(SYMBOLIC.test(chars[0])){
-					tokens.add(extractSymbol(source));
-					continue;
-				}
-				if(Character.isWhitespace(chars[0])){
-					tokens.add(extractWhitespace(source));
-					continue;
 				}
 				tokens.add(
 					new Token(
 						new String(source.read(1)),
-						TokenType.HANGING
+						TokenType.UNHANDLED
 					)
 				);
+			}
+		}
+	}
+
+	private static class KeyHandler implements Handler{
+		@Override
+		public boolean handles(char head){
+			return head == KEY_HEAD;
+		}
+
+		@Override
+		public Token extract(CharSource source){
+			final var chars = source.peek(2);
+			if(chars.length == 2){
+				if(LOWER.test(chars[1])){
+					return extractKeyword(source);
+				}
+				if(SYMBOLIC.test(chars[1])){
+					return extractKeysymbol(source);
+				}
+			}
+			source.read();
+			return HANGING_KEY_HEAD;
+		}
+	}
+
+	private static class IdentifierHandler implements Handler{
+		@Override
+		public boolean handles(char head){
+			return LOWER.test(head);
+		}
+
+		@Override
+		public Token extract(CharSource source){
+			return extractIdentifier(source);
+		}
+	}
+
+	private static class SymbolHandler implements Handler{
+		@Override
+		public boolean handles(char head){
+			return SYMBOLIC.test(head);
+		}
+
+		@Override
+		public Token extract(CharSource source){
+			return extractSymbol(source);
+		}
+	}
+
+	private static class WhitespaceHandler implements Handler{
+		@Override
+		public boolean handles(char head){
+			return Character.isWhitespace(head);
+		}
+
+		@Override
+		public Token extract(CharSource source){
+			return extractWhitespace(source);
+		}
+	}
+
+	private static class StringHandler implements Handler{
+
+		@Override
+		public boolean handles(char head){
+			return head == STRING_HEAD;
+		}
+
+		@Override
+		public Token extract(CharSource source){
+			if(source.read() != STRING_HEAD){
+				exceptInvalid();
+			}
+			final var builder = new StringBuilder().append('\"');
+			for(;;){
+				char c = source.read();
+				hanging:{
+					switch(c){
+						case CharSource.STREAM_END:{
+							break;
+						}
+						case '\"':{
+							return new Token(builder.append('\"').toString(), TokenType.STRING);
+						}
+						case '\\':{
+							builder.append(c);
+							final char escaped = source.read();
+							if(escaped == CharSource.STREAM_END){
+								break;
+							}
+							c = escaped;
+						}
+						default:{
+							builder.append(c);
+							break hanging;
+						}
+					}
+					//TODO: make hanging a property of the Token, rather than a token type - this should be a hanging STRING token.
+					return new Token(builder.toString(), TokenType.HANGING);
+				}
 			}
 		}
 	}

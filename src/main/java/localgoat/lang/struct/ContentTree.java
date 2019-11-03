@@ -34,6 +34,7 @@ public class ContentTree{
 			.filter(line -> line.content().equals(""))
 			.collect(Collectors.toList());
 
+		System.err.println(new Exception().getStackTrace()[0]);
 	}
 
 	public List<CodeTree> getCode(){

@@ -10,6 +10,8 @@ public enum TokenType{
 	IDENTIFIER(false),
 	STATIC_IDENTIFIER(false),
 	HANGING(false),
+	UNHANDLED(false),
+	STRING(false),
 	TYPE(false);
 
 	public final boolean ignored;
