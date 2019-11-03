@@ -11,20 +11,12 @@ import java.util.stream.IntStream;
 public class ContentTree{
 
 	private final List<CodeTree> trees;
-	private final List<CodeLine> ignored;
 
 	public ContentTree(String text){
 		final String lines[] = text.split("\r?\n", -1);
-		final var codelines = IntStream.range(0, lines.length)
+		final var queue = IntStream.range(0, lines.length)
 			.mapToObj(index -> new CodeLine(lines[index], index))
-			.collect(Collectors.toList());
-
-		final Predicate<CodeLine> ignored = code -> code.first(t -> !t.ignored()) == null;
-		var queue = codelines.stream()
-			.filter(ignored.negate())
-			.collect(
-				Collectors.toCollection(ArrayDeque::new)
-			);
+			.collect(Collectors.toCollection(ArrayDeque::new));
 
 		var trees = new ArrayList<CodeTree>();
 		this.trees = Collections.unmodifiableList(trees);
@@ -32,9 +24,6 @@ public class ContentTree{
 			trees.add(new CodeTree(queue));
 		}
 
-		this.ignored = codelines.stream()
-			.filter(ignored)
-			.collect(Collectors.toList());
 
 	}
 
@@ -47,12 +36,8 @@ public class ContentTree{
 		for(var code: trees){
 			code.reconstruct(lines);
 		}
-		for(var line: ignored){
-			lines.add(line.lineindex, line.reconstruct());
-		}
 		final var builder = new StringBuilder();
 		lines.forEach(line -> builder.append("\n").append(line));
-		System.err.println(new Exception().getStackTrace()[0]);
 		return builder.substring(1);
 	}
 

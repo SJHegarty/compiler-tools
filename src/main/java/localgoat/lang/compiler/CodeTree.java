@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.IntStream;
 
 public class CodeTree{
@@ -18,6 +19,7 @@ public class CodeTree{
 		CONTINUATION,
 		CONTINUED,
 		NOTHING,
+		BLANK,
 		UNCLOSED,
 		UNSOUND;
 	}
@@ -43,8 +45,16 @@ public class CodeTree{
 			return;
 		}
 
-		this.children = new ArrayList<>();
 		final var head = lines.poll();
+		if(head.reconstruct().length() == 0){
+			this.head = head;
+			this.tail = null;
+			this.type = BlockType.BLANK;
+			this.children = Collections.emptyList();
+			return;
+		}
+
+		this.children = new ArrayList<>();
 		final int depth = head.depth();
 
 		final int splitIndex;
@@ -93,11 +103,10 @@ public class CodeTree{
 		}
 		else{
 			this.head = head;
-
-			while(lines.size() != 0 && lines.peek().depth() > depth){
+			final Predicate<CodeLine> filter = line -> line.depth() > depth || line.reconstruct().length() == 0;
+			while(lines.size() != 0 && filter.test(lines.peek())){
 				children.add(new CodeTree(lines));
 			}
-
 			final Token headEnd = head.last(t -> !t.ignored());
 			if(headEnd != null && headEnd.value.equals(SymbolHandler.OPENING_BRACKET)){
 				final var line = lines.peek();
@@ -187,6 +196,7 @@ public class CodeTree{
 				children.forEach(child -> child.effective(lines, depth));
 				break;
 			}
+			case BLANK:
 			case NOTHING:{
 				break;
 			}
@@ -218,6 +228,10 @@ public class CodeTree{
 			case CONTINUATION:{
 				children().forEach(child -> child.reconstruct(lines));
 				break;
+			}
+			case BLANK:{
+				lines.add("");
+				return;
 			}
 			case NOTHING:{
 				break;

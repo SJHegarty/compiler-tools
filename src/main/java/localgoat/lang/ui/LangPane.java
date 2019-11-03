@@ -1,9 +1,12 @@
 package localgoat.lang.ui;
 
+import localgoat.lang.compiler.CodeLine;
+import localgoat.lang.compiler.ContentTree;
+import localgoat.lang.compiler.TokenType;
 import localgoat.util.ui.document.AllListener;
-import localgoat.util.ui.document.InsertListener;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
@@ -12,9 +15,14 @@ import javax.swing.text.TabSet;
 import javax.swing.text.TabStop;
 import java.awt.Color;
 import java.awt.Font;
+import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.IntStream;
 
 public class LangPane extends JTextPane{
+
+	private ContentTree content;
 
 	public LangPane(){
 
@@ -44,14 +52,25 @@ public class LangPane extends JTextPane{
 			context.addAttribute(context.getEmptySet(), StyleConstants.Foreground, Color.RED)
 		};
 
+		final var colours = new HashMap<TokenType, Color>();
 		doc.addDocumentListener(
-			(AllListener)(e) -> {
-				SwingUtilities.invokeLater(
-					() -> {
-						int index = getCaretPosition() - 1;
-						//doc.setCharacterAttributes(index, 1, attributes[index & 1], false);
+			new AllListener(){
+				final AtomicBoolean open = new AtomicBoolean(true);
+				@Override
+				public void update(DocumentEvent e){
+					if(open.getAndSet(false)){
+						LangPane.this.content = new ContentTree(getText());
+						SwingUtilities.invokeLater(
+							() -> {
+								System.err.println("here " + e.getType() + " " + e);
+								int index = getCaretPosition() - 1;
+								doc.setCharacterAttributes(index, 1, attributes[index & 1], false);
+								System.err.println("There" + e.getType()  + "\n");
+								open.set(true);
+							}
+						);
 					}
-				);
+				}
 			}
 		);
 

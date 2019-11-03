@@ -1,6 +1,7 @@
 import localgoat.lang.compiler.ContentTree;
 import localgoat.lang.ui.LangPane;
 import localgoat.lang.ui.LangTree;
+import localgoat.util.ui.document.AllListener;
 import localgoat.util.ui.document.InsertListener;
 
 import javax.swing.*;
@@ -24,7 +25,7 @@ public class Main{
 		//recpane.setEditable(false);
 
 		pane.getDocument().addDocumentListener(
-			(InsertListener)(e) -> {
+			(AllListener)(e) -> {
 				var text = pane.getText().replaceAll("\r\n", "\n");
 				var contentTree = new ContentTree(text);
 				recpane.setText(contentTree.reconstruct());
