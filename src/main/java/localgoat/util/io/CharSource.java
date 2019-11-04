@@ -54,6 +54,11 @@ public class CharSource implements AutoCloseable{
 		return rv;
 	}
 
+
+	public void skip(int charCount){
+		read(charCount);
+	}
+
 	public char[] read(int charCount){
 		try{
 			final char[] result = new char[charCount];
@@ -86,4 +91,5 @@ public class CharSource implements AutoCloseable{
 			throw new IllegalStateException();
 		}
 	}
+
 }

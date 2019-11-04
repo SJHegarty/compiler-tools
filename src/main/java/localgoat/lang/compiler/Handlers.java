@@ -1,12 +1,6 @@
 package localgoat.lang.compiler;
 
-import localgoat.lang.compiler.handlers.Handler;
-import localgoat.lang.compiler.handlers.IdentifierHandler;
-import localgoat.lang.compiler.handlers.KeyHandler;
-import localgoat.lang.compiler.handlers.StringHandler;
-import localgoat.lang.compiler.handlers.SymbolHandler;
-import localgoat.lang.compiler.handlers.TypeHandler;
-import localgoat.lang.compiler.handlers.WhitespaceHandler;
+import localgoat.lang.compiler.handlers.*;
 import localgoat.util.io.CharSource;
 
 import java.util.LinkedHashMap;
@@ -23,6 +17,7 @@ class Handlers{
 		HANDLERS = new Handler[]{
 			IdentifierHandler.INSTANCE,
 			TypeHandler.INSTANCE,
+			ConstHandler.INSTANCE,
 			new KeyHandler(),
 			new SymbolHandler(),
 			WhitespaceHandler.INSTANCE,

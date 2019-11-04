@@ -15,10 +15,17 @@ public class ContentTree{
 
 	public ContentTree(String text){
 		final String lines[] = text.split("\r?\n", -1);
+
+		long time = System.currentTimeMillis();
+
 		final var queue = IntStream.range(0, lines.length)
+			.parallel()
 			.mapToObj(index -> new CodeLine(lines[index], index))
 			.collect(Collectors.toCollection(ArrayDeque::new));
 
+		time = System.currentTimeMillis() - time;
+
+//		System.err.println(new Exception().getStackTrace()[0] + " " + time);
 		var trees = new ArrayList<CodeTree>();
 		this.trees = Collections.unmodifiableList(trees);
 		while(!queue.isEmpty()){

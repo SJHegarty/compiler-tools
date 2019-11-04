@@ -25,14 +25,27 @@ public class KeyHandler implements Handler{
 			if(c == '$'){
 				source.read(1);
 				final var peek = source.peek(2);
-				if(peek.length == 2 && peek[0] == '-' && IdentifierHandler.INSTANCE.handles(peek[1])){
-					source.read(1);
-					return new Token(
-						"$$-" + IdentifierHandler.INSTANCE.extract(source),
-						TokenType.FORMATTED_COMMENT
-					);
+				switch(peek.length){
+					case 2:{
+						if(peek[0] == '-' && IdentifierHandler.INSTANCE.handles(peek[1])){
+							source.read(1);
+							return new Token(
+								"$$-" + IdentifierHandler.INSTANCE.extract(source),
+								TokenType.HANDLED_COMMENT
+							);
+						}
+					}
+					case 1:{
+						if(peek[0] == '$'){
+							var builder = new StringBuilder().append("$$");
+							for(char cn = source.read(); cn != CharSource.STREAM_END; cn = source.read()){
+								builder.append(cn);
+							}
+							return new Token(builder.toString(), TokenType.LINE_COMMENT);
+						}
+					}
 				}
-				return new Token("$$", TokenType.COMMENT);
+				return new Token("$$", TokenType.STRUCTURED_COMMENT);
 			}
 			if(LOWER.test(c)){
 				return new Token(

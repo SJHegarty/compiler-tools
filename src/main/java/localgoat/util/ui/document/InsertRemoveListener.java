@@ -4,7 +4,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 @FunctionalInterface
-public interface AllListener extends DocumentListener{
+public interface InsertRemoveListener extends DocumentListener{
 
 	void update(DocumentEvent e);
 
@@ -17,7 +17,7 @@ public interface AllListener extends DocumentListener{
 	}
 
 	default void changedUpdate(DocumentEvent e){
-		update(e);
+	//	update(e);
 	}
 
 }

@@ -1,8 +1,7 @@
 import localgoat.lang.compiler.ContentTree;
 import localgoat.lang.ui.LangPane;
 import localgoat.lang.ui.LangTree;
-import localgoat.util.ui.document.AllListener;
-import localgoat.util.ui.document.InsertListener;
+import localgoat.util.ui.document.InsertRemoveListener;
 
 import javax.swing.*;
 
@@ -22,10 +21,10 @@ public class Main{
 		//tabs.add("Effective", new JScrollPane(actualised));
 		tabs.add("Tree", new JScrollPane(tree));
 		//final var recpane = new LangPane();
-		//recpane.setEditable(false);
+		recpane.setEditable(false);
 
 		pane.getDocument().addDocumentListener(
-			(AllListener)(e) -> {
+			(InsertRemoveListener)(e) -> {
 				var text = pane.getText().replaceAll("\r\n", "\n");
 				var contentTree = new ContentTree(text);
 				recpane.setText(contentTree.reconstruct());

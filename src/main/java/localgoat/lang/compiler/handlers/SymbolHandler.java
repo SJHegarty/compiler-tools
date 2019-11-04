@@ -13,6 +13,8 @@ public class SymbolHandler implements Handler{
 
 	public static final String CONTINUING_BRACKET = "}&";
 	public static final String LINE_CONTINUATION = "::";
+	public static final String OPENING_SQUARE = "[";
+	public static final String CLOSING_SQUARE = "]";
 	public static final String OPENING_BRACKET = "{";
 	public static final String CLOSING_BRACKET = "}";
 	public static final String OPENING_PARENTHESIS = "(";
@@ -31,6 +33,9 @@ public class SymbolHandler implements Handler{
 		SYMBOLS = new HashSet<>();
 		SYMBOLS.addAll(
 			Arrays.asList(
+				".",
+				"..",
+				"...",
 				"^",
 				"~",
 				"!",
@@ -41,6 +46,8 @@ public class SymbolHandler implements Handler{
 				"/",
 				"*",
 				":",
+				OPENING_SQUARE,
+				CLOSING_SQUARE,
 				OPENING_BRACKET,
 				CLOSING_BRACKET,
 				OPENING_PARENTHESIS,

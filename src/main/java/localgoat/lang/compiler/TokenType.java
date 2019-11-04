@@ -1,11 +1,13 @@
 package localgoat.lang.compiler;
 
 public enum TokenType{
+	CONST(false),
 	KEYWORD(false),
 	KEYSYMBOL(false),
 	WHITESPACE(true),
-	COMMENT(true),
-	FORMATTED_COMMENT(true),
+	LINE_COMMENT(true),
+	STRUCTURED_COMMENT(false),
+	HANDLED_COMMENT(false),
 	SYMBOL(false),
 	IDENTIFIER(false),
 	STATIC_IDENTIFIER(false),
