@@ -5,6 +5,13 @@ import localgoat.lang.compiler.TokenType;
 import localgoat.util.io.CharSource;
 
 public class WhitespaceHandler implements Handler{
+
+	public static final Handler INSTANCE = new WhitespaceHandler();
+
+	private WhitespaceHandler(){
+
+	}
+
 	@Override
 	public boolean handles(char head){
 		return Character.isWhitespace(head);

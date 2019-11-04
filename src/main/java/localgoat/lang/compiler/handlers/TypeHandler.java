@@ -4,26 +4,27 @@ import localgoat.lang.compiler.Token;
 import localgoat.lang.compiler.TokenType;
 import localgoat.util.io.CharSource;
 
-public class IdentifierHandler implements Handler{
-	public static final Handler INSTANCE = new IdentifierHandler();
+public class TypeHandler implements Handler{
 
-	private IdentifierHandler(){
+	public static final Handler INSTANCE = new TypeHandler();
+
+	private TypeHandler(){
 
 	}
 
 	@Override
 	public boolean handles(char head){
-		return LOWER.test(head);
+		return UPPER.test(head);
 	}
 
 	@Override
 	public Token extract(CharSource source){
-		return extractCompound(
-			LOWER,
+		return this.extractCompound(
+			UPPER,
 			c -> LOWER.test(c) || NUMERIC.test(c),
-			c -> c == '-',
+			UPPER,
 			source,
-			TokenType.IDENTIFIER
+			TokenType.TYPE
 		);
 	}
 }

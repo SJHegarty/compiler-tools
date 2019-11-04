@@ -22,6 +22,18 @@ public class KeyHandler implements Handler{
 		}
 		final var c = source.peek();
 		if(c != CharSource.STREAM_END){
+			if(c == '$'){
+				source.read(1);
+				final var peek = source.peek(2);
+				if(peek.length == 2 && peek[0] == '-' && IdentifierHandler.INSTANCE.handles(peek[1])){
+					source.read(1);
+					return new Token(
+						"$$-" + IdentifierHandler.INSTANCE.extract(source),
+						TokenType.FORMATTED_COMMENT
+					);
+				}
+				return new Token("$$", TokenType.COMMENT);
+			}
 			if(LOWER.test(c)){
 				return new Token(
 					KEY_HEAD_STRING + IdentifierHandler.INSTANCE.extract(source),

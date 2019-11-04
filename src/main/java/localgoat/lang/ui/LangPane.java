@@ -1,10 +1,7 @@
 package localgoat.lang.ui;
 
-import localgoat.lang.compiler.CodeLine;
 import localgoat.lang.compiler.ContentTree;
-import localgoat.lang.compiler.Token;
 import localgoat.lang.compiler.TokenType;
-import localgoat.util.ESupplier;
 import localgoat.util.ui.document.AllListener;
 
 import javax.swing.*;
@@ -19,11 +16,9 @@ import javax.swing.text.TabStop;
 import java.awt.Color;
 import java.awt.Font;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
 public class LangPane extends JTextPane{
@@ -33,6 +28,7 @@ public class LangPane extends JTextPane{
 	public LangPane(){
 
 		this.setBackground(new Color(0xff404040));
+		this.setCaretColor(new Color(0xffc0c0c0));
 		final int charcount = 4;
 		final var font = new Font(Font.MONOSPACED, Font.BOLD, 12);
 		final int tabsize = charcount * getFontMetrics(font).charWidth('w');
@@ -67,15 +63,28 @@ public class LangPane extends JTextPane{
 			TokenType.KEYWORD,
 			builder.apply(new Color(0xff80c0ff))
 		);
+		atts.put(
+			TokenType.TYPE,
+			builder.apply(Color.WHITE)
+		);
+		atts.put(
+			TokenType.UNHANDLED,
+			builder.apply(Color.RED)
+		);
 
 		final var colours = new HashMap<TokenType, Color>();
 		doc.addDocumentListener(
 			new AllListener(){
 				final AtomicBoolean open = new AtomicBoolean(true);
 				@Override
-				public void update(DocumentEvent e){
+				public void update(DocumentEvent event){
 					if(open.getAndSet(false)){
-						LangPane.this.content = new ContentTree(getText());
+						try{
+							LangPane.this.content = new ContentTree(doc.getText(0, doc.getLength()));
+						}
+						catch(BadLocationException e){
+							throw new IllegalStateException(e);
+						}
 						SwingUtilities.invokeLater(
 							() -> {
 								int index = 0;
@@ -84,6 +93,7 @@ public class LangPane extends JTextPane{
 									final var type = token.type;
 
 									if(type != TokenType.WHITESPACE){
+										System.err.println(type + ": " + token);
 										var attributes = atts.get(type);
 										if(attributes == null){
 											System.err.println("Missing type handler: " + type);

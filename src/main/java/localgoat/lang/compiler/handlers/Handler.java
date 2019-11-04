@@ -9,7 +9,8 @@ public interface Handler{
 
 	CharPredicate LOWER = c -> 'a' <= c && c <= 'z';
 	CharPredicate UPPER = c -> 'A' <= c && c <= 'Z';
-	CharPredicate NUMERICAL = c -> '0' <= c && c <= '9';
+	CharPredicate NUMERIC = c -> '0' <= c && c <= '9';
+	CharPredicate ALPHANUMERIC = c -> LOWER.test(c) || UPPER.test(c) || NUMERIC.test(c);
 
 	boolean handles(char head);
 	Token extract(CharSource source);

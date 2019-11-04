@@ -5,6 +5,7 @@ public enum TokenType{
 	KEYSYMBOL(false),
 	WHITESPACE(true),
 	COMMENT(true),
+	FORMATTED_COMMENT(true),
 	SYMBOL(false),
 	IDENTIFIER(false),
 	STATIC_IDENTIFIER(false),

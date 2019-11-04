@@ -15,6 +15,9 @@ public class SymbolHandler implements Handler{
 	public static final String LINE_CONTINUATION = "::";
 	public static final String OPENING_BRACKET = "{";
 	public static final String CLOSING_BRACKET = "}";
+	public static final String OPENING_PARENTHESIS = "(";
+	public static final String CLOSING_PARENTHESIS = ")";
+	public static final String STATEMENT_TERMINATOR = ";";
 
 	private static final Set<String> SYMBOLS;
 	private static final Set<String> SYMBOL_PREFIXES;
@@ -40,6 +43,9 @@ public class SymbolHandler implements Handler{
 				":",
 				OPENING_BRACKET,
 				CLOSING_BRACKET,
+				OPENING_PARENTHESIS,
+				CLOSING_PARENTHESIS,
+				STATEMENT_TERMINATOR,
 				CONTINUING_BRACKET,
 				LINE_CONTINUATION,
 				"->",

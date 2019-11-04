@@ -5,7 +5,9 @@ import localgoat.lang.compiler.handlers.IdentifierHandler;
 import localgoat.lang.compiler.handlers.KeyHandler;
 import localgoat.lang.compiler.handlers.StringHandler;
 import localgoat.lang.compiler.handlers.SymbolHandler;
+import localgoat.lang.compiler.handlers.TypeHandler;
 import localgoat.lang.compiler.handlers.WhitespaceHandler;
+import localgoat.util.io.CharSource;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -15,16 +17,15 @@ import java.util.stream.Stream;
 
 class Handlers{
 
-	static final Handler WHITESPACE_HANDLER;
 	static final Handler[] HANDLERS;
 
 	static{
-		WHITESPACE_HANDLER = new WhitespaceHandler();
 		HANDLERS = new Handler[]{
 			IdentifierHandler.INSTANCE,
+			TypeHandler.INSTANCE,
 			new KeyHandler(),
 			new SymbolHandler(),
-			WHITESPACE_HANDLER,
+			WhitespaceHandler.INSTANCE,
 			new StringHandler(),
 		};
 		@SuppressWarnings("unchecked")

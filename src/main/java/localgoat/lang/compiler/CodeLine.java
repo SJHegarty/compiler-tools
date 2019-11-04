@@ -1,5 +1,6 @@
 package localgoat.lang.compiler;
 
+import localgoat.lang.compiler.handlers.WhitespaceHandler;
 import localgoat.util.io.CharSource;
 
 import java.util.ArrayDeque;
@@ -22,7 +23,7 @@ public class CodeLine{
 
 		try(var source = new CharSource(line)){
 			tokens.add(
-				Handlers.WHITESPACE_HANDLER.extract(source)
+				WhitespaceHandler.INSTANCE.extract(source)
 			);
 
 			outer: for(;;){
