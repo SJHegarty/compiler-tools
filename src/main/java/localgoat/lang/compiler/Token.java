@@ -2,6 +2,8 @@ package localgoat.lang.compiler;
 
 public class Token{
 
+	public static final Token LINE_FEED = new Token("\n", TokenType.WHITESPACE);
+
 	public final String value;
 	public final TokenType type;
 

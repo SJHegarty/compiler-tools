@@ -1,14 +1,13 @@
 package localgoat.lang.compiler;
 
 import localgoat.lang.compiler.handlers.SymbolHandler;
+import localgoat.util.ESupplier;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
 import java.util.function.Predicate;
-import java.util.stream.IntStream;
 
 public class CodeTree{
 
@@ -25,12 +24,12 @@ public class CodeTree{
 	}
 	final BlockType type;
 	public final CodeLine head;
-	public final CodeLine tail;
 	private final List<CodeTree> children;
+	public final CodeLine tail;
 
-	private CodeTree(CodeLine head){
+	private CodeTree(){
 		this.type = BlockType.CONTINUATION;
-		this.head = head;
+		this.head = null;
 		this.tail = null;
 		this.children = new ArrayList<>();
 	}
@@ -57,8 +56,8 @@ public class CodeTree{
 		this.children = new ArrayList<>();
 		final int depth = head.depth();
 
-		final int splitIndex;
-		block:{
+		//final int splitIndex;
+		/*block:{
 			final var tokens = head.contentTokens();
 			for(int i = 0; i < tokens.size(); i++){
 				final var t = tokens.get(i);
@@ -68,8 +67,8 @@ public class CodeTree{
 				}
 			}
 			splitIndex = -1;
-		}
-		if(splitIndex != -1){
+		}*/
+		/*if(splitIndex != -1){
 			final var tokens = head.contentTokens();
 			final int index = head.lineindex;
 			{
@@ -100,8 +99,8 @@ public class CodeTree{
 			//TODO: if children.get(0).type == CONTINUED add validation error - unsupported confusing syntax
 			this.tail = null;
 			this.type = BlockType.UNCLOSED;
-		}
-		else{
+		}*/
+		//else{
 			this.head = head;
 			final Predicate<CodeLine> filter = line -> line.depth() > depth || line.reconstruct().length() == 0;
 			while(lines.size() != 0 && filter.test(lines.peek())){
@@ -157,106 +156,47 @@ public class CodeTree{
 							break;
 						}
 					}
-					final var collapsed = new CodeTree(continuation.get(0).head);
+					final var collapsed = new CodeTree();
 					collapsed.children.addAll(continuation);
 					children.set(i, collapsed);
 				}
 			}
-		}
+		//}
 	}
+
+	static ESupplier<Token> tokenise(Iterable<CodeTree> trees){
+		return ESupplier.from(trees)
+			.map(child -> child.tokens())
+			.interlace(() -> ESupplier.of(Token.LINE_FEED))
+			.flatMap(supplier -> supplier);
+	}
+
+	public ESupplier<Token> tokens(){
+		var sources = new ArrayList<ESupplier<Token>>();
+		if(head != null){
+			sources.add(ESupplier.from(head.tokens));
+		}
+		if(!children.isEmpty()){
+			sources.add(tokenise(children));
+		}
+		if(tail != null){
+			sources.add(ESupplier.from(tail.tokens));
+		}
+		return ESupplier.from(sources)
+			.interlace(() -> ESupplier.of(Token.LINE_FEED))
+			.flatMap(supplier -> supplier);
+	};
 
 	public List<CodeTree> children(){
 		return Collections.unmodifiableList(children);
 	}
 
-	public String toString(){
-		return head.reconstruct();
-	}
-
 	public String reconstruct(){
-		final var lines = new ArrayList<String>();
-		reconstruct(lines);
 		final var builder = new StringBuilder();
-		if(lines.size() != 0){
-			builder.append(lines.get(0));
-			IntStream.range(1, lines.size()).forEach(
-				i -> builder.append(lines.get(i))
-			);
+		for(var t: tokens()){
+			builder.append(t);
 		}
 		return builder.toString();
 	}
 
-	public void effective(List<String> lines){
-		effective(lines, head.depth());
-	}
-
-	private void effective(List<String> lines, int depth){
-		switch(type){
-			case CONTINUATION:{
-				children.forEach(child -> child.effective(lines, depth));
-				break;
-			}
-			case BLANK:
-			case NOTHING:{
-				break;
-			}
-			default:{
-				var indent = new StringBuilder();
-
-				for(int i = 0; i < depth; i++){
-					indent.append('\t');
-				}
-
-				final boolean continuation = children.size() == 1 && children.get(0).head.lineindex == head.lineindex;
-				lines.add(indent + head.content() + (continuation? "{":""));
-				final int childDepth = depth + 1;
-				for(var c: children){
-					c.effective(lines, childDepth);
-				}
-				if(type == BlockType.CLOSED || type == BlockType.CONTINUED){
-					lines.add(indent + tail.content());
-				}
-				else if(continuation){
-					lines.add(indent + "}");
-				}
-			}
-		}
-	}
-
-	public void reconstruct(List<String> lines){
-		switch(type){
-			case CONTINUATION:{
-				children().forEach(child -> child.reconstruct(lines));
-				break;
-			}
-			case BLANK:{
-				lines.add("");
-				return;
-			}
-			case NOTHING:{
-				break;
-			}
-			default:{
-				if(children.size() == 1){
-					var child = children.get(0);
-					var headc = child.head;
-					if(head.lineindex == headc.lineindex){
-						final int line = lines.size();
-						child.reconstruct(lines);
-						lines.set(line, head.reconstruct() + CodeTree.CONTRACTION_DELIMITOR + lines.get(line).substring(headc.depth()));
-						return;
-					}
-				}
-
-				lines.add(head.reconstruct());
-
-				for(var c : children){
-					c.reconstruct(lines);
-				}
-				if(type == BlockType.CLOSED || type == BlockType.CONTINUED){
-					lines.add(tail.reconstruct());
-				}
-			}
-		}
-	}
 }

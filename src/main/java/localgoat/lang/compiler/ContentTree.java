@@ -1,10 +1,11 @@
 package localgoat.lang.compiler;
 
+import localgoat.util.ESupplier;
+
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -23,32 +24,22 @@ public class ContentTree{
 		while(!queue.isEmpty()){
 			trees.add(new CodeTree(queue));
 		}
-
-
 	}
 
 	public List<CodeTree> getCode(){
 		return trees;
 	}
 
-	public String reconstruct(){
-		final List<String> lines = new ArrayList<>();
-		for(var code: trees){
-			code.reconstruct(lines);
-		}
-		final var builder = new StringBuilder();
-		lines.forEach(line -> builder.append("\n").append(line));
-		return builder.substring(1);
+	public ESupplier<Token> tokens(){
+		return CodeTree.tokenise(trees);
 	}
 
-	public String effective(){
-		final List<String> lines = new ArrayList<>();
-		for(var code: trees){
-			code.effective(lines);
-		}
+	public String reconstruct(){
 		final var builder = new StringBuilder();
-		lines.forEach(line -> builder.append("\n").append(line));
-		return builder.substring(1);
+		for(var t: tokens()){
+			builder.append(t);
+		}
+		return builder.toString();
 	}
 
 }
