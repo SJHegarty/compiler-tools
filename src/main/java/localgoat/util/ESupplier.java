@@ -1,8 +1,6 @@
 package localgoat.util;
 
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -156,6 +154,50 @@ public interface ESupplier<T> extends Supplier<T>, Iterable<T>{
 					else{
 						return result;
 					}
+				}
+			}
+		};
+	}
+
+	default ESupplier<T> limit(final int maxSize){
+		return new ESupplier<>(){
+			int count = 0;
+			@Override
+			public T get(){
+				if(count == maxSize){
+					return null;
+				}
+				count += 1;
+				return ESupplier.this.get();
+			}
+		};
+	}
+
+	default ESupplier<T> branchingMap(Function<T, ESupplier<T>> mapper){
+		return new ESupplier<>(){
+			ESupplier<T> supplier = ESupplier.this;
+			Queue<T> viewed = new ArrayDeque<>();
+
+			@Override
+			public T get(){
+				if(supplier == null){
+					return null;
+				}
+				for(;;){
+					var result = supplier.get();
+					if(result == null){
+						if(viewed.isEmpty()){
+							supplier = null;
+							return null;
+						}
+						supplier = mapper.apply(viewed.poll());
+						if(supplier == null){
+							supplier = empty();
+						}
+						continue;
+					}
+					viewed.add(result);
+					return result;
 				}
 			}
 		};
