@@ -2,6 +2,7 @@ package localgoat.lang.compiler.automata;
 
 import java.util.AbstractList;
 import java.util.List;
+import java.util.Set;
 
 public interface Automaton<T extends Token>{
 
@@ -18,7 +19,7 @@ public interface Automaton<T extends Token>{
 
 	int nodeCount();
 	Node<T> node(int index);
-	TokenSet<T> tokens();
+	Set<T> tokens();
 
 	default List<Node<T>> nodes(){
 		return new AbstractList<>(){

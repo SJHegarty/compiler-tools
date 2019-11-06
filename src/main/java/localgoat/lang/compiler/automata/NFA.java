@@ -1,5 +1,9 @@
 package localgoat.lang.compiler.automata;
 
+import localgoat.util.CollectionUtils;
+
+import java.util.Collections;
+import java.util.Set;
 import java.util.stream.IntStream;
 
 public class NFA<T extends Token> implements Automaton<T>{
@@ -46,25 +50,31 @@ public class NFA<T extends Token> implements Automaton<T>{
 		}
 	}
 
-
-
 	private final MutableNode<T>[] nodes;
-	private final TokenSet<T> tokens;
+	private final Set<T> tokens;
 
 	NFA(BinaryOperation op, Automaton<T> a0, Automaton<T> a1){
 		switch(op){
 			case OR:{
-				tokens = TokenSet.union(a0.tokens(), a1.tokens());
+				tokens = CollectionUtils.union(a0.tokens(), a1.tokens());
 				final var left = a0.nodes();
 				final var right = a1.nodes();
 
 				//noinspection unchecked
-				nodes = IntStream.range(0, 1 + left.size() + right.size())
-					.mapToObj(i -> new MutableNode<>(this, i))
-					.toArray(MutableNode[]::new);
+				nodes = new MutableNode[1 + left.size() + right.size()];
+				nodes[0] = new MutableNode<>(this, 0, false);
 
 				{
 					final int loff = 1;
+
+					IntStream.range(0, left.size())
+						.forEach(
+							lindex -> {
+								final int index = loff + lindex;
+								nodes[index] = new MutableNode<>(this, index, left.get(lindex).isTerminating());
+							}
+						);
+
 					nodes[0].addTransition(null, nodes[loff]);
 					for(var l : left){
 						final var node = nodes[loff + l.index()];
@@ -79,6 +89,16 @@ public class NFA<T extends Token> implements Automaton<T>{
 				}
 				{
 					final int roff = 1 + left.size();
+
+					IntStream.range(0, right.size())
+						.forEach(
+							rindex -> {
+								final int index = roff + rindex;
+								nodes[index] = new MutableNode<>(this, index, right.get(rindex).isTerminating());
+							}
+						);
+
+
 					nodes[0].addTransition(null, nodes[roff]);
 					for(var r : right){
 						final var node = nodes[roff + r.index()];
@@ -113,8 +133,8 @@ public class NFA<T extends Token> implements Automaton<T>{
 	}
 
 	@Override
-	public TokenSet tokens(){
-		return tokens;
+	public Set<T> tokens(){
+		return Collections.unmodifiableSet(tokens);
 	}
 
 	@Override

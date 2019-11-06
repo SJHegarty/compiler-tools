@@ -2,6 +2,7 @@ package localgoat.util;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -17,8 +18,9 @@ public interface ESupplier<T> extends Supplier<T>, Iterable<T>{
 	}
 
 	static <T> ESupplier<T> of(T...elements){
-		return new ESupplier<T>(){
+		return new ESupplier<>(){
 			int index = 0;
+
 			@Override
 			public T get(){
 				while(index < elements.length){
@@ -73,7 +75,7 @@ public interface ESupplier<T> extends Supplier<T>, Iterable<T>{
 
 	@Override
 	default Iterator<T> iterator(){
-		return new Iterator<T>(){
+		return new Iterator<>(){
 			boolean retrieved;
 			T value;
 
@@ -159,6 +161,21 @@ public interface ESupplier<T> extends Supplier<T>, Iterable<T>{
 		};
 	}
 
+	default ESupplier<T> retain(Predicate<T> predicate){
+		return () -> {
+			for(;;){
+				final T result = ESupplier.this.get();
+				if(result == null || predicate.test(result)){
+					return result;
+				}
+			}
+		};
+	}
+
+	default ESupplier<T> exclude(Predicate<T> predicate){
+		return retain(predicate.negate());
+	}
+
 	default ESupplier<T> limit(final int maxSize){
 		return new ESupplier<>(){
 			int count = 0;
@@ -173,10 +190,35 @@ public interface ESupplier<T> extends Supplier<T>, Iterable<T>{
 		};
 	}
 
-	default ESupplier<T> branchingMap(Function<T, ESupplier<T>> mapper){
+	public static void main(String...args){
+		var supplier = ESupplier.of("a")
+			.branchingMap(false, s -> ESupplier.of(s + "a", s + "b", s + "c"))
+			.limit(100)
+			.exclude(s -> s.contains("abc"));
+
+		int index = 0;
+		for(var s: supplier){
+			System.err.println(index++ + ": " + s);
+		}
+	}
+
+	default ESupplier<T> unique(){
+		final Set<T> viewed = new HashSet<>();
+		return () -> {
+			for(;;){
+				final var result = ESupplier.this.get();
+				if(result == null || viewed.add(result)){
+					return result;
+				}
+			}
+		};
+	}
+
+	default ESupplier<T> branchingMap(boolean unique, Function<T, ESupplier<T>> mapper){
 		return new ESupplier<>(){
 			ESupplier<T> supplier = ESupplier.this;
-			Queue<T> viewed = new ArrayDeque<>();
+			final Queue<T> unmapped = new ArrayDeque<>();
+			final Set<T> viewed = new HashSet<>();
 
 			@Override
 			public T get(){
@@ -184,20 +226,22 @@ public interface ESupplier<T> extends Supplier<T>, Iterable<T>{
 					return null;
 				}
 				for(;;){
-					var result = supplier.get();
+					final T result = supplier.get();
 					if(result == null){
-						if(viewed.isEmpty()){
+						if(unmapped.isEmpty()){
 							supplier = null;
 							return null;
 						}
-						supplier = mapper.apply(viewed.poll());
+						supplier = mapper.apply(unmapped.poll());
 						if(supplier == null){
 							supplier = empty();
 						}
 						continue;
 					}
-					viewed.add(result);
-					return result;
+					if(!unique || viewed.add(result)){
+						unmapped.add(result);
+						return result;
+					}
 				}
 			}
 		};
