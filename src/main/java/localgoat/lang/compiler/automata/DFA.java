@@ -1,5 +1,6 @@
 package localgoat.lang.compiler.automata;
 
+import localgoat.util.CollectionUtils;
 import localgoat.util.ESupplier;
 
 import java.util.Arrays;
@@ -12,6 +13,7 @@ public class DFA<T extends Token> implements Automaton<T>{
 
 	private final MutableNode<T>[] nodes;
 	private final Set<T> tokens;
+	private CachedBoolean complete = CachedBoolean.UNCACHED;
 
 	public DFA(NFA<T> nfa){
 		for(var node: nfa.nodes()){
@@ -31,19 +33,18 @@ public class DFA<T extends Token> implements Automaton<T>{
 			new MutableNode<>(this, 0, false),
 			new MutableNode<>(this, 0, true)
 		};
-		for(var t: tokens){
-			nodes[0].addTransition(t, nodes[1]);
-		}
+		nodes[0].addTransitions(this.tokens, nodes[1]);
 	}
 
 	public DFA(DFA<T> source){
 		this.tokens = new HashSet<>(source.tokens);
 		//noinspection unchecked
-		this.nodes = IntStream.range(0, source.nodes.length)
+		this.nodes = IntStream.range(0, source.nodes.length + (source.isComplete() ? 0 : 1))
 			.mapToObj(i -> new MutableNode<>(this, i, source.nodes[i].isTerminating()))
 			.toArray(MutableNode[]::new);
 
-		for(var node: nodes){
+		for(int i = 0; i < source.nodes.length; i++){
+			final var node = nodes[i];
 			source.nodes[node.index()].transitions().forEach(
 				(token, srcdests) -> {
 					if(srcdests.size() != 1){
@@ -55,6 +56,31 @@ public class DFA<T extends Token> implements Automaton<T>{
 				}
 			);
 		}
+
+		if(!source.isComplete()){
+			var sink = nodes[source.nodes.length];
+			for(var node: nodes){
+				node.addTransitions(
+					CollectionUtils.exclusion(tokens, node.tokens()),
+					sink
+				);
+			}
+		}
+		
+		complete = CachedBoolean.TRUE;
+	}
+
+	public boolean isComplete(){
+		if(complete == CachedBoolean.UNCACHED){
+			this.complete = CachedBoolean.of(
+				null == ESupplier.from(nodes)
+					.exclude(
+						node -> node.tokens().equals(tokens)
+					)
+					.get()
+			);
+		}
+		return complete.asBoolean();
 	}
 
 	@Override

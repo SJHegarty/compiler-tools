@@ -34,6 +34,10 @@ public interface ESupplier<T> extends Supplier<T>, Iterable<T>{
 		};
 	}
 
+	static <T> ESupplier<T> from(T...values){
+		return from(Arrays.asList(values));
+	}
+
 	static <T> ESupplier<T> from(Iterable<T> source){
 		final var iterator = source.iterator();
 		return () -> {

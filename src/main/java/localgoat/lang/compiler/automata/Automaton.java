@@ -37,4 +37,5 @@ public interface Automaton<T extends Token>{
 	}
 
 	boolean isDeterministic();
+
 }

@@ -17,6 +17,12 @@ public class MutableNode<T extends Token> implements Node<T>{
 		this.terminating = terminating;
 	}
 
+	void addTransitions(Set<T> tokens, Node<T> destination){
+		for(var token: tokens){
+			addTransition(token, destination);
+		}
+	}
+
 	void addTransition(T token, Node<T> destination){
 		if(destination.automaton() != automaton){
 			throw new IllegalArgumentException("Destination Node does not belong to the same automaton as this Node.");
@@ -36,7 +42,7 @@ public class MutableNode<T extends Token> implements Node<T>{
 		else if(automaton.isDeterministic()){
 			throw new IllegalArgumentException("Transitions from the same node to different destinations on the same token are only permitted in non-deterministic automata.");
 		}
-		terminable = Terminability.UNCACHED;
+		terminable = CachedBoolean.UNCACHED;
 		set.add(destination);
 	}
 
@@ -45,45 +51,19 @@ public class MutableNode<T extends Token> implements Node<T>{
 		return terminating;
 	}
 
-	private enum Terminability{
-		UNCACHED{
-			@Override
-			boolean asBoolean(){
-				throw new UnsupportedOperationException();
-			}
-		},
-		TERMINABLE{
-			@Override
-			boolean asBoolean(){
-				return true;
-			}
-		},
-		INTERMINABLE{
-			@Override
-			boolean asBoolean(){
-				return false;
-			}
-		};
-
-		abstract boolean asBoolean();
-		static Terminability of(boolean terminable){
-			return terminable ? TERMINABLE : INTERMINABLE;
-		}
-	}
-
-	private Terminability terminable = Terminability.UNCACHED;
+	private CachedBoolean terminable = CachedBoolean.UNCACHED;
 
 	@Override
 	public boolean isTerminable(){
-		if(terminable == Terminability.UNCACHED){
-			terminable = Terminability.of(Node.super.isTerminable());
+		if(terminable == CachedBoolean.UNCACHED){
+			terminable = CachedBoolean.of(Node.super.isTerminable());
 		}
 		return terminable.asBoolean();
 	}
 
 	@Override
-	public Set<Node<T>> transitions(T token){
-		return Collections.unmodifiableSet(transitions.get(token));
+	public Set<T> tokens(){
+		return Collections.unmodifiableSet(transitions.keySet());
 	}
 
 	@Override
@@ -93,6 +73,11 @@ public class MutableNode<T extends Token> implements Node<T>{
 				.flatMap(nodes -> nodes.stream())
 				.collect(Collectors.toSet())
 		);
+	}
+
+	@Override
+	public Set<Node<T>> transitions(T token){
+		return Collections.unmodifiableSet(transitions.get(token));
 	}
 
 	@Override

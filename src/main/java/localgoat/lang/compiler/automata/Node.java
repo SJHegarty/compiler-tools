@@ -11,6 +11,7 @@ public interface Node<T extends Token>{
 	Set<Node<T>> transitions(T token);
 	Map<T, Set<Node<T>>> transitions();
 	Set<Node<T>> neighbours();
+	Set<T> tokens();
 	boolean isTerminating();
 
 	default boolean isTerminable(){
