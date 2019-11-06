@@ -14,7 +14,8 @@ public interface Automaton<T extends Token>{
 
 	enum UnaryOperation{
 		NOT,
-		KLEENE
+		KLEENE_STAR,
+		KLEENE_PLUS
 	}
 
 	int nodeCount();

@@ -3,8 +3,11 @@ package localgoat.lang.compiler.automata;
 import localgoat.util.CollectionUtils;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
+import java.util.function.IntFunction;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class NFA<T extends Token> implements Automaton<T>{
 
@@ -42,7 +45,7 @@ public class NFA<T extends Token> implements Automaton<T>{
 					}
 				}
 
-				return new NFA<>(op, a0, a1);
+				return new NFA<>(a0, a1, op);
 			}
 			default:{
 				throw new IllegalStateException();
@@ -53,7 +56,7 @@ public class NFA<T extends Token> implements Automaton<T>{
 	private final MutableNode<T>[] nodes;
 	private final Set<T> tokens;
 
-	NFA(BinaryOperation op, Automaton<T> a0, Automaton<T> a1){
+	NFA(Automaton<T> a0, Automaton<T> a1, BinaryOperation op){
 		switch(op){
 			case OR:{
 				tokens = CollectionUtils.union(a0.tokens(), a1.tokens());
@@ -119,6 +122,43 @@ public class NFA<T extends Token> implements Automaton<T>{
 			default:{
 				throw new UnsupportedOperationException();
 			}
+		}
+	}
+
+	NFA(Automaton<T> a, UnaryOperation op){
+		if(op == UnaryOperation.KLEENE_PLUS || op == UnaryOperation.KLEENE_STAR){
+			this.tokens = new HashSet<>(a.tokens());
+
+			//noinspection unchecked
+			this.nodes = new MutableNode[a.nodeCount()];
+			final IntFunction<MutableNode<T>> builder;
+			switch(op){
+				case KLEENE_PLUS:{
+					builder = i -> new MutableNode<>(this, i, a.node(i).isTerminating());
+					this.nodes[0] = new MutableNode<>(this, 0, a.node(0).isTerminating());
+					break;
+				}
+				case KLEENE_STAR:{
+					builder = i -> new MutableNode<>(this, i, false);
+					this.nodes[0] = new MutableNode<>(this, 0, true);
+					break;
+				}
+				default:{
+					throw new IllegalStateException();
+				}
+			}
+			for(int i = 0; i < nodes.length; i++){
+				this.nodes[i] = builder.apply(i);
+			}
+
+			Stream.of(nodes)
+				.filter(MutableNode::isTerminating)
+				.forEach(
+					node -> node.addTransition(null, nodes[0])
+				);
+		}
+		else{
+			throw new UnsupportedOperationException();
 		}
 	}
 

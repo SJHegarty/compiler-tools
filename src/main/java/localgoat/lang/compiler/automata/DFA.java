@@ -14,6 +14,7 @@ public class DFA<T extends Token> implements Automaton<T>{
 	private final MutableNode<T>[] nodes;
 	private final Set<T> tokens;
 	private CachedBoolean complete = CachedBoolean.UNCACHED;
+	private DFA<T> completeDFA;
 
 	public DFA(NFA<T> nfa){
 		for(var node: nfa.nodes()){
@@ -26,7 +27,47 @@ public class DFA<T extends Token> implements Automaton<T>{
 		throw new UnsupportedOperationException();
 	}
 
+	public DFA(DFA<T> source, UnaryOperation op){
+		if(op == UnaryOperation.NOT){
+			final var complete = source.complete();
+			this.tokens = new HashSet<>(complete.tokens);
+
+			//noinspection unchecked
+			this.nodes = IntStream.range(0, complete.nodes.length)
+				.mapToObj(
+					i -> new MutableNode(this, i, !complete.nodes[i].isTerminating())
+				)
+				.toArray(MutableNode[]::new);
+
+			for(var node: nodes){
+				var srcnode = complete.nodes[node.index()];
+				srcnode.tokens().forEach(
+					token -> {
+						final var transitions = srcnode.transitions(token);
+						if(transitions.size() != 1){
+							throw new IllegalStateException();
+						}
+						transitions.stream()
+							.map(srcdest -> nodes[srcdest.index()])
+							.forEach(dest -> node.addTransition(token, dest));
+					}
+				);
+			}
+			return;
+		}
+
+		throw new UnsupportedOperationException(op.toString());
+	}
+
 	public DFA(T...tokens){
+		if(tokens.length == 0){
+			this.tokens = Collections.emptySet();
+			//noinspection unchecked
+			this.nodes = new MutableNode[]{
+				new MutableNode(this, 0, false)
+			};
+			return;
+		}
 		this.tokens = new HashSet<>(Arrays.asList(tokens));
 		//noinspection unchecked
 		this.nodes = new MutableNode[]{
@@ -66,8 +107,16 @@ public class DFA<T extends Token> implements Automaton<T>{
 				);
 			}
 		}
-		
+
 		complete = CachedBoolean.TRUE;
+		completeDFA = this;
+	}
+
+	public DFA<T> complete(){
+		if(completeDFA == null){
+			completeDFA = isComplete() ? this : new DFA<>(this);
+		}
+		return completeDFA;
 	}
 
 	public boolean isComplete(){
