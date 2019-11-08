@@ -1,5 +1,6 @@
 package localgoat.lang.compiler.automata;
 
+import localgoat.lang.compiler.automata.operation.Or;
 import localgoat.util.CollectionUtils;
 import localgoat.util.ESupplier;
 import localgoat.util.ValueCache;
@@ -11,7 +12,7 @@ import java.util.stream.IntStream;
 
 public class DFA<T extends Token> implements Automaton<T>{
 
-	/*public static void main(String...args){
+	public static void main(String...args){
 		final class CharToken implements Token{
 			private final char c;
 			CharToken(char c){
@@ -30,13 +31,14 @@ public class DFA<T extends Token> implements Automaton<T>{
 				return (o instanceof CharToken) && ((CharToken)o).c == c;
 			}
 		}
-		final var nfa = new NFA<>(
+		final var or = new Or<CharToken>();
+
+		final var nfa = or.apply(
 			new NFA<>(
 				new DFA<>(new CharToken('b')),
-				UnaryOperation.KLEENE_PLUS
+				UnaryOperation.KLEENE_STAR
 			),
-			new DFA<>(new CharToken('a')),
-			BinaryOperation.OR
+			new DFA<>(new CharToken('a'))
 		);
 
 		final var dfa = new DFA<>(nfa);
@@ -54,7 +56,7 @@ public class DFA<T extends Token> implements Automaton<T>{
 		for(var v: supplier){
 			System.err.println(v.index + ": " + v.value);
 		}
-	}*/
+	}
 
 	public static class Builder<T extends Token>{
 		private final Set<T> tokens;
