@@ -32,6 +32,8 @@ public class NFA<T extends Token> implements Automaton<T>{
 		}
 	}
 
+	private final MutableNode<T>[] nodes;
+	private final Set<T> tokens;
 
 	private NFA(Builder<T> builder){
 		this.tokens = new HashSet<>(builder.tokens);
@@ -42,61 +44,6 @@ public class NFA<T extends Token> implements Automaton<T>{
 
 		for(var n: builder.nodes){
 			n.finalise();
-		}
-
-	}
-
-	private final MutableNode<T>[] nodes;
-	private final Set<T> tokens;
-
-
-	NFA(Automaton<T> a, UnaryOperation op){
-		if(op == UnaryOperation.KLEENE_PLUS || op == UnaryOperation.KLEENE_STAR){
-			this.tokens = new HashSet<>(a.tokens());
-
-			//noinspection unchecked
-			this.nodes = new MutableNode[a.nodeCount()];
-			final IntFunction<MutableNode<T>> builder;
-			switch(op){
-				case KLEENE_PLUS:{
-					builder = i -> new MutableNode<>(this, i, a.node(i).isTerminating());
-					this.nodes[0] = new MutableNode<>(this, 0, a.node(0).isTerminating());
-					break;
-				}
-				case KLEENE_STAR:{
-					builder = i -> new MutableNode<>(this, i, false);
-					this.nodes[0] = new MutableNode<>(this, 0, true);
-					break;
-				}
-				default:{
-					throw new IllegalStateException();
-				}
-			}
-			for(int i = 1; i < nodes.length; i++){
-				this.nodes[i] = builder.apply(i);
-			}
-
-
-			IntStream.range(0, nodes.length)
-				.filter(i -> a.node(i).isTerminating())
-				.mapToObj(i -> nodes[i])
-				.forEach(node -> node.addTransition(null, nodes[0]));
-
-			IntStream.range(0, nodes.length)
-				.forEach(
-					i -> {
-						final var srcNode = a.node(i);
-						final var node = nodes[i];
-						srcNode.transitions().forEach(
-							(token, destinations) -> destinations.stream()
-								.map(srcdest -> nodes[srcdest.index()])
-								.forEach(dest -> node.addTransition(token, dest))
-						);
-					}
-				);
-		}
-		else{
-			throw new UnsupportedOperationException();
 		}
 	}
 

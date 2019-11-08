@@ -1,5 +1,6 @@
 package localgoat.lang.compiler.automata;
 
+import localgoat.lang.compiler.automata.operation.Kleene;
 import localgoat.lang.compiler.automata.operation.Or;
 import localgoat.util.CollectionUtils;
 import localgoat.util.ESupplier;
@@ -32,12 +33,9 @@ public class DFA<T extends Token> implements Automaton<T>{
 			}
 		}
 		final var or = new Or<CharToken>();
-
+		final var kleene = new Kleene<CharToken>(Kleene.Op.PLUS);
 		final var nfa = or.apply(
-			new NFA<>(
-				new DFA<>(new CharToken('b')),
-				UnaryOperation.KLEENE_STAR
-			),
+			kleene.apply(new DFA<>(new CharToken('b'))),
 			new DFA<>(new CharToken('a'))
 		);
 
