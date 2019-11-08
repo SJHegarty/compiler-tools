@@ -2,14 +2,59 @@ package localgoat.lang.compiler.automata;
 
 import localgoat.util.CollectionUtils;
 import localgoat.util.ESupplier;
+import localgoat.util.ValueCache;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class DFA<T extends Token> implements Automaton<T>{
+
+	public static void main(String...args){
+		final class CharToken implements Token{
+			private final char c;
+			CharToken(char c){
+				this.c = c;
+			}
+
+			public String toString(){
+				return Character.toString(c);
+			}
+
+			public int hashCode(){
+				return c;
+			}
+
+			public boolean equals(Object o){
+				return (o instanceof CharToken) && ((CharToken)o).c == c;
+			}
+		}
+		final var nfa = new NFA<>(
+			new NFA<>(
+				new DFA<>(new CharToken('b')),
+				UnaryOperation.KLEENE_PLUS
+			),
+			new DFA<>(new CharToken('a')),
+			BinaryOperation.OR
+		);
+
+		final var dfa = new DFA<>(nfa);
+
+		final Function<String, CharToken[]> converter = s -> IntStream.range(0, s.length())
+			.mapToObj(i -> new CharToken(s.charAt(i)))
+			.toArray(CharToken[]::new);
+
+		var supplier = ESupplier.of("")
+			.branchingMap(true, s -> ESupplier.of(s + "a", s + "b"))
+			.counting()
+			.limit(100)
+			.retain(v -> dfa.accepts(converter.apply(v.value)));
+
+		for(var v: supplier){
+			System.err.println(v.index + ": " + v.value);
+		}
+	}
 
 	private final MutableNode<T>[] nodes;
 	private final Set<T> tokens;
@@ -17,14 +62,92 @@ public class DFA<T extends Token> implements Automaton<T>{
 	private DFA<T> completeDFA;
 
 	public DFA(NFA<T> nfa){
-		for(var node: nfa.nodes()){
-			ESupplier.of(node)
-				.branchingMap(true, n -> ESupplier.from(n.transitions(null)))
-				.map(n -> n.toString())
-				.interlace(", ")
-				.toStream().reduce((s0, s1) -> s0 + s1);
+		this.tokens = new HashSet<>(nfa.tokens());
+		//noinspection unchecked
+		final Map<Node<T>, Set<Node<T>>> lambdaTransitable = IntStream.range(0, nfa.nodeCount())
+			.mapToObj(nfa::node)
+			.collect(
+				Collectors.toMap(
+					node -> node,
+					node -> ESupplier.of(node)
+						.branchingMap(true, n -> ESupplier.from(n.transitions(null)))
+						.toStream()
+						.collect(Collectors.toSet())
+				)
+			);
+
+		final var nodesMap = new LinkedHashMap<Set<Node<T>>, MutableNode<T>>();
+		final var reverseMap = new HashMap<MutableNode<T>, Set<Node<T>>>();
+		final var nodeBuilder = new ValueCache<>(
+			nodesMap,
+			nodeset -> {
+				final Set<Node<T>> reachable = nodeset.stream()
+					.flatMap(n -> lambdaTransitable.get(n).stream())
+					.collect(Collectors.toSet());
+
+				final boolean terminating = null != ESupplier.from(reachable)
+					.retain(n -> n.isTerminating())
+					.get();
+
+				final var rv = new MutableNode<T>(this, nodesMap.size(), terminating);
+				nodesMap.put(nodeset, rv);
+				reverseMap.put(rv, nodeset);
+				return rv;
+			}
+		);
+
+		final Queue<MutableNode<T>> nodesQueue = new ArrayDeque<>();
+		nodesQueue.add(
+			nodeBuilder.get(
+				lambdaTransitable.get(nfa.node(0))
+			)
+		);
+		class Transition{
+			final T token;
+			final Node<T> destination;
+
+			Transition(T token, Node<T> destination){
+				this.token = token;
+				this.destination = destination;
+			}
 		}
-		throw new UnsupportedOperationException();
+		while(!nodesQueue.isEmpty()){
+			final var node = nodesQueue.poll();
+			final var srcNodes = reverseMap.get(node);
+			final var transitions = srcNodes.stream()
+				.flatMap(n -> lambdaTransitable.get(n).stream())
+				.flatMap(n -> n.transitions().entrySet().stream())
+				.flatMap(
+					e -> {
+						T token = e.getKey();
+						return e.getValue().stream()
+							.map(n -> new Transition(token, n));
+					}
+				)
+				.filter(transition -> transition.token != null)
+				.collect(
+					Collectors.groupingBy(
+						transition -> transition.token,
+						Collectors.mapping(
+							transition -> transition.destination,
+							Collectors.toSet()
+						)
+					)
+				);
+
+			transitions.forEach(
+				(token, srcDests) -> {
+					var dest = nodesMap.get(srcDests);
+					if(dest == null){
+						dest = nodeBuilder.get(srcDests);
+						nodesQueue.add(dest);
+					}
+					node.addTransition(token, dest);
+				}
+			);
+		}
+		//noinspection unchecked
+		this.nodes = nodesMap.values().stream().toArray(MutableNode[]::new);
 	}
 
 	public DFA(DFA<T> source, UnaryOperation op){
@@ -72,7 +195,7 @@ public class DFA<T extends Token> implements Automaton<T>{
 		//noinspection unchecked
 		this.nodes = new MutableNode[]{
 			new MutableNode<>(this, 0, false),
-			new MutableNode<>(this, 0, true)
+			new MutableNode<>(this, 1, true)
 		};
 		nodes[0].addTransitions(this.tokens, nodes[1]);
 	}
@@ -150,5 +273,16 @@ public class DFA<T extends Token> implements Automaton<T>{
 	@Override
 	public boolean isDeterministic(){
 		return true;
+	}
+
+	public boolean accepts(T...tokens){
+		var state = node(0);
+		for(T token: tokens){
+			state = state.transition(token);
+			if(state == null){
+				return false;
+			}
+		}
+		return state.isTerminating();
 	}
 }

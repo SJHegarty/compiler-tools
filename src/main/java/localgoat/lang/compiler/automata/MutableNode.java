@@ -30,7 +30,7 @@ public class MutableNode<T extends Token> implements Node<T>{
 		if(token == null && automaton.isDeterministic()){
 			throw new IllegalArgumentException("Null transitions are only permitted in non-deterministic automata.");
 		}
-		if(automaton.tokens().contains(token)){
+		if(token != null && !automaton.tokens().contains(token)){
 			throw new IllegalArgumentException(
 				String.format("Token %s is not in the set of legal transition tokens", token)
 			);
@@ -38,6 +38,7 @@ public class MutableNode<T extends Token> implements Node<T>{
 		Set<Node<T>> set = transitions.get(token);
 		if(set == null){
 			set = new HashSet<>();
+			transitions.put(token, set);
 		}
 		else if(automaton.isDeterministic()){
 			throw new IllegalArgumentException("Transitions from the same node to different destinations on the same token are only permitted in non-deterministic automata.");
@@ -77,7 +78,9 @@ public class MutableNode<T extends Token> implements Node<T>{
 
 	@Override
 	public Set<Node<T>> transitions(T token){
-		return Collections.unmodifiableSet(transitions.get(token));
+		return Optional.ofNullable(transitions.get(token))
+			.map(Collections::unmodifiableSet)
+			.orElseGet(Collections::emptySet);
 	}
 
 	@Override

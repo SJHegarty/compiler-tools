@@ -151,10 +151,25 @@ public class NFA<T extends Token> implements Automaton<T>{
 				this.nodes[i] = builder.apply(i);
 			}
 
-			Stream.of(nodes)
-				.filter(MutableNode::isTerminating)
+
+			IntStream.range(0, nodes.length)
+				.filter(i -> a.node(i).isTerminating())
+				.mapToObj(i -> nodes[i])
 				.forEach(
 					node -> node.addTransition(null, nodes[0])
+				);
+
+			IntStream.range(0, nodes.length)
+				.forEach(
+					i -> {
+						final var srcNode = a.node(i);
+						final var node = nodes[i];
+						srcNode.transitions().forEach(
+							(token, destinations) -> destinations.stream()
+								.map(srcdest -> nodes[srcdest.index()])
+								.forEach(dest -> node.addTransition(token, dest))
+						);
+					}
 				);
 		}
 		else{
@@ -163,7 +178,7 @@ public class NFA<T extends Token> implements Automaton<T>{
 	}
 
 	@Override
-	public Node node(int index){
+	public Node<T> node(int index){
 		return nodes[index];
 	}
 

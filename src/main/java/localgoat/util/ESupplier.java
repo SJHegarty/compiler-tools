@@ -206,6 +206,28 @@ public interface ESupplier<T> extends Supplier<T>, Iterable<T>{
 		}
 	}
 
+	class Counting<T>{
+		public final T value;
+		public final int index;
+
+		public Counting(T value, int index){
+			this.value = value;
+			this.index = index;
+		}
+	}
+
+	default ESupplier<Counting<T>> counting(){
+		return new ESupplier<>(){
+			int index;
+
+			@Override
+			public Counting<T> get(){
+				final T result = ESupplier.this.get();
+				return (result == null) ? null : new Counting<>(result, index++);
+			}
+		};
+	}
+
 	default ESupplier<T> unique(){
 		final Set<T> viewed = new HashSet<>();
 		return () -> {
