@@ -6,11 +6,6 @@ import java.util.Set;
 
 public interface Automaton<T extends Token>{
 
-	enum BinaryOperation{
-		OR,
-		AND,
-		CONCATENATE
-	}
 
 	enum UnaryOperation{
 		NOT,

@@ -5,12 +5,58 @@ import java.util.stream.Collectors;
 
 public class MutableNode<T extends Token> implements Node<T>{
 
+	public static class Builder<T extends Token>{
+		private final int index;
+		private final Map<T, Set<Builder<T>>> transitions;
+		private final boolean terminating;
+		private Automaton<T> automaton;
+		private MutableNode<T> node;
+
+		public Builder(int index, boolean terminating){
+			this.index = index;
+			this.terminating = terminating;
+			this.transitions = new HashMap<>();
+		}
+
+		public int index(){
+			return index;
+		}
+
+		public void addTransition(T token, Builder<T> destination){
+			var set = transitions.get(token);
+			if(set == null){
+				set = new HashSet<>();
+				transitions.put(token, set);
+			}
+			set.add(destination);
+		}
+
+		MutableNode<T> initialise(Automaton<T> automaton){
+			this.automaton = automaton;
+			this.node = new MutableNode<T>(automaton, index, terminating);
+			return node;
+		}
+
+		void finalise(){
+			if(automaton == null){
+				throw new IllegalStateException();
+			}
+			transitions.forEach(
+				(token, builders) -> builders.forEach(
+					builder -> node.addTransition(
+						token,
+						automaton.node(builder.index)
+					)
+				)
+			);
+		}
+	}
 	private final Automaton<T> automaton;
 	private final int index;
 	private final Map<T, Set<Node<T>>> transitions;
 	private final boolean terminating;
 
-	MutableNode(Automaton automaton, int index, boolean terminating){
+	MutableNode(Automaton<T> automaton, int index, boolean terminating){
 		this.automaton = automaton;
 		this.index = index;
 		this.transitions = new HashMap<>();

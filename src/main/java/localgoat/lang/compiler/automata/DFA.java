@@ -11,7 +11,7 @@ import java.util.stream.IntStream;
 
 public class DFA<T extends Token> implements Automaton<T>{
 
-	public static void main(String...args){
+	/*public static void main(String...args){
 		final class CharToken implements Token{
 			private final char c;
 			CharToken(char c){
@@ -54,12 +54,39 @@ public class DFA<T extends Token> implements Automaton<T>{
 		for(var v: supplier){
 			System.err.println(v.index + ": " + v.value);
 		}
+	}*/
+
+	public static class Builder<T extends Token>{
+		private final Set<T> tokens;
+		private final List<MutableNode.Builder<T>> nodes = new ArrayList<>();
+
+		public Builder(Set<T> tokens){
+			this.tokens = tokens;
+		}
+
+		public MutableNode.Builder<T> addNode(boolean terminating){
+			final var rv = new MutableNode.Builder<T>(nodes.size(), terminating);
+			nodes.add(rv);
+			return rv;
+		}
+
+		public DFA<T> build(){
+			return new DFA<T>(this);
+		}
 	}
 
 	private final MutableNode<T>[] nodes;
 	private final Set<T> tokens;
 	private CachedBoolean complete = CachedBoolean.UNCACHED;
 	private DFA<T> completeDFA;
+
+	private DFA(Builder<T> builder){
+		this.nodes = builder.nodes.stream()
+			.map(nbuilder -> nbuilder.initialise(this))
+			.toArray(MutableNode[]::new);
+
+		this.tokens = new HashSet<>(builder.tokens);
+	}
 
 	public DFA(NFA<T> nfa){
 		this.tokens = new HashSet<>(nfa.tokens());
@@ -150,37 +177,6 @@ public class DFA<T extends Token> implements Automaton<T>{
 		this.nodes = nodesMap.values().stream().toArray(MutableNode[]::new);
 	}
 
-	public DFA(DFA<T> source, UnaryOperation op){
-		if(op == UnaryOperation.NOT){
-			final var complete = source.complete();
-			this.tokens = new HashSet<>(complete.tokens);
-
-			//noinspection unchecked
-			this.nodes = IntStream.range(0, complete.nodes.length)
-				.mapToObj(
-					i -> new MutableNode(this, i, !complete.nodes[i].isTerminating())
-				)
-				.toArray(MutableNode[]::new);
-
-			for(var node: nodes){
-				var srcnode = complete.nodes[node.index()];
-				srcnode.tokens().forEach(
-					token -> {
-						final var transitions = srcnode.transitions(token);
-						if(transitions.size() != 1){
-							throw new IllegalStateException();
-						}
-						transitions.stream()
-							.map(srcdest -> nodes[srcdest.index()])
-							.forEach(dest -> node.addTransition(token, dest));
-					}
-				);
-			}
-			return;
-		}
-
-		throw new UnsupportedOperationException(op.toString());
-	}
 
 	public DFA(T...tokens){
 		if(tokens.length == 0){
