@@ -18,19 +18,38 @@ public class DFA<T extends Token> implements Automaton<T>{
 		final var concat = new Concatenate<Token<Character>>();
 		final var kleene = new Kleene<Token<Character>>(Kleene.Op.PLUS);
 		final var converter = new Converter();
-		converter.addClass('U', c -> 'A' <= c && c <= 'B');
-		converter.addClass('l', c -> 'a' <= c && c <= 'b');
-		final var dfa = converter.buildDFA("*<1+>(U*l)");
 
-		var supplier = ESupplier.of("")
-			.branchingMap(true, s -> ESupplier.of(s + "a", s + "A", s + "b", s + "B"))
-			.counting()
-			.limit(100)
-			.retain(v -> dfa.accepts(Token.from(v.value)));
+		converter.addClass('U', c -> 'A' <= c && c <= 'Z');
+		converter.addClass('l', c -> 'a' <= c && c <= 'z');
+		converter.addClass('s', c -> c == '_');
+		converter.addClass('h', c -> c == '-');
 
-		for(var v: supplier){
-			System.err.println(v);
-		}
+		final var className = "@<class-name>*<1+>(U*l)";
+		final var constant = "@<constant>(*<1+>U*(s*<1+>U))";
+		final var identifier = "@<identifier>(*<1+>l*(h*<1+>l))";
+
+		final var dfa = converter.buildDFA(
+			String.format(
+				"+(%s, %s, %s)",
+				constant,
+				className,
+				identifier
+			)
+		);
+
+		System.err.println(dfa.read(ReadMode.GREEDY, Token.from("ClassName")));
+		System.err.println(dfa.read(ReadMode.GREEDY, Token.from("HTTP")));
+		System.err.println(dfa.read(ReadMode.GREEDY, Token.from("ENUM_CONSTANTsome-other-shit")));
+		System.err.println(dfa.read(ReadMode.GREEDY, Token.from("instance-identifier")));
+
+		dfa.nodes().stream()
+			.filter(n -> n.classes().size() > 1)
+			.forEach(
+				n -> {
+					System.err.println(String.format("Ambiguity detected - classes %s collide.", n.classes()));
+				}
+			);
+
 	}
 
 	private final MutableNode<T>[] nodes;
@@ -69,11 +88,11 @@ public class DFA<T extends Token> implements Automaton<T>{
 					.flatMap(n -> lambdaTransitable.get(n).stream())
 					.collect(Collectors.toSet());
 
-				final boolean terminating = null != ESupplier.from(reachable)
-					.retain(n -> n.isTerminating())
-					.get();
+				final Set<String> names = ESupplier.from(reachable)
+					.flatMap(n -> ESupplier.from(n.classes()))
+					.toStream().collect(Collectors.toSet());
 
-				final var rv = new MutableNode<T>(this, nodesMap.size(), terminating);
+				final var rv = new MutableNode<T>(this, nodesMap.size(), names);
 				nodesMap.put(nodeset, rv);
 				reverseMap.put(rv, nodeset);
 				return rv;
@@ -232,5 +251,68 @@ public class DFA<T extends Token> implements Automaton<T>{
 			}
 		}
 		return state.isTerminating();
+	}
+
+	public enum ReadMode{
+		EAGER,
+		GREEDY;
+	}
+
+	public class TokenString{
+		private final List<T> tokens;
+		private final Set<String> classes;
+
+		private TokenString(Set<String> classes, List<T> tokens){
+			this.tokens = Collections.unmodifiableList(tokens);
+			this.classes = Collections.unmodifiableSet(classes);
+		}
+
+		public String toString(){
+			final var builder = new StringBuilder().append(classes).append(": ");
+			for(var t: tokens){
+				builder.append(t);
+			}
+			return builder.toString();
+		}
+	}
+
+	public TokenString read(final ReadMode mode, T...tokens){
+		return read(mode, 0, tokens);
+	}
+
+	public TokenString read(final ReadMode mode, final int index, final T...tokens){
+		class Terminating{
+			final int index;
+			final Node<T> state;
+
+			public Terminating(int index, Node<T> state){
+				this.index = index;
+				this.state = state;
+			}
+		}
+
+		var state = node(0);
+		var t = state.isTerminating() ? new Terminating(index, state) : null;
+		int depth = index;
+		while(depth < tokens.length && state.isTerminable()){
+			state = state.transition(tokens[depth++]);
+			if(state == null){
+				break;
+			}
+			if(state.isTerminating()){
+				t = new Terminating(depth, state);
+				if(mode == ReadMode.EAGER){
+					break;
+				}
+			}
+		}
+		if(t != null){
+			final var result = new ArrayList<T>();
+			for(int i = index; i < t.index; i++){
+				result.add(tokens[i]);
+			}
+			return new TokenString(t.state.classes(), result);
+		}
+		return null;
 	}
 }

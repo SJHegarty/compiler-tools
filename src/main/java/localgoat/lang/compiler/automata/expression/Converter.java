@@ -42,7 +42,6 @@ public class Converter{
 	private Map<Class<? extends Expression>, Function<Expression, Automaton<Token<Character>>>> handlers;
 
 	public static void main(String...args){
-		//*<0...>+(a, b)
 		final String identifier = "@<identifier>(*<1+>l*(h*<1+>l))";
 		final String className = "@<class-name>(*<1+>(U*l))";
 		final String pattern = String.format("+(%s, %s)", identifier, className);

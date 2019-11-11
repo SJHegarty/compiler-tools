@@ -72,7 +72,7 @@ public class MutableNode<T extends Token> implements Node<T>{
 		this(automaton, index, new HashSet<>(Arrays.asList(classes)));
 	}
 
-	private MutableNode(Automaton<T> automaton, int index, Set<String> classes){
+	MutableNode(Automaton<T> automaton, int index, Set<String> classes){
 		this.automaton = automaton;
 		this.index = index;
 		this.transitions = new HashMap<>();
