@@ -42,7 +42,7 @@ public class Builder<T extends Token>{
 		}
 		for(int i = 0; i < nodecount; i++){
 			final var srcnode = a.node(i);
-			final var builder = nodeBuilder(i);
+			final var builder = nodeBuilder(i + offset);
 			srcnode.transitions().forEach(
 				(token, srcdests) -> srcdests.forEach(
 					srcdest -> {

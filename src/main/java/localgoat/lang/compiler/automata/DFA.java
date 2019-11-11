@@ -17,17 +17,16 @@ public class DFA<T extends Token> implements Automaton<T>{
 
 		final var concat = new Concatenate<Token<Character>>();
 		final var kleene = new Kleene<Token<Character>>(Kleene.Op.PLUS);
-		final var dfa = new Converter().buildDFA("*ba");
-
-		final Function<String, Token<Character>[]> converter = s -> IntStream.range(0, s.length())
-			.mapToObj(i -> Token.of(s.charAt(i)))
-			.toArray(Token[]::new);
+		final var converter = new Converter();
+		converter.addClass('U', c -> 'A' <= c && c <= 'B');
+		converter.addClass('l', c -> 'a' <= c && c <= 'b');
+		final var dfa = converter.buildDFA("*<1+>(U*l)");
 
 		var supplier = ESupplier.of("")
-			.branchingMap(true, s -> ESupplier.of(s + "a", s + "b"))
+			.branchingMap(true, s -> ESupplier.of(s + "a", s + "A", s + "b", s + "B"))
 			.counting()
 			.limit(100)
-			.retain(v -> dfa.accepts(converter.apply(v.value)));
+			.retain(v -> dfa.accepts(Token.from(v.value)));
 
 		for(var v: supplier){
 			System.err.println(v);

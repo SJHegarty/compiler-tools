@@ -134,11 +134,11 @@ public class Converter{
 				if((c & 0xffffff00) == 0){
 					final char[] chars = classes[c];
 					if(chars == null){
-						System.err.println(String.format("No character class provided for symbol '%s' using literal interpretation.", c));
+						System.err.println(String.format("No character class defined for symbol '%s' using literal interpretation.", c));
 						return new DFA<Token<Character>>(Token.of(c));
 					}
 					else{
-						throw new UnsupportedOperationException("Not yet implemented.");
+						return new DFA<Token<Character>>(Token.from(chars));
 					}
 
 				}

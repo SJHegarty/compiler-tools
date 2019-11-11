@@ -9,7 +9,10 @@ import java.util.stream.Stream;
 public interface Token<T>{
 
 	static Token<Character>[] from(String s){
-		final var chars = s.toCharArray();
+		return from(s.toCharArray());
+	}
+
+	static Token<Character>[] from(char...chars){
 		final Token<Character> rv[] = new Token[chars.length];
 		for(int i = 0; i < rv.length; i++){
 			rv[i] = of(chars[i]);
@@ -36,6 +39,11 @@ public interface Token<T>{
 			@Override
 			public int hashCode(){
 				return c;
+			}
+
+			@Override
+			public String toString(){
+				return Character.toString(c);
 			}
 		};
 	}
