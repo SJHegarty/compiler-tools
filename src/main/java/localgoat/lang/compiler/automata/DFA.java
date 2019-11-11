@@ -1,5 +1,6 @@
 package localgoat.lang.compiler.automata;
 
+import localgoat.lang.compiler.automata.expression.Converter;
 import localgoat.lang.compiler.automata.operation.Concatenate;
 import localgoat.lang.compiler.automata.operation.Kleene;
 import localgoat.util.CollectionUtils;
@@ -16,12 +17,7 @@ public class DFA<T extends Token> implements Automaton<T>{
 
 		final var concat = new Concatenate<Token<Character>>();
 		final var kleene = new Kleene<Token<Character>>(Kleene.Op.PLUS);
-		final var nfa = concat.apply(
-			kleene.apply(new DFA<>(Token.of('b'))),
-			new DFA<>(Token.of('a'))
-		);
-
-		final var dfa = new DFA<>(nfa);
+		final var dfa = new Converter().buildDFA("*ba");
 
 		final Function<String, Token<Character>[]> converter = s -> IntStream.range(0, s.length())
 			.mapToObj(i -> Token.of(s.charAt(i)))

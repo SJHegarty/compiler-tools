@@ -13,7 +13,11 @@ public interface Node<T extends Token>{
 	Map<T, Set<Node<T>>> transitions();
 	Set<Node<T>> neighbours();
 	Set<T> tokens();
-	boolean isTerminating();
+	Set<String> classes();
+
+	default boolean isTerminating(){
+		return !classes().isEmpty();
+	}
 
 	default Node<T> transition(T token){
 		final var tokenTransitions = transitions(token);

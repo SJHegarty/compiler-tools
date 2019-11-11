@@ -17,9 +17,12 @@ public class MutableNode<T extends Token> implements Node<T>{
 		}
 
 		public Builder(int index, String...classes){
+			this(index, new HashSet<>(Arrays.asList(classes)));
+		}
+
+		public Builder(int index, Set<String> classes){
 			this.index = index;
-			this.classes = new HashSet<>();
-			this.classes.addAll(Arrays.asList(classes));
+			this.classes = new HashSet<>(classes);
 			this.transitions = new HashMap<>();
 		}
 
@@ -107,8 +110,8 @@ public class MutableNode<T extends Token> implements Node<T>{
 	}
 
 	@Override
-	public boolean isTerminating(){
-		return !classes.isEmpty();
+	public Set<String> classes(){
+		return Collections.unmodifiableSet(classes);
 	}
 
 	private CachedBoolean terminable = CachedBoolean.UNCACHED;

@@ -1,9 +1,12 @@
 package localgoat.lang.compiler.automata.expression;
 
 import localgoat.lang.compiler.automata.Automaton;
+import localgoat.lang.compiler.automata.DFA;
+import localgoat.lang.compiler.automata.NFA;
 import localgoat.lang.compiler.automata.Token;
 import localgoat.lang.compiler.automata.operation.Concatenate;
 import localgoat.lang.compiler.automata.operation.Kleene;
+import localgoat.lang.compiler.automata.operation.Name;
 import localgoat.lang.compiler.automata.operation.Or;
 import localgoat.util.functional.CharPredicate;
 
@@ -66,22 +69,38 @@ public class Converter{
 						return or.apply(children);
 					}
 					case '@':{
-						System.err.println("Currently unsupported feature - string class extraction.");
+						final var name = function.modifiers();
+						if(name == null){
+							throw new IllegalStateException("@ function requires defined modifiers.");
+						}
 						final var children = function.children();
 						if(children.size() != 1){
 							throw new IllegalStateException("@ function only supports a single argument.");
 						}
-						return build(children.get(0));
+						final var naming = new Name<Token<Character>>(name);
+						return naming.apply(build(children.get(0)));
 					}
 					case '*':{
-						if(function.modifiers() != null){
-							throw new UnsupportedOperationException("Modifiers not yet implemented (" + function.modifiers() + ").");
+						final int minCount;
+						final int maxCount = -1;
+						{
+							final String modifiers = function.modifiers();
+							if(modifiers == null){
+								minCount = 0;
+							}
+							else{
+								if(!modifiers.equals("1+")){
+									throw new UnsupportedOperationException("Not yet implemented: " + modifiers);
+								}
+								minCount = 1;
+							}
+
 						}
 						final var children = function.children();
 						if(children.size() != 1){
 							throw new IllegalStateException("Kleene functions only support a single argument.");
 						}
-						final var kleen = new Kleene<Token<Character>>(Kleene.Op.STAR);
+						final var kleen = new Kleene<Token<Character>>((minCount == 0) ? Kleene.Op.STAR : Kleene.Op.PLUS);
 						return kleen.apply(build(children.get(0)));
 					}
 					default:{
@@ -103,8 +122,35 @@ public class Converter{
 				return concat.apply(children);
 			}
 		);
+
+		handlers.put(
+			Symbol.class,
+			expression -> {
+				final var symbol = (Symbol)expression;
+				final char c = symbol.value();
+				if(c == '^'){
+					return new DFA<Token<Character>>();
+				}
+				if((c & 0xffffff00) == 0){
+					final char[] chars = classes[c];
+					if(chars == null){
+						System.err.println(String.format("No character class provided for symbol '%s' using literal interpretation.", c));
+						return new DFA<Token<Character>>(Token.of(c));
+					}
+					else{
+						throw new UnsupportedOperationException("Not yet implemented.");
+					}
+
+				}
+				throw new IllegalStateException();
+			}
+		);
 	}
 
+	public DFA<Token<Character>> buildDFA(String pattern){
+		final var a = build(pattern);
+		return (a instanceof DFA) ? (DFA)a : new DFA<Token<Character>>((NFA)a);
+	}
 	public Automaton<Token<Character>> build(String pattern){
 		return build(Expression.parse(pattern));
 	}

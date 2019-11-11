@@ -1,8 +1,7 @@
 package localgoat.lang.compiler.automata;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.lang.reflect.Array;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -12,6 +11,16 @@ public class Builder<T extends Token>{
 
 	public Builder(Set<T> tokens){
 		this.tokens = tokens;
+	}
+
+	public MutableNode.Builder<T> addNode(String...classes){
+		return addNode(new HashSet<>(Arrays.asList(classes)));
+	}
+
+	public MutableNode.Builder<T> addNode(Set<String> classes){
+		final var rv = new MutableNode.Builder<T>(nodes.size(), classes);
+		nodes.add(rv);
+		return rv;
 	}
 
 	public MutableNode.Builder<T> addNode(boolean terminating){

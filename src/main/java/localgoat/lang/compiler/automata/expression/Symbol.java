@@ -17,4 +17,8 @@ public class Symbol implements Expression{
 	public String toString(){
 		return Character.toString(c);
 	}
+
+	public char value(){
+		return c;
+	}
 }
