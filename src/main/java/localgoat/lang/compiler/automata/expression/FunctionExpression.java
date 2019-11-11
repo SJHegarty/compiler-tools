@@ -9,6 +9,7 @@ import java.util.List;
 
 public class FunctionExpression implements Expression{
 
+	private final boolean bracketed;
 	private final char identifier;
 	private final String modifiers;
 	private final Expression[] children;
@@ -33,6 +34,7 @@ public class FunctionExpression implements Expression{
 		}
 
 		if(source.charAt(index) == '('){
+			bracketed = true;
 			final var segments = new ArrayList<Expression>();
 			loop: while(true){
 				final var seg = Expression.parseSeries(source, ++index);
@@ -53,6 +55,7 @@ public class FunctionExpression implements Expression{
 			this.children = segments.stream().toArray(Expression[]::new);
 		}
 		else{
+			bracketed = false;
 			this.children = new Expression[]{
 				Expression.parseSegment(source, index)
 			};
@@ -65,14 +68,12 @@ public class FunctionExpression implements Expression{
 		if(modifiers != null){
 			rv += 2 + modifiers.length();
 		}
-		if(children.length == 1 && !(children[0] instanceof ExpressionSeries)){
-			rv += children[0].length();
+		if(bracketed){
+			rv += 2;
 		}
-		else{
-			rv += 1 + children.length;
-			for(var c: children){
-				rv += c.length();
-			}
+		rv += children.length - 1;
+		for(var c: children){
+			rv += c.length();
 		}
 		return rv;
 	}
@@ -84,15 +85,16 @@ public class FunctionExpression implements Expression{
 		if(modifiers != null){
 			builder.append('<').append(modifiers).append('>');
 		}
-		if(children.length == 1 && !(children[0] instanceof ExpressionSeries)){
-			builder.append(children[0]);
-		}
-		else{
+		if(bracketed){
 			builder.append('(');
-			ESupplier.from(children)
-				.map(c -> c.toString())
-				.interleave(",")
-				.forEach(s -> builder.append(s));
+		}
+
+		ESupplier.from(children)
+			.map(c -> c.toString())
+			.interleave(",")
+			.forEach(s -> builder.append(s));
+
+		if(bracketed){
 			builder.append(')');
 		}
 		return builder.toString();
