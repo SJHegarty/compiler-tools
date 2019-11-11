@@ -12,20 +12,20 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class DFA<T extends Token> implements Automaton<T>{
-	/*public static void main(String...args){
+	public static void main(String...args){
 
-		final var concat = new Concatenate<CharToken>();
-		final var kleene = new Kleene<CharToken>(Kleene.Op.PLUS);
+		final var concat = new Concatenate<Token<Character>>();
+		final var kleene = new Kleene<Token<Character>>(Kleene.Op.PLUS);
 		final var nfa = concat.apply(
-			kleene.apply(new DFA<>(new CharToken('b'))),
-			new DFA<>(new CharToken('a'))
+			kleene.apply(new DFA<>(Token.of('b'))),
+			new DFA<>(Token.of('a'))
 		);
 
 		final var dfa = new DFA<>(nfa);
 
-		final Function<String, CharToken[]> converter = s -> IntStream.range(0, s.length())
-			.mapToObj(i -> new CharToken(s.charAt(i)))
-			.toArray(CharToken[]::new);
+		final Function<String, Token<Character>[]> converter = s -> IntStream.range(0, s.length())
+			.mapToObj(i -> Token.of(s.charAt(i)))
+			.toArray(Token[]::new);
 
 		var supplier = ESupplier.of("")
 			.branchingMap(true, s -> ESupplier.of(s + "a", s + "b"))
@@ -36,7 +36,7 @@ public class DFA<T extends Token> implements Automaton<T>{
 		for(var v: supplier){
 			System.err.println(v);
 		}
-	}*/
+	}
 
 	private final MutableNode<T>[] nodes;
 	private final Set<T> tokens;
@@ -53,7 +53,6 @@ public class DFA<T extends Token> implements Automaton<T>{
 
 	public DFA(NFA<T> nfa){
 		this.tokens = new HashSet<>(nfa.tokens());
-		//noinspection unchecked
 		final Map<Node<T>, Set<Node<T>>> lambdaTransitable = IntStream.range(0, nfa.nodeCount())
 			.mapToObj(nfa::node)
 			.collect(
@@ -136,22 +135,18 @@ public class DFA<T extends Token> implements Automaton<T>{
 				}
 			);
 		}
-		//noinspection unchecked
 		this.nodes = nodesMap.values().stream().toArray(MutableNode[]::new);
 	}
-
 
 	public DFA(T...tokens){
 		if(tokens.length == 0){
 			this.tokens = Collections.emptySet();
-			//noinspection unchecked
 			this.nodes = new MutableNode[]{
 				new MutableNode(this, 0, true)
 			};
 			return;
 		}
 		this.tokens = new HashSet<>(Arrays.asList(tokens));
-		//noinspection unchecked
 		this.nodes = new MutableNode[]{
 			new MutableNode<>(this, 0, false),
 			new MutableNode<>(this, 1, true)
@@ -161,7 +156,6 @@ public class DFA<T extends Token> implements Automaton<T>{
 
 	public DFA(DFA<T> source){
 		this.tokens = new HashSet<>(source.tokens);
-		//noinspection unchecked
 		this.nodes = IntStream.range(0, source.nodes.length + (source.isComplete() ? 0 : 1))
 			.mapToObj(i -> new MutableNode<>(this, i, source.nodes[i].isTerminating()))
 			.toArray(MutableNode[]::new);

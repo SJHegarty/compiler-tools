@@ -1,0 +1,22 @@
+$[final class] FooBar{
+	$[private enum] Option{
+		$values{
+			@OPTION_1("name 1");
+			@OPTION_2("name 2");
+			@OPTION_3("name 3");
+		}
+		
+		$[private final] String option-name;
+
+		#(String name){
+			@this.option-name = name;
+		}
+
+		$$-doc{
+			name is a public property despite the class being private, this should cause a validation error.
+		}
+		$[public property] name{
+			$get :: @$.return(option-name);
+		}
+	}
+}

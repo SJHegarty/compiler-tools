@@ -8,13 +8,18 @@ public class MutableNode<T extends Token> implements Node<T>{
 	public static class Builder<T extends Token>{
 		private final int index;
 		private final Map<T, Set<Builder<T>>> transitions;
-		private final boolean terminating;
+		private final Set<String> classes;
 		private Automaton<T> automaton;
 		private MutableNode<T> node;
 
 		public Builder(int index, boolean terminating){
+			this(index, terminating ? new String[]{null} : new String[0]);
+		}
+
+		public Builder(int index, String...classes){
 			this.index = index;
-			this.terminating = terminating;
+			this.classes = new HashSet<>();
+			this.classes.addAll(Arrays.asList(classes));
 			this.transitions = new HashMap<>();
 		}
 
@@ -33,7 +38,7 @@ public class MutableNode<T extends Token> implements Node<T>{
 
 		MutableNode<T> initialise(Automaton<T> automaton){
 			this.automaton = automaton;
-			this.node = new MutableNode<T>(automaton, index, terminating);
+			this.node = new MutableNode<T>(automaton, index, classes);
 			return node;
 		}
 
@@ -54,13 +59,21 @@ public class MutableNode<T extends Token> implements Node<T>{
 	private final Automaton<T> automaton;
 	private final int index;
 	private final Map<T, Set<Node<T>>> transitions;
-	private final boolean terminating;
+	private final Set<String> classes;
 
 	MutableNode(Automaton<T> automaton, int index, boolean terminating){
+		this(automaton, index, terminating ? Collections.singleton(null) : Collections.emptySet());
+	}
+
+	MutableNode(Automaton<T> automaton, int index, String...classes){
+		this(automaton, index, new HashSet<>(Arrays.asList(classes)));
+	}
+
+	private MutableNode(Automaton<T> automaton, int index, Set<String> classes){
 		this.automaton = automaton;
 		this.index = index;
 		this.transitions = new HashMap<>();
-		this.terminating = terminating;
+		this.classes = classes;
 	}
 
 	void addTransitions(Set<T> tokens, Node<T> destination){
@@ -95,7 +108,7 @@ public class MutableNode<T extends Token> implements Node<T>{
 
 	@Override
 	public boolean isTerminating(){
-		return terminating;
+		return !classes.isEmpty();
 	}
 
 	private CachedBoolean terminable = CachedBoolean.UNCACHED;
