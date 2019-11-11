@@ -6,7 +6,7 @@ import localgoat.util.functional.operation.AssociativeOperation;
 
 import java.util.stream.IntStream;
 
-public class Or<T extends Token> implements AssociativeOperation<Automaton<T>>{
+public class Or<T extends TokenA> implements AssociativeOperation<Automaton<T>>{
 
 	@Override
 	public NFA<T> apply(Automaton<T> a0, Automaton<T> a1){

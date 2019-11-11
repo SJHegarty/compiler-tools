@@ -1,6 +1,5 @@
 package localgoat.lang.compiler;
 
-import localgoat.lang.compiler.handlers.SymbolHandler;
 import localgoat.util.ESupplier;
 
 import java.util.ArrayList;
@@ -72,7 +71,7 @@ public class CodeTree{
 			final var tokens = head.contentTokens();
 			final int index = head.lineindex;
 			{
-				final var deque = new ArrayDeque<Token>();
+				final var deque = new ArrayDeque<TokenA>();
 				IntStream.range(0, splitIndex - 1).forEach(
 					i -> deque.add(tokens.get(i))
 				);
@@ -84,7 +83,7 @@ public class CodeTree{
 				this.head = new CodeLine(builder.toString(), index);
 			}
 			{
-				final var queue = new ArrayDeque<Token>();
+				final var queue = new ArrayDeque<TokenA>();
 				IntStream.range(splitIndex + 1, tokens.size()).forEach(
 					i -> queue.add(tokens.get(i))
 				);
@@ -107,7 +106,10 @@ public class CodeTree{
 				children.add(new CodeTree(lines));
 			}
 			final Token headEnd = head.last(t -> !t.ignored());
-			if(headEnd != null && headEnd.value.equals(SymbolHandler.OPENING_BRACKET)){
+			final String OPENING_BRACKET = "{";
+			final String CLOSING_BRACKET = "}";
+			final String CONTINUING_BRACKET = "}&";
+			if(headEnd != null && headEnd.value.equals(OPENING_BRACKET)){
 				final var line = lines.peek();
 				handled:{
 					unhandled:{
@@ -119,11 +121,11 @@ public class CodeTree{
 							break unhandled;
 						}
 						switch(lineEnd.value){
-							case SymbolHandler.CONTINUING_BRACKET:{
+							case CONTINUING_BRACKET:{
 								this.type = BlockType.CONTINUED;
 								break;
 							}
-							case SymbolHandler.CLOSING_BRACKET:{
+							case CLOSING_BRACKET:{
 								this.type = BlockType.CLOSED;
 								break;
 							}

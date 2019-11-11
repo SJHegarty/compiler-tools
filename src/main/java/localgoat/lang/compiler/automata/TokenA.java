@@ -1,27 +1,21 @@
 package localgoat.lang.compiler.automata;
 
-import localgoat.util.ESupplier;
+public interface TokenA<T>{
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Stream;
-
-public interface Token<T>{
-
-	static Token<Character>[] from(String s){
+	static TokenA<Character>[] from(String s){
 		return from(s.toCharArray());
 	}
 
-	static Token<Character>[] from(char...chars){
-		final Token<Character> rv[] = new Token[chars.length];
+	static TokenA<Character>[] from(char...chars){
+		final TokenA<Character> rv[] = new TokenA[chars.length];
 		for(int i = 0; i < rv.length; i++){
 			rv[i] = of(chars[i]);
 		}
 		return rv;
 	}
 
-	static Token<Character> of(char c){
-		return new Token<Character>(){
+	static TokenA<Character> of(char c){
+		return new TokenA<Character>(){
 			@Override
 			public Character value(){
 				return c;
@@ -30,7 +24,7 @@ public interface Token<T>{
 			@Override
 			public boolean equals(Object o){
 				if(o.getClass() == getClass()){
-					final var t = (Token<Character>)o;
+					final var t = (TokenA<Character>)o;
 					return c == t.value();
 				}
 				return false;

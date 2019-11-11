@@ -1,11 +1,9 @@
 package localgoat.lang.compiler.automata;
 
-import java.lang.reflect.Array;
 import java.util.*;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
-public class Builder<T extends Token>{
+public class Builder<T extends TokenA>{
 	final Set<T> tokens;
 	final List<MutableNode.Builder<T>> nodes = new ArrayList<>();
 

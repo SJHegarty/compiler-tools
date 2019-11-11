@@ -3,10 +3,9 @@ package localgoat.lang.compiler.automata.operation;
 import localgoat.lang.compiler.automata.*;
 import localgoat.util.functional.operation.UnaryOperation;
 
-import java.util.Collection;
 import java.util.Collections;
 
-public class Name<T extends Token> implements UnaryOperation<Automaton<T>>{
+public class Name<T extends TokenA> implements UnaryOperation<Automaton<T>>{
 	private final String name;
 
 	public Name(String name){

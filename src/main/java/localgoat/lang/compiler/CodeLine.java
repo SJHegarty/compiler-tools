@@ -1,17 +1,55 @@
 package localgoat.lang.compiler;
 
-import localgoat.lang.compiler.handlers.WhitespaceHandler;
+import localgoat.lang.compiler.automata.DFA;
+import localgoat.lang.compiler.automata.TokenA;
+import localgoat.lang.compiler.automata.expression.Converter;
+import localgoat.util.ESupplier;
 import localgoat.util.io.CharSource;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class CodeLine{
 
+	static final DFA<TokenA<Character>> DFA;
+	static final String WHITE_SPACE = "white-space";
+	static final String CLASS_NAME = "class-name";
+	static final String CONSTANT = "constant";
+	static final String IDENTIFIER = "identifier";
+
+	static{
+		final var converter = new Converter();
+		converter.addClass('u', c -> 'A' <= c && c <= 'Z');
+		converter.addClass('l', c -> 'a' <= c && c <= 'z');
+		converter.addClass('w', c -> c == ' ' || c == '\t');
+		converter.addClass('h', c -> c == '-');
+		converter.addClass('s', c -> c == '_');
+
+		final var expressions = new HashMap<>();
+		expressions.put(WHITE_SPACE, "*<1+>w");
+		expressions.put(CLASS_NAME, "*<1+>(u*l)");
+		expressions.put(CONSTANT, "*<1+>u*(s*<1+>u)");
+		expressions.put(IDENTIFIER, "*<1+>l*(h*<1+>l)");
+
+		final var builder = new StringBuilder();
+		builder.append("+(");
+
+		ESupplier.from(expressions.entrySet())
+			.map(
+				e -> String.format(
+					"@<%s>(%s)",
+					e.getKey(),
+					e.getValue()
+				)
+			)
+			.interleave(", ")
+			.forEach(s -> builder.append(s));
+
+		builder.append(")");
+
+		DFA = converter.buildDFA(builder.toString());
+	}
 	public static final int TAB_WIDTH = 4;
 	public final int lineindex;
 	public final List<Token> tokens;
@@ -21,30 +59,52 @@ public class CodeLine{
 		final var tokens = new ArrayList<Token>();
 		this.tokens = Collections.unmodifiableList(tokens);
 
-		try(var source = new CharSource(line)){
-			tokens.add(
-				WhitespaceHandler.INSTANCE.extract(source)
-			);
-
-			outer: for(;;){
-				final char c = source.peek();
-				if(c == CharSource.STREAM_END){
-					break;
-				}
-				for(var handler: Handlers.HANDLERS){
-					if(handler.handles(c)){
-						tokens.add(handler.extract(source));
-						continue outer;
+		DFA.tokenise(TokenA.from(line))
+			.map(
+				tokena -> {
+					final TokenType type;
+					outer:{
+						var classes = tokena.classes();
+						switch(classes.size()){
+							case 0:{
+								type = TokenType.UNHANDLED;
+								break;
+							}
+							case 1:{
+								switch(classes.iterator().next()){
+									case WHITE_SPACE:{
+										type = TokenType.WHITESPACE;
+										break outer;
+									}
+									case CLASS_NAME:{
+										type = TokenType.TYPE;
+										break outer;
+									}
+									case CONSTANT:{
+										type = TokenType.CONST;
+										break outer;
+									}
+									case IDENTIFIER:{
+										type = TokenType.IDENTIFIER;
+										break outer;
+									}
+									default:{
+										type = TokenType.UNHANDLED;
+										break outer;
+									}
+								}
+							}
+							default:{
+								type = TokenType.AMBIGUOUS;
+								break;
+							}
+						}
 					}
+					return new Token(tokena.value(), type);
 				}
-				tokens.add(
-					new Token(
-						new String(source.read(1)),
-						TokenType.UNHANDLED
-					)
-				);
-			}
-		}
+			)
+			.forEach(token -> tokens.add(token));
+
 	}
 
 	public List<Token> contentTokens(){
@@ -93,25 +153,17 @@ public class CodeLine{
 	}
 
 	public String prefix(){
-		return tokens.get(0).value;
-	}
-
-	public String suffix(){
-		final var stack = new ArrayDeque<Token>();
-		for(int index = tokens.size() - 1 ;; index--){
-			final var token = tokens.get(index);
-			if(token.type.ignored){
-				stack.push(token);
+		handler:{
+			if(tokens.size() == 0){
+				break handler;
 			}
-			else{
-				break;
+			final var token = tokens.get(0);
+			if(token.type != TokenType.WHITESPACE){
+				break handler;
 			}
+			return token.value;
 		}
-		final var builder = new StringBuilder();
-		while(!stack.isEmpty()){
-			builder.append(stack.pop());
-		}
-		return builder.toString();
+		return "";
 	}
 
 	public String reconstruct(){
@@ -124,7 +176,7 @@ public class CodeLine{
 
 	public int depth(){
 		int sum = 0;
-		for(char c: tokens.get(0).value.toCharArray()){
+		for(char c: prefix().toCharArray()){
 			switch(c){
 				case '\t':{
 					sum += TAB_WIDTH - (sum % TAB_WIDTH);

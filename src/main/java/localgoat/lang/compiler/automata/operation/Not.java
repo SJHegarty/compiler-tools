@@ -3,13 +3,13 @@ package localgoat.lang.compiler.automata.operation;
 import localgoat.lang.compiler.automata.Builder;
 import localgoat.lang.compiler.automata.DFA;
 import localgoat.lang.compiler.automata.MutableNode;
-import localgoat.lang.compiler.automata.Token;
+import localgoat.lang.compiler.automata.TokenA;
 import localgoat.util.functional.operation.UnaryOperation;
 
 import java.util.HashSet;
 import java.util.stream.IntStream;
 
-public class Not<T extends Token> implements UnaryOperation<DFA<T>>{
+public class Not<T extends TokenA> implements UnaryOperation<DFA<T>>{
 	@Override
 	public DFA<T> apply(DFA<T> source){
 		final var complete = source.complete();

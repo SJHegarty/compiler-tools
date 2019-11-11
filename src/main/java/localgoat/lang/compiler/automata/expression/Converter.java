@@ -3,7 +3,7 @@ package localgoat.lang.compiler.automata.expression;
 import localgoat.lang.compiler.automata.Automaton;
 import localgoat.lang.compiler.automata.DFA;
 import localgoat.lang.compiler.automata.NFA;
-import localgoat.lang.compiler.automata.Token;
+import localgoat.lang.compiler.automata.TokenA;
 import localgoat.lang.compiler.automata.operation.Concatenate;
 import localgoat.lang.compiler.automata.operation.Kleene;
 import localgoat.lang.compiler.automata.operation.Name;
@@ -39,7 +39,7 @@ public class Converter{
 		}
 	}
 
-	private Map<Class<? extends Expression>, Function<Expression, Automaton<Token<Character>>>> handlers;
+	private Map<Class<? extends Expression>, Function<Expression, Automaton<TokenA<Character>>>> handlers;
 
 	public static void main(String...args){
 		final String identifier = "@<identifier>(*<1+>l*(h*<1+>l))";
@@ -64,7 +64,7 @@ public class Converter{
 							.map(expr -> build(expr))
 							.collect(Collectors.toList());
 
-						final var or = new Or<Token<Character>>();
+						final var or = new Or<TokenA<Character>>();
 						return or.apply(children);
 					}
 					case '@':{
@@ -76,7 +76,7 @@ public class Converter{
 						if(children.size() != 1){
 							throw new IllegalStateException("@ function only supports a single argument.");
 						}
-						final var naming = new Name<Token<Character>>(name);
+						final var naming = new Name<TokenA<Character>>(name);
 						return naming.apply(build(children.get(0)));
 					}
 					case '*':{
@@ -99,7 +99,7 @@ public class Converter{
 						if(children.size() != 1){
 							throw new IllegalStateException("Kleene functions only support a single argument.");
 						}
-						final var kleen = new Kleene<Token<Character>>((minCount == 0) ? Kleene.Op.STAR : Kleene.Op.PLUS);
+						final var kleen = new Kleene<TokenA<Character>>((minCount == 0) ? Kleene.Op.STAR : Kleene.Op.PLUS);
 						return kleen.apply(build(children.get(0)));
 					}
 					default:{
@@ -117,7 +117,7 @@ public class Converter{
 					.map(seg -> build(seg))
 					.collect(Collectors.toList());
 
-				final var concat = new Concatenate<Token<Character>>();
+				final var concat = new Concatenate<TokenA<Character>>();
 				return concat.apply(children);
 			}
 		);
@@ -128,16 +128,16 @@ public class Converter{
 				final var symbol = (Symbol)expression;
 				final char c = symbol.value();
 				if(c == '^'){
-					return new DFA<Token<Character>>();
+					return new DFA<TokenA<Character>>();
 				}
 				if((c & 0xffffff00) == 0){
 					final char[] chars = classes[c];
 					if(chars == null){
 						System.err.println(String.format("No character class defined for symbol '%s' using literal interpretation.", c));
-						return new DFA<Token<Character>>(Token.of(c));
+						return new DFA<TokenA<Character>>(TokenA.of(c));
 					}
 					else{
-						return new DFA<Token<Character>>(Token.from(chars));
+						return new DFA<TokenA<Character>>(TokenA.from(chars));
 					}
 
 				}
@@ -146,15 +146,15 @@ public class Converter{
 		);
 	}
 
-	public DFA<Token<Character>> buildDFA(String pattern){
+	public DFA<TokenA<Character>> buildDFA(String pattern){
 		final var a = build(pattern);
-		return (a instanceof DFA) ? (DFA)a : new DFA<Token<Character>>((NFA)a);
+		return (a instanceof DFA) ? (DFA)a : new DFA<TokenA<Character>>((NFA)a);
 	}
-	public Automaton<Token<Character>> build(String pattern){
+	public Automaton<TokenA<Character>> build(String pattern){
 		return build(Expression.parse(pattern));
 	}
 
-	private Automaton<Token<Character>> build(Expression expression){
+	private Automaton<TokenA<Character>> build(Expression expression){
 		final var type = expression.getClass();
 		final var handler = handlers.get(type);
 		if(handler == null){

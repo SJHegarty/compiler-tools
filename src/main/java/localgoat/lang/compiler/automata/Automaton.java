@@ -4,7 +4,7 @@ import java.util.AbstractList;
 import java.util.List;
 import java.util.Set;
 
-public interface Automaton<T extends Token>{
+public interface Automaton<T extends TokenA>{
 
 
 	enum UnaryOperation{

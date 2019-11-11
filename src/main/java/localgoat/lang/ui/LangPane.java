@@ -99,7 +99,7 @@ public class LangPane extends JTextPane{
 									if(!token.value.equals(extract)){
 										throw new IllegalStateException(
 											String.format(
-												"Extracted Token \"%s\" of type %s does not match text \"%s\" at text index %s",
+												"Extracted TokenA \"%s\" of type %s does not match text \"%s\" at text index %s",
 												token,
 												type,
 												extract,

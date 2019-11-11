@@ -8,15 +8,12 @@ import localgoat.util.ESupplier;
 import localgoat.util.ValueCache;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class DFA<T extends Token> implements Automaton<T>{
+public class DFA<T extends TokenA> implements Automaton<T>{
 	public static void main(String...args){
 
-		final var concat = new Concatenate<Token<Character>>();
-		final var kleene = new Kleene<Token<Character>>(Kleene.Op.PLUS);
 		final var converter = new Converter();
 
 		converter.addClass('U', c -> 'A' <= c && c <= 'Z');
@@ -24,31 +21,33 @@ public class DFA<T extends Token> implements Automaton<T>{
 		converter.addClass('s', c -> c == '_');
 		converter.addClass('h', c -> c == '-');
 
-		final var className = "@<class-name>*<1+>(U*l)";
-		final var constant = "@<constant>(*<1+>U*(s*<1+>U))";
-		final var identifier = "@<identifier>(*<1+>l*(h*<1+>l))";
+		final var expressions = new HashMap<>();
+		expressions.put("class-name", "*<1+>(U*l)");
+		expressions.put("constant", "*<1+>U*(s*<1+>U)");
+		expressions.put("identifier", "*<1+>l*(h*<1+>l)");
 
-		final var dfa = converter.buildDFA(
-			String.format(
-				"+(%s, %s, %s)",
-				constant,
-				className,
-				identifier
+		final var builder = new StringBuilder();
+		builder.append("+(");
+
+		ESupplier.from(expressions.entrySet())
+			.map(
+				e -> String.format(
+					"@<%s>(%s)",
+					e.getKey(),
+					e.getValue()
+				)
 			)
-		);
+			.interleave(", ")
+			.forEach(s -> builder.append(s));
 
-		System.err.println(dfa.read(ReadMode.GREEDY, Token.from("ClassName")));
-		System.err.println(dfa.read(ReadMode.GREEDY, Token.from("HTTP")));
-		System.err.println(dfa.read(ReadMode.GREEDY, Token.from("ENUM_CONSTANTsome-other-shit")));
-		System.err.println(dfa.read(ReadMode.GREEDY, Token.from("instance-identifier")));
+		builder.append(")");
 
-		dfa.nodes().stream()
-			.filter(n -> n.classes().size() > 1)
-			.forEach(
-				n -> {
-					System.err.println(String.format("Ambiguity detected - classes %s collide.", n.classes()));
-				}
-			);
+		final var dfa = converter.buildDFA(builder.toString());
+
+		System.err.println(dfa.read(ReadMode.GREEDY, TokenA.from("ClassName")));
+		System.err.println(dfa.read(ReadMode.GREEDY, TokenA.from("HTTP_")));
+		System.err.println(dfa.read(ReadMode.GREEDY, TokenA.from("ENUM_CONSTANTsome-other-shit")));
+		System.err.println(dfa.read(ReadMode.GREEDY, TokenA.from("instance-identifier")));
 
 	}
 
@@ -268,11 +267,23 @@ public class DFA<T extends Token> implements Automaton<T>{
 		}
 
 		public String toString(){
-			final var builder = new StringBuilder().append(classes).append(": ");
+			return classes + ": " + value();
+		}
+
+		public String value(){
+			final var builder = new StringBuilder();
 			for(var t: tokens){
 				builder.append(t);
 			}
 			return builder.toString();
+		}
+
+		public Set<String> classes(){
+			return classes;
+		}
+
+		public List<T> tokens(){
+			return tokens;
 		}
 	}
 
@@ -314,5 +325,28 @@ public class DFA<T extends Token> implements Automaton<T>{
 			return new TokenString(t.state.classes(), result);
 		}
 		return null;
+	}
+
+	public ESupplier<TokenString> tokenise(T...input){
+		return new ESupplier<>(){
+			int index = 0;
+			@Override
+			public TokenString get(){
+				if(index < input.length){
+					final var result = read(ReadMode.GREEDY, index, input);
+					if(result == null){
+						final List<T> tokens = new ArrayList<>();
+						for(int i = index; i < input.length; i++){
+							tokens.add(input[i]);
+							index = input.length;
+							return new TokenString(Collections.emptySet(), tokens);
+						}
+					}
+					index += result.tokens.size();
+					return result;
+				}
+				return null;
+			}
+		};
 	}
 }

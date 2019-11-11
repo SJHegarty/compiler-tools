@@ -14,7 +14,8 @@ public enum TokenType{
 	HANGING(false),
 	UNHANDLED(false),
 	STRING(false),
-	TYPE(false);
+	TYPE(false),
+	AMBIGUOUS(false);
 
 	public final boolean ignored;
 
