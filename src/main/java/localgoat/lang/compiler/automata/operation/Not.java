@@ -1,5 +1,6 @@
 package localgoat.lang.compiler.automata.operation;
 
+import localgoat.lang.compiler.automata.Builder;
 import localgoat.lang.compiler.automata.DFA;
 import localgoat.lang.compiler.automata.MutableNode;
 import localgoat.lang.compiler.automata.Token;
@@ -14,7 +15,7 @@ public class Not<T extends Token> implements UnaryOperation<DFA<T>>{
 		final var complete = source.complete();
 		final var tokens = new HashSet<>(source.tokens());
 
-		final var builder = new DFA.Builder<T>(tokens);
+		final var builder = new Builder<T>(tokens);
 
 		//noinspection unchecked
 		var nbuilders = IntStream.range(0, complete.nodeCount())
@@ -38,6 +39,6 @@ public class Not<T extends Token> implements UnaryOperation<DFA<T>>{
 			);
 		}
 
-		return builder.build();
+		return builder.buildDFA();
 	}
 }

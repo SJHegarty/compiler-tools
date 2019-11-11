@@ -167,7 +167,7 @@ public class CodeTree{
 	static ESupplier<Token> tokenise(Iterable<CodeTree> trees){
 		return ESupplier.from(trees)
 			.map(child -> child.tokens())
-			.interlace(() -> ESupplier.of(Token.LINE_FEED))
+			.interleave(() -> ESupplier.of(Token.LINE_FEED))
 			.flatMap(supplier -> supplier);
 	}
 
@@ -183,7 +183,7 @@ public class CodeTree{
 			sources.add(ESupplier.from(tail.tokens));
 		}
 		return ESupplier.from(sources)
-			.interlace(() -> ESupplier.of(Token.LINE_FEED))
+			.interleave(() -> ESupplier.of(Token.LINE_FEED))
 			.flatMap(supplier -> supplier);
 	};
 

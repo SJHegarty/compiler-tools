@@ -5,10 +5,13 @@ import localgoat.lang.compiler.automata.DFA;
 import localgoat.lang.compiler.automata.NFA;
 import localgoat.lang.compiler.automata.Token;
 import localgoat.util.functional.operation.AssociativeOperation;
+import localgoat.util.functional.operation.PolyOperation;
 
+import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
-public class And<T extends Token> implements AssociativeOperation<Automaton<T>>{
+public class And<T extends Token> implements PolyOperation<Automaton<T>>{
 
 	private final Not<T> not = new Not<>();
 	private final Or<T> or = new Or<>();
@@ -27,11 +30,12 @@ public class And<T extends Token> implements AssociativeOperation<Automaton<T>>{
 	};
 
 	@Override
-	public Automaton<T> apply(Automaton<T> a0, Automaton<T> a1){
+	public Automaton<T> apply(List<Automaton<T>> values){
 		return negator.apply(
 			or.apply(
-				negator.apply(a0),
-				negator.apply(a1)
+				values.stream()
+					.map(negator)
+					.collect(Collectors.toList())
 			)
 		);
 	}

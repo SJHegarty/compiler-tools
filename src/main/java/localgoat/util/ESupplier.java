@@ -34,6 +34,18 @@ public interface ESupplier<T> extends Supplier<T>, Iterable<T>{
 		};
 	}
 
+	static ESupplier<Character> from(String s){
+		return new ESupplier<Character>(){
+			int index;
+			@Override
+			public Character get(){
+				if(index == s.length()){
+					return null;
+				}
+				return s.charAt(index++);
+			}
+		};
+	}
 	static <T> ESupplier<T> from(T...values){
 		return from(Arrays.asList(values));
 	}
@@ -77,6 +89,60 @@ public interface ESupplier<T> extends Supplier<T>, Iterable<T>{
 		};
 	}
 
+	class Peekable<T> implements ESupplier<T>{
+		private final ESupplier<T> wrapped;
+		private final Queue<T> queue = new ArrayDeque<>();
+
+		private Peekable(ESupplier<T> wrapped){
+			this.wrapped = wrapped;
+		}
+
+		@Override
+		public T get(){
+			return queue.isEmpty() ? wrapped.get() : queue.poll();
+		}
+
+		public T peek(){
+			if(queue.isEmpty()){
+				T rv = get();
+				queue.add(rv);
+				return rv;
+			}
+			else{
+				return queue.peek();
+			}
+		}
+
+		@Override
+		public Peekable<T> peekable(){
+			throw new UnsupportedOperationException();
+		}
+	}
+
+	default Peekable<T> peekable(){
+		return new Peekable<>(this);
+	}
+
+	default ESupplier<T> until(Predicate<T> predicate, boolean includeTerminal){
+		return new ESupplier<T>(){
+			private boolean terminated;
+			@Override
+			public T get(){
+				if(terminated){
+					return null;
+				}
+				T result = ESupplier.this.get();
+				if(predicate.test(result)){
+					terminated = true;
+					if(!includeTerminal){
+						return null;
+					}
+				}
+				return result;
+			}
+		};
+	}
+
 	@Override
 	default Iterator<T> iterator(){
 		return new Iterator<>(){
@@ -107,11 +173,11 @@ public interface ESupplier<T> extends Supplier<T>, Iterable<T>{
 		return Stream.generate(this).takeWhile(t -> t != null);
 	}
 
-	default ESupplier<T> interlace(T split){
-		return interlace(() -> split);
+	default ESupplier<T> interleave(T split){
+		return interleave(() -> split);
 	}
 
-	default ESupplier<T> interlace(Supplier<T> split){
+	default ESupplier<T> interleave(Supplier<T> split){
 		final ESupplier<T> wrapped = this;
 		return new ESupplier<T>(){
 
@@ -213,6 +279,10 @@ public interface ESupplier<T> extends Supplier<T>, Iterable<T>{
 		public Counting(T value, int index){
 			this.value = value;
 			this.index = index;
+		}
+
+		public String toString(){
+			return index + ": " + value;
 		}
 	}
 

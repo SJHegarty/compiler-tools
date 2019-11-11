@@ -14,7 +14,7 @@ public class Or<T extends Token> implements AssociativeOperation<Automaton<T>>{
 		final var tokens = CollectionUtils.union(a0.tokens(), a1.tokens());
 		final var left = a0.nodes();
 		final var right = a1.nodes();
-		final var builder = new NFA.Builder<T>(tokens);
+		final var builder = new Builder<T>(tokens);
 
 		final var nbuilder0 = builder.addNode(false);
 
@@ -63,6 +63,6 @@ public class Or<T extends Token> implements AssociativeOperation<Automaton<T>>{
 				);
 			}
 		}
-		return builder.build();
+		return builder.buildNFA();
 	}
 }

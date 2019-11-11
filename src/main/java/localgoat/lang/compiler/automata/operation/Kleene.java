@@ -1,9 +1,6 @@
 package localgoat.lang.compiler.automata.operation;
 
-import localgoat.lang.compiler.automata.Automaton;
-import localgoat.lang.compiler.automata.MutableNode;
-import localgoat.lang.compiler.automata.NFA;
-import localgoat.lang.compiler.automata.Token;
+import localgoat.lang.compiler.automata.*;
 import localgoat.util.functional.operation.UnaryOperation;
 
 import java.util.HashSet;
@@ -27,7 +24,7 @@ public class Kleene<T extends Token> implements UnaryOperation<Automaton<T>>{
 	public NFA<T> apply(Automaton<T> a){
 
 		final var tokens = new HashSet<>(a.tokens());
-		final var abuilder = new NFA.Builder<T>(tokens);
+		final var abuilder = new Builder<T>(tokens);
 		final IntFunction<MutableNode.Builder<T>> builder;
 		final MutableNode.Builder<T> nbuilder0;
 
@@ -50,12 +47,6 @@ public class Kleene<T extends Token> implements UnaryOperation<Automaton<T>>{
 			builder.apply(i);
 		}
 
-
-		IntStream.range(0, a.nodeCount())
-			.filter(i -> a.node(i).isTerminating())
-			.mapToObj(i -> abuilder.nodeBuilder(i))
-			.forEach(node -> node.addTransition(null, nbuilder0));
-
 		IntStream.range(0, a.nodeCount())
 			.forEach(
 				i -> {
@@ -69,7 +60,12 @@ public class Kleene<T extends Token> implements UnaryOperation<Automaton<T>>{
 				}
 			);
 
-		return abuilder.build();
+		IntStream.range(0, a.nodeCount())
+			.filter(i -> a.node(i).isTerminating())
+			.mapToObj(i -> abuilder.nodeBuilder(i))
+			.forEach(node -> node.addTransition(null, nbuilder0));
+
+		return abuilder.buildNFA();
 	}
 
 }

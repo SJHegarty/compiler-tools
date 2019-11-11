@@ -1,7 +1,7 @@
 package localgoat.lang.compiler.automata;
 
+import localgoat.lang.compiler.automata.operation.Concatenate;
 import localgoat.lang.compiler.automata.operation.Kleene;
-import localgoat.lang.compiler.automata.operation.Or;
 import localgoat.util.CollectionUtils;
 import localgoat.util.ESupplier;
 import localgoat.util.ValueCache;
@@ -12,29 +12,11 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class DFA<T extends Token> implements Automaton<T>{
+	/*public static void main(String...args){
 
-	public static void main(String...args){
-		final class CharToken implements Token{
-			private final char c;
-			CharToken(char c){
-				this.c = c;
-			}
-
-			public String toString(){
-				return Character.toString(c);
-			}
-
-			public int hashCode(){
-				return c;
-			}
-
-			public boolean equals(Object o){
-				return (o instanceof CharToken) && ((CharToken)o).c == c;
-			}
-		}
-		final var or = new Or<CharToken>();
+		final var concat = new Concatenate<CharToken>();
 		final var kleene = new Kleene<CharToken>(Kleene.Op.PLUS);
-		final var nfa = or.apply(
+		final var nfa = concat.apply(
 			kleene.apply(new DFA<>(new CharToken('b'))),
 			new DFA<>(new CharToken('a'))
 		);
@@ -52,35 +34,16 @@ public class DFA<T extends Token> implements Automaton<T>{
 			.retain(v -> dfa.accepts(converter.apply(v.value)));
 
 		for(var v: supplier){
-			System.err.println(v.index + ": " + v.value);
+			System.err.println(v);
 		}
-	}
-
-	public static class Builder<T extends Token>{
-		private final Set<T> tokens;
-		private final List<MutableNode.Builder<T>> nodes = new ArrayList<>();
-
-		public Builder(Set<T> tokens){
-			this.tokens = tokens;
-		}
-
-		public MutableNode.Builder<T> addNode(boolean terminating){
-			final var rv = new MutableNode.Builder<T>(nodes.size(), terminating);
-			nodes.add(rv);
-			return rv;
-		}
-
-		public DFA<T> build(){
-			return new DFA<T>(this);
-		}
-	}
+	}*/
 
 	private final MutableNode<T>[] nodes;
 	private final Set<T> tokens;
 	private CachedBoolean complete = CachedBoolean.UNCACHED;
 	private DFA<T> completeDFA;
 
-	private DFA(Builder<T> builder){
+	DFA(Builder<T> builder){
 		this.nodes = builder.nodes.stream()
 			.map(nbuilder -> nbuilder.initialise(this))
 			.toArray(MutableNode[]::new);
@@ -183,7 +146,7 @@ public class DFA<T extends Token> implements Automaton<T>{
 			this.tokens = Collections.emptySet();
 			//noinspection unchecked
 			this.nodes = new MutableNode[]{
-				new MutableNode(this, 0, false)
+				new MutableNode(this, 0, true)
 			};
 			return;
 		}
