@@ -11,6 +11,7 @@ import localgoat.util.functional.CharPredicate;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Converter{
 	private final char[][] classes = new char[256][];
@@ -52,6 +53,18 @@ public class Converter{
 
 	public Converter(){
 		this.handlers = new HashMap<>();
+		handlers.put(
+			LiteralExpression.class,
+			expression -> {
+				final var literal = (LiteralExpression)expression;
+				final var tokens = TokenA.from(literal.value());
+				final var machines = Stream.of(tokens)
+					.map(t -> new DFA<>(t))
+					.toArray(DFA[]::new);
+
+				return new Concatenate<TokenA<Character>>().apply(machines);
+			}
+		);
 		handlers.put(
 			FunctionExpression.class,
 			expression -> {

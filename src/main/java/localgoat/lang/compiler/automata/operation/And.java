@@ -30,7 +30,6 @@
 //
 //	@Override
 //	public Automaton<T> apply(List<Automaton<T>> values){
-//		
 //		return negator.apply(
 //			or.apply(
 //				values.stream()

@@ -20,6 +20,8 @@ public class CodeLine{
 	static final String IDENTIFIER = "identifier";
 	static final String SYMBOL = "symbol";
 	static final String STRING = "string";
+	static final String DECIMAL = "decimal";
+	static final String HEXADECIMAL = "hexadecimal";
 
 	static{
 		final var converter = new Converter();
@@ -54,15 +56,26 @@ public class CodeLine{
 			)
 		);
 		converter.addClass('d', new CharRange('0', '9'));
+		converter.addClass(
+			'x',
+			CharPredicate.or(
+				new CharRange('0', '9'),
+				new CharRange('a', 'f'),
+				new CharRange('A', 'F')
+			)
+		);
 		converter.addClass('q', c -> c == '\"');
 		converter.addClass('e', c -> c == '\\');
 		final var expressions = new HashMap<>();
+
 		expressions.put(WHITE_SPACE, "*<1+>w");
 		expressions.put(CLASS_NAME, "*<1+>(u*l)");
 		expressions.put(CONSTANT, "*<1+>u*(s*<1+>u)");
 		expressions.put(IDENTIFIER, "*<1+>l*(h*<1+>l)");
 		expressions.put(SYMBOL, "*<1+>t");
 		expressions.put(STRING, "q*+(!q, eq)q");
+		expressions.put(DECIMAL, "*<1+>d");
+		expressions.put(HEXADECIMAL, "'0x'*<1+>x");
 	//	expressions.put()
 
 

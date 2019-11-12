@@ -1,11 +1,7 @@
 package localgoat.lang.compiler.automata;
 
-import localgoat.lang.compiler.Token;
 import localgoat.lang.compiler.automata.expression.Converter;
 import localgoat.lang.compiler.automata.expression.Expression;
-import localgoat.lang.compiler.automata.operation.Concatenate;
-import localgoat.lang.compiler.automata.operation.Kleene;
-import localgoat.lang.compiler.automata.operation.Not;
 import localgoat.util.CollectionUtils;
 import localgoat.util.ESupplier;
 import localgoat.util.ValueCache;
@@ -246,11 +242,6 @@ public class DFA<T extends TokenA> implements Automaton<T>{
 			}
 		}
 		return state.isTerminating();
-	}
-
-	public enum ReadMode{
-		EAGER,
-		GREEDY;
 	}
 
 	public class TokenString{
