@@ -15,7 +15,11 @@ public class TokenString<T> implements Token{
 	}
 
 	public String toString(){
-		return classes + ": " + value().replaceAll("\r", "\\\\r").replaceAll("\n", "\\\\n");
+		return String.format(
+			"[%s%s]",
+			classes,
+			value().replaceAll("\r", "\\\\r").replaceAll("\n", "\\\\n")
+		);
 	}
 
 	public String value(){

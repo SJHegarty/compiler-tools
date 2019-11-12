@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class FunctionExpression implements Expression{
+public class FunctionExpression implements ExpressionTree{
 
 	private final boolean bracketed;
 	private final char identifier;
@@ -108,6 +108,7 @@ public class FunctionExpression implements Expression{
 		return modifiers;
 	}
 
+	@Override
 	public List<Expression> children(){
 		return Collections.unmodifiableList(Arrays.asList(children));
 	}

@@ -1,7 +1,8 @@
 package localgoat.lang.ui;
 
-import localgoat.lang.compiler.CodeLine;
+import localgoat.lang.compiler.LineTokeniser;
 import localgoat.lang.compiler.ContentTree;
+import localgoat.lang.compiler.automata.Token;
 import localgoat.util.ui.document.InsertRemoveListener;
 
 import javax.swing.*;
@@ -17,7 +18,9 @@ import java.awt.Font;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.IntFunction;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class LangPane extends JTextPane{
@@ -26,7 +29,7 @@ public class LangPane extends JTextPane{
 
 	public LangPane(){
 
-		this.setBackground(new Color(0xff404040));
+		this.setBackground(new Color(0xff202020));
 		this.setCaretColor(new Color(0xffc0c0c0));
 		setDoubleBuffered(true);
 		final int charcount = 4;
@@ -51,41 +54,37 @@ public class LangPane extends JTextPane{
 		var doc = getStyledDocument();
 		var context = StyleContext.getDefaultStyleContext();
 
-		final IntFunction<AttributeSet> builder = (colour) -> context.addAttribute(
+		final Function<Color, AttributeSet> builder = (colour) -> context.addAttribute(
 			context.getEmptySet(),
 			StyleConstants.Foreground,
-			new Color(colour)
+			colour
 		);
 
-		final var missing = builder.apply(Color.ORANGE.getRGB());
-		final Map<String, AttributeSet> atts = new HashMap<>();
-		{
-			var a = builder.apply(0xffc0c0c0);
-			atts.put(CodeLine.LINE_COMMENT, a);
-			//atts.put(TokenType.HANDLED_COMMENT, a);
-			//atts.put(TokenType.STRUCTURED_COMMENT, a);
-		}
-		final String HANGING = "hanging";
-		atts.put(HANGING, builder.apply(0xffff0000));
+		final var missing = builder.apply(Color.ORANGE);
+		final var hanging = builder.apply(Color.RED);
+		//;
+		final ColourMap<String> colours = new ColourMap<>();
+
+		colours.add("line-feed");
+		colours.add(ContentTree.LINE_COMMENT);
 		final String AMBIGUOUS = "ambiguous";
-		atts.put(AMBIGUOUS, builder.apply(0xff00ffff));
-		atts.put(
-			CodeLine.STRING,
-			builder.apply(0xff80ff80)
-		);
-		{
-			var a =	builder.apply(0xff80c0ff);
-			atts.put(CodeLine.KEY_WORD, a);
-			atts.put(CodeLine.SYMBOL, a);
-		}
-		atts.put(
-			CodeLine.CLASS_NAME,
-			builder.apply(0xffffffff)
-		);
-		atts.put(
-			null,
-			builder.apply(0xffff0000)
-		);
+		colours.add(AMBIGUOUS);
+		colours.add(ContentTree.IDENTIFIER);
+		colours.add(ContentTree.STRING);
+		colours.add(ContentTree.KEY_WORD);
+		colours.add(ContentTree.SYMBOL);
+		colours.add(ContentTree.CLASS_NAME);
+		colours.add(ContentTree.CONSTANT);
+		colours.add(ContentTree.DECIMAL);
+
+		final Map<String, AttributeSet> atts = colours.build().entrySet().stream()
+			.collect(
+				Collectors.toMap(
+					e -> e.getKey(),
+					e -> builder.apply(e.getValue().brighter().brighter())
+				)
+			);
+
 		doc.addDocumentListener(
 			(InsertRemoveListener) event -> {
 				LangPane.this.content = new ContentTree(getText());
@@ -96,7 +95,7 @@ public class LangPane extends JTextPane{
 							final int length = token.value().length();
 							final var classes = token.classes();
 
-							if(!classes.contains(CodeLine.WHITE_SPACE)){
+							if(!classes.contains(ContentTree.WHITE_SPACE)){
 								try{
 									var extract = doc.getText(index, length);
 
@@ -118,7 +117,7 @@ public class LangPane extends JTextPane{
 								final AttributeSet attributes;
 								switch(classes.size()){
 									case 0:{
-										attributes = atts.get(HANGING);
+										attributes = hanging;
 										break;
 									}
 									case 1:{

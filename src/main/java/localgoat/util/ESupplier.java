@@ -2,6 +2,7 @@ package localgoat.util;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -177,6 +178,10 @@ public interface ESupplier<T> extends Supplier<T>, Iterable<T>{
 		return interleave(() -> split);
 	}
 
+	default T[] toArray(IntFunction<T[]> builder){
+		return toStream().toArray(builder);
+	}
+
 	default ESupplier<T> interleave(Supplier<T> split){
 		final ESupplier<T> wrapped = this;
 		return new ESupplier<T>(){
@@ -199,9 +204,15 @@ public interface ESupplier<T> extends Supplier<T>, Iterable<T>{
 	}
 
 	default <R> ESupplier<R> map(Function<T, R> mapper){
-		return () -> Optional.ofNullable(get())
-			.map(mapper)
-			.orElse(null);
+		return () -> {
+			for(var t: this){
+				final R r = mapper.apply(t);
+				if(r != null){
+					return r;
+				}
+			}
+			return null;
+		};
 	}
 
 	default <R> ESupplier<R> flatMap(Function<T, ESupplier<R>> mapper){
@@ -264,11 +275,18 @@ public interface ESupplier<T> extends Supplier<T>, Iterable<T>{
 		var supplier = ESupplier.of("a")
 			.branchingMap(false, s -> ESupplier.of(s + "a", s + "b", s + "c"))
 			.limit(100)
-			.exclude(s -> s.contains("abc"));
+			.exclude(s -> s.contains("abc"))
+			.counting();
 
-		int index = 0;
 		for(var s: supplier){
-			System.err.println(index++ + ": " + s);
+			System.err.println(s);
+			if(s.index == 30){
+				break;
+			}
+		}
+		System.err.println();
+		for(var s: supplier){
+			System.err.println(s);
 		}
 	}
 

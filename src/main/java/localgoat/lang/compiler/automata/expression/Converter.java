@@ -5,6 +5,7 @@ import localgoat.lang.compiler.automata.DFA;
 import localgoat.lang.compiler.automata.NFA;
 import localgoat.lang.compiler.automata.Token;
 import localgoat.lang.compiler.automata.operation.*;
+import localgoat.util.ESupplier;
 import localgoat.util.functional.CharPredicate;
 
 import java.util.*;
@@ -14,10 +15,11 @@ import java.util.stream.Stream;
 
 public class Converter{
 	private final char[][] classes = new char[256][];
+	private final Expression[] substitutions = new Expression[256];
 	private final Set<Token<Character>> alphabet = new HashSet<>();
 
 	public void addClass(char sub, CharPredicate members){
-		if(('a' <= sub && sub <= 'z') || ('A' <= sub && sub <= 'Z')){
+		if(('a' <= sub && sub <= 'z')){
 			if(classes[sub] != null){
 				throw new IllegalStateException(String.format("Unavailable class substitution character: '%s'.", sub));
 			}
@@ -25,6 +27,55 @@ public class Converter{
 		}
 		else{
 			throw new IllegalArgumentException(String.format("Unsupported class substitution character: '%s'.", sub));
+		}
+	}
+
+	public void addSubstitution(char sub, String expression){
+		if('A' <= sub && sub <= 'Z'){
+			if(substitutions[sub] != null){
+				throw new IllegalStateException(String.format("Unavailable expression substitution character: '%s'.", sub));
+			}
+			final var expr = Expression.parse(expression);
+			final Queue<Expression> loopCheck = new ArrayDeque<>();
+			loopCheck.add(expr);
+			while(!loopCheck.isEmpty()){
+				var embedded = ESupplier.of(loopCheck.poll())
+					.branchingMap(
+						true,
+						e -> {
+							if(e instanceof ExpressionTree){
+								return ESupplier.from(((ExpressionTree) e).children());
+							}
+							else return ESupplier.empty();
+						}
+					)
+					.retain(e -> e instanceof Symbol)
+					.map(e -> (Symbol) e)
+					.retain(
+						s -> {
+							final char c = s.value();
+							return c == sub || (c < 0x100 && substitutions[c] != null);
+						}
+					)
+					.toArray(Symbol[]::new);
+
+				for(Symbol s: embedded){
+					if(s.value() == sub){
+						throw new IllegalArgumentException(
+							String.format(
+								"Recursively defined substitution in expression \"%s\" for character '%s'",
+								expression,
+								s
+							)
+						);
+					}
+					else loopCheck.add(substitutions[s.value()]);
+				}
+			}
+			substitutions[sub] = expr;
+		}
+		else{
+			throw new IllegalArgumentException(String.format("Unsupported expression substitution character '%s'", sub));
 		}
 	}
 
@@ -161,7 +212,7 @@ public class Converter{
 			ExpressionSeries.class,
 			expression -> {
 				final var series = (ExpressionSeries)expression;
-				final var children = series.segments().stream()
+				final var children = series.children().stream()
 					.map(seg -> build(seg))
 					.collect(Collectors.toList());
 
@@ -179,15 +230,20 @@ public class Converter{
 					return new DFA<Token<Character>>();
 				}
 				if((c & 0xffffff00) == 0){
-					final char[] chars = classes[c];
-					if(chars == null){
-						System.err.println(String.format("No character class defined for symbol '%s' using literal interpretation.", c));
-						return new DFA<Token<Character>>(Token.of(c));
+					if('A' <= c && c <= 'Z'){
+						final var expr = substitutions[c];
+						if(expr != null){
+							return buildDFA(expr);
+						}
 					}
 					else{
-						return new DFA<Token<Character>>(Token.from(chars));
+						final char[] chars = classes[c];
+						if(chars != null){
+							return new DFA<Token<Character>>(Token.from(chars));
+						}
 					}
-
+					System.err.println(String.format("No character class defined for symbol '%s' using literal interpretation.", c));
+					return new DFA<Token<Character>>(Token.of(c));
 				}
 				throw new IllegalStateException();
 			}

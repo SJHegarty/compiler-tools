@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
-public class ExpressionSeries implements Expression{
+public class ExpressionSeries implements ExpressionTree{
 	private final Expression[] segments;
 
 	public ExpressionSeries(List<Expression> segments){
@@ -32,7 +32,8 @@ public class ExpressionSeries implements Expression{
 		return builder.toString();
 	}
 
-	public List<Expression> segments(){
+	@Override
+	public List<Expression> children(){
 		return Collections.unmodifiableList(Arrays.asList(segments));
 	}
 }

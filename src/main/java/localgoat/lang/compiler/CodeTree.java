@@ -24,9 +24,9 @@ public class CodeTree{
 		UNSOUND;
 	}
 	final BlockType type;
-	public final CodeLine head;
+	public final LineTokeniser.CodeLine head;
 	private final List<CodeTree> children;
-	public final CodeLine tail;
+	public final LineTokeniser.CodeLine tail;
 
 	private CodeTree(){
 		this.type = BlockType.CONTINUATION;
@@ -35,7 +35,7 @@ public class CodeTree{
 		this.children = new ArrayList<>();
 	}
 
-	public CodeTree(Deque<CodeLine> lines){
+	public CodeTree(Deque<LineTokeniser.CodeLine> lines){
 
 		if(lines.isEmpty()){
 			this.head = null;
@@ -58,11 +58,11 @@ public class CodeTree{
 		final int depth = head.depth();
 
 			this.head = head;
-			final Predicate<CodeLine> filter = line -> line.depth() > depth || line.reconstruct().length() == 0;
+			final Predicate<LineTokeniser.CodeLine> filter = line -> line.depth() > depth || line.reconstruct().length() == 0;
 			while(lines.size() != 0 && filter.test(lines.peek())){
 				children.add(new CodeTree(lines));
 			}
-			final TokenString<Token<Character>> headEnd = head.last(t -> !t.classes().contains(CodeLine.WHITE_SPACE));
+			final TokenString<Token<Character>> headEnd = head.last(t -> !t.classes().contains(ContentTree.WHITE_SPACE));
 			final String OPENING_BRACKET = "{";
 			final String CLOSING_BRACKET = "}";
 			final String CONTINUING_BRACKET = "}&";
@@ -73,7 +73,7 @@ public class CodeTree{
 						if(line == null || line.depth() != depth){
 							break unhandled;
 						}
-						final TokenString<Token<Character>> lineEnd = line.last(t -> !t.classes().contains(CodeLine.WHITE_SPACE));
+						final TokenString<Token<Character>> lineEnd = line.last(t -> !t.classes().contains(ContentTree.WHITE_SPACE));
 						if(lineEnd == null){
 							break unhandled;
 						}
@@ -126,7 +126,7 @@ public class CodeTree{
 	static ESupplier<TokenString<Token<Character>>> tokenise(Iterable<CodeTree> trees){
 		return ESupplier.from(trees)
 			.map(child -> child.tokens())
-			.interleave(() -> ESupplier.of(CodeLine.LINE_FEED))
+			.interleave(() -> ESupplier.of(LineTokeniser.LINE_FEED))
 			.flatMap(supplier -> supplier);
 	}
 
@@ -142,7 +142,7 @@ public class CodeTree{
 			sources.add(ESupplier.from(tail.tokens));
 		}
 		return ESupplier.from(sources)
-			.interleave(() -> ESupplier.of(CodeLine.LINE_FEED))
+			.interleave(() -> ESupplier.of(LineTokeniser.LINE_FEED))
 			.flatMap(supplier -> supplier);
 	};
 
