@@ -15,7 +15,7 @@ public class DFA<T extends Token> implements Automaton<T>{
 
 		final var converter = new Converter();
 
-		converter.addClass('U', c -> 'A' <= c && c <= 'Z');
+		converter.addClass('u', c -> 'A' <= c && c <= 'Z');
 		converter.addClass('l', c -> 'a' <= c && c <= 'z');
 		converter.addClass('s', c -> c == '_');
 		converter.addClass('h', c -> c == '-');
@@ -24,8 +24,8 @@ public class DFA<T extends Token> implements Automaton<T>{
 
 		final var expressions = new HashMap<>();
 		expressions.put("string", "q*+(~q, eq)q");
-		expressions.put("class-name", "*<1+>(U*l)");
-		expressions.put("constant", "*<1+>U*(s*<1+>U)");
+		expressions.put("class-name", "*<1+>(u*l)");
+		expressions.put("constant", "*<1+>u*(s*<1+>u)");
 		expressions.put("identifier", "*<1+>l*(h*<1+>l)");
 
 		final var builder = new StringBuilder();
@@ -91,7 +91,7 @@ public class DFA<T extends Token> implements Automaton<T>{
 					.flatMap(n -> lambdaTransitable.get(n).stream())
 					.collect(Collectors.toSet());
 
-				final Set<String> names = ESupplier.from(reachable)
+				final Set<StringClass> names = ESupplier.from(reachable)
 					.flatMap(n -> ESupplier.from(n.classes()))
 					.toStream().collect(Collectors.toSet());
 

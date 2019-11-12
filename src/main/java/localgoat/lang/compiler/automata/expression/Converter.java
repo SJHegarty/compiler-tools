@@ -1,9 +1,6 @@
 package localgoat.lang.compiler.automata.expression;
 
-import localgoat.lang.compiler.automata.Automaton;
-import localgoat.lang.compiler.automata.DFA;
-import localgoat.lang.compiler.automata.NFA;
-import localgoat.lang.compiler.automata.Token;
+import localgoat.lang.compiler.automata.*;
 import localgoat.lang.compiler.automata.operation.*;
 import localgoat.util.ESupplier;
 import localgoat.util.functional.CharPredicate;
@@ -17,6 +14,35 @@ public class Converter{
 	private final char[][] classes = new char[256][];
 	private final Expression[] substitutions = new Expression[256];
 	private final Set<Token<Character>> alphabet = new HashSet<>();
+
+
+	private static final DFA<Token<Character>> NAME_PARSER;
+	static{
+		final var converter = new Converter();
+		converter.addClass('a', c -> 'a' <= c && c <= 'z');
+		converter.addSubstitution('S', "*<1+>a*('-'*<1+>a)");
+		converter.addSubstitution('N', "S");
+		converter.addSubstitution('P', "'--'S");
+		NAME_PARSER = converter.buildDFA("+(N,P)");
+	}
+
+	private StringClass classFor(String name){
+		final var tokens = NAME_PARSER.tokenise(Token.from(name))
+			.map(token -> token.value())
+			.toArray(String[]::new);
+
+		if(tokens.length == 0 || tokens[0].startsWith("--")){
+			throw new IllegalArgumentException(name);
+		}
+		final Set<String> flags = new HashSet<>();
+		for(int i = 1; i < tokens.length; i++){
+			if(!tokens[i].startsWith("--")){
+				throw new IllegalArgumentException(name);
+			}
+			flags.add(tokens[i].substring(2));
+		}
+		return new StringClass(tokens[0], flags);
+	}
 
 	public void addClass(char sub, CharPredicate members){
 		if(('a' <= sub && sub <= 'z')){
@@ -175,7 +201,7 @@ public class Converter{
 						if(children.size() != 1){
 							throw new IllegalStateException("@ function only supports a single argument.");
 						}
-						final var naming = new Name<Token<Character>>(name);
+						final var naming = new Name<Token<Character>>(classFor(name));
 						return naming.apply(build(children.get(0)));
 					}
 					case '*':{

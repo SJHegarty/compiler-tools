@@ -14,9 +14,7 @@ public class ContentTree{
 
 	private final List<CodeTree> trees;
 	private static final LineTokeniser TOKENISER;
-
-	public static final String LINE_COMMENT = "line-comment";
-	public static final String WHITE_SPACE = "white-space";
+	public static final String LINE_COMMENT ="line-comment";
 	public static final String CLASS_NAME = "class-name";
 	public static final String CONSTANT = "constant";
 	public static final String IDENTIFIER = "identifier";
@@ -70,11 +68,20 @@ public class ContentTree{
 		);
 		converter.addClass('q', c -> c == '\"');
 		converter.addClass('e', c -> c == '\\');
+		converter.addClass('p', c -> c == ' ');
 
 		converter.addSubstitution('I', "*<1+>l*(u*<1+>l)");
+		converter.addSubstitution('K', "*<1+>l*(h*<1+>l)");
 		final var expressions = new HashMap<>();
 
-		expressions.put(WHITE_SPACE, "*<1+>w");
+		expressions.put(
+			String.format(
+				LineTokeniser.WHITE_SPACE + " --%s --%s",
+				LineTokeniser.IGNORED,
+				LineTokeniser.WHITE_SPACE
+			),
+			"*<1+>w"
+		);
 		expressions.put(CLASS_NAME, "*<1+>(u*l)");
 		expressions.put(CONSTANT, "'@'*<1+>u*(s*<1+>u)");
 		expressions.put(IDENTIFIER, "I");
@@ -129,10 +136,15 @@ public class ContentTree{
 		expressions.put(STRING, "q*+(!q, eq)q");
 		expressions.put(DECIMAL, "*<1+>d");
 		expressions.put(HEXADECIMAL, "'0x'*<1+>x");
-		expressions.put(LINE_COMMENT, "'//'*.");
-		expressions.put(KEY_WORD, "'$'*<1+>l*(h*<1+>l)");
+		expressions.put(
+			String.format(
+				LINE_COMMENT + " --%s",
+				LineTokeniser.IGNORED
+			),
+			"'//'*."
+		);
+		expressions.put(KEY_WORD, "'$'+(K, '['K*<1+>(pK)']')");
 		//	expressions.put()
-
 
 		final var builder = new StringBuilder();
 		builder.append("+(");

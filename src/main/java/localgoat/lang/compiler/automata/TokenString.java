@@ -3,22 +3,28 @@ package localgoat.lang.compiler.automata;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 
 public class TokenString<T> implements Token{
 
 	private final List<T> tokens;
-	private final Set<String> classes;
+	private final Set<StringClass> classes;
 
-	public TokenString(Set<String> classes, List<T> tokens){
+	public TokenString(Set<StringClass> classes, List<T> tokens){
 		this.tokens = Collections.unmodifiableList(tokens);
 		this.classes = Collections.unmodifiableSet(classes);
+		for(var c: classes){
+			if(!(c instanceof StringClass)){
+				throw new IllegalStateException();
+			}
+		}
 	}
 
 	public String toString(){
 		return String.format(
 			"[%s%s]",
 			classes,
-			value().replaceAll("\r", "\\\\r").replaceAll("\n", "\\\\n")
+			value().replaceAll("\r", "\\\\r").replaceAll("\n", "\\\\n").replaceAll("\t", "\\\\t")
 		);
 	}
 
@@ -30,7 +36,13 @@ public class TokenString<T> implements Token{
 		return builder.toString();
 	}
 
-	public Set<String> classes(){
+	public boolean hasClass(Predicate<StringClass> predicate){
+		return null != classes.stream()
+			.filter(predicate)
+			.findFirst()
+			.orElse(null);
+	}
+	public Set<StringClass> classes(){
 		return classes;
 	}
 

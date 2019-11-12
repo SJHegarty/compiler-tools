@@ -6,9 +6,9 @@ import localgoat.util.functional.operation.UnaryOperation;
 import java.util.Collections;
 
 public class Name<T extends Token> implements UnaryOperation<Automaton<T>>{
-	private final String name;
+	private final StringClass name;
 
-	public Name(String name){
+	public Name(StringClass name){
 		this.name = name;
 	}
 

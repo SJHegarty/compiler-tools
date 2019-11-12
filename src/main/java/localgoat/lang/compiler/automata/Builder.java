@@ -11,11 +11,11 @@ public class Builder<T extends Token>{
 		this.tokens = tokens;
 	}
 
-	public MutableNode.Builder<T> addNode(String...classes){
+	public MutableNode.Builder<T> addNode(StringClass...classes){
 		return addNode(new HashSet<>(Arrays.asList(classes)));
 	}
 
-	public MutableNode.Builder<T> addNode(Set<String> classes){
+	public MutableNode.Builder<T> addNode(Set<StringClass> classes){
 		final var rv = new MutableNode.Builder<T>(nodes.size(), classes);
 		nodes.add(rv);
 		return rv;

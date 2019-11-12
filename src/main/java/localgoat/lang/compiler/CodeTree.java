@@ -12,8 +12,6 @@ import java.util.function.Predicate;
 
 public class CodeTree{
 
-	public static final String CONTRACTION_DELIMITOR = " :: ";
-
 	enum BlockType{
 		CLOSED,
 		CONTINUATION,
@@ -62,27 +60,25 @@ public class CodeTree{
 			while(lines.size() != 0 && filter.test(lines.peek())){
 				children.add(new CodeTree(lines));
 			}
-			final TokenString<Token<Character>> headEnd = head.last(t -> !t.classes().contains(ContentTree.WHITE_SPACE));
-			final String OPENING_BRACKET = "{";
-			final String CLOSING_BRACKET = "}";
-			final String CONTINUING_BRACKET = "}&";
-			if(headEnd != null && headEnd.value().equals(OPENING_BRACKET)){
+			final Predicate<TokenString<Token<Character>>> stringPredicate = t -> !t.hasClass(sc -> sc.hasFlag(LineTokeniser.IGNORED));
+			final TokenString<Token<Character>> headEnd = head.last(stringPredicate);
+			if(headEnd != null && headEnd.value().equals(ContentTree.OPENING_BRACKET)){
 				final var line = lines.peek();
 				handled:{
 					unhandled:{
 						if(line == null || line.depth() != depth){
 							break unhandled;
 						}
-						final TokenString<Token<Character>> lineEnd = line.last(t -> !t.classes().contains(ContentTree.WHITE_SPACE));
+						final TokenString<Token<Character>> lineEnd = line.last(stringPredicate);
 						if(lineEnd == null){
 							break unhandled;
 						}
 						switch(lineEnd.value()){
-							case CONTINUING_BRACKET:{
+							case ContentTree.CONTINUING_BRACKET:{
 								this.type = BlockType.CONTINUED;
 								break;
 							}
-							case CLOSING_BRACKET:{
+							case ContentTree.CLOSING_BRACKET:{
 								this.type = BlockType.CLOSED;
 								break;
 							}

@@ -8,22 +8,27 @@ public class MutableNode<T extends Token> implements Node<T>{
 	public static class Builder<T extends Token>{
 		private final int index;
 		private final Map<T, Set<Builder<T>>> transitions;
-		private final Set<String> classes;
+		private final Set<StringClass> classes;
 		private Automaton<T> automaton;
 		private MutableNode<T> node;
 
 		public Builder(int index, boolean terminating){
-			this(index, terminating ? new String[]{""} : new String[0]);
+			this(index, terminating ? new StringClass[]{StringClass.NONE} : new StringClass[0]);
 		}
 
-		public Builder(int index, String...classes){
+		public Builder(int index, StringClass...classes){
 			this(index, new HashSet<>(Arrays.asList(classes)));
 		}
 
-		public Builder(int index, Set<String> classes){
+		public Builder(int index, Set<StringClass> classes){
 			this.index = index;
 			this.classes = new HashSet<>(classes);
 			this.transitions = new HashMap<>();
+			for(var v: classes){
+				if(!(v instanceof StringClass)){
+					throw new IllegalStateException();
+				}
+			}
 		}
 
 		public int index(){
@@ -62,17 +67,17 @@ public class MutableNode<T extends Token> implements Node<T>{
 	private final Automaton<T> automaton;
 	private final int index;
 	private final Map<T, Set<Node<T>>> transitions;
-	private final Set<String> classes;
+	private final Set<StringClass> classes;
 
 	MutableNode(Automaton<T> automaton, int index, boolean terminating){
-		this(automaton, index, terminating ? Collections.singleton("") : Collections.emptySet());
+		this(automaton, index, terminating ? Collections.singleton(StringClass.NONE) : Collections.emptySet());
 	}
 
-	MutableNode(Automaton<T> automaton, int index, String...classes){
+	MutableNode(Automaton<T> automaton, int index, StringClass...classes){
 		this(automaton, index, new HashSet<>(Arrays.asList(classes)));
 	}
 
-	MutableNode(Automaton<T> automaton, int index, Set<String> classes){
+	MutableNode(Automaton<T> automaton, int index, Set<StringClass> classes){
 		this.automaton = automaton;
 		this.index = index;
 		this.transitions = new HashMap<>();
@@ -110,7 +115,7 @@ public class MutableNode<T extends Token> implements Node<T>{
 	}
 
 	@Override
-	public Set<String> classes(){
+	public Set<StringClass> classes(){
 		return Collections.unmodifiableSet(classes);
 	}
 

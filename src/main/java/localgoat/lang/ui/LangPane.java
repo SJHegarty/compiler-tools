@@ -63,7 +63,7 @@ public class LangPane extends JTextPane{
 		final var missing = builder.apply(Color.ORANGE);
 		final var hanging = builder.apply(Color.RED);
 		//;
-		final ColourMap<String> colours = new ColourMap<>();
+		final ColourMap<String> colours = new ColourMap<>(Math.PI/3);
 
 		colours.add("line-feed");
 		colours.add(ContentTree.LINE_COMMENT);
@@ -76,12 +76,13 @@ public class LangPane extends JTextPane{
 		colours.add(ContentTree.CLASS_NAME);
 		colours.add(ContentTree.CONSTANT);
 		colours.add(ContentTree.DECIMAL);
+		colours.add(ContentTree.CONTEXT_IDENTIFIER);
 
 		final Map<String, AttributeSet> atts = colours.build().entrySet().stream()
 			.collect(
 				Collectors.toMap(
 					e -> e.getKey(),
-					e -> builder.apply(e.getValue().brighter().brighter())
+					e -> builder.apply(e.getValue().brighter())
 				)
 			);
 
@@ -93,18 +94,17 @@ public class LangPane extends JTextPane{
 						int index = 0;
 						for(var token: content.tokens()){
 							final int length = token.value().length();
-							final var classes = token.classes();
 
-							if(!classes.contains(ContentTree.WHITE_SPACE)){
+							if(!token.hasClass(c -> c.hasFlag(LineTokeniser.WHITE_SPACE))){
 								try{
 									var extract = doc.getText(index, length);
 
 									if(!token.value().equals(extract)){
 										throw new IllegalStateException(
 											String.format(
-												"Extracted Token \"%s\" of type %s does not match text \"%s\" at text index %s",
-												token,
-												classes,
+												"Extracted Token \"%s\" of name %s does not match text \"%s\" at text index %s",
+												token.value(),
+												token.classes(),
 												extract,
 												index
 											)
@@ -115,6 +115,10 @@ public class LangPane extends JTextPane{
 									throw new IllegalStateException(e);
 								}
 								final AttributeSet attributes;
+								final var classes = token.classes().stream()
+									.map(c -> c.name())
+									.collect(Collectors.toSet());
+
 								switch(classes.size()){
 									case 0:{
 										attributes = hanging;
@@ -124,7 +128,7 @@ public class LangPane extends JTextPane{
 										attributes = Optional.ofNullable(atts.get(classes.iterator().next()))
 											.orElseGet(
 												() -> {
-													System.err.println("Missing type handler for token - " + token);
+													System.err.println("Missing name handler for token - " + token);
 													return missing;
 												}
 											);

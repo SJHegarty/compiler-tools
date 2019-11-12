@@ -7,6 +7,11 @@ import java.util.stream.IntStream;
 
 public class ColourMap<T>{
 	private final List<T> values = new ArrayList<>();
+	private final double offset;
+
+	public ColourMap(double offset){
+		this.offset = offset;
+	}
 
 	public void add(T value){
 		values.add(value);
@@ -16,9 +21,9 @@ public class ColourMap<T>{
 		final Map<T, Color> rv = new HashMap<>();
 
 		final double twopi = 2 * Math.PI;
-		final double offsetr = 0d;
-		final double offsetg = twopi/3;
-		final double offsetb = -offsetg;
+		final double offsetr = offset;
+		final double offsetg = offset + twopi/3;
+		final double offsetb = offset - twopi/3;
 
 		final int valueCount = values.size();
 		for(int i = 0; i < valueCount; i++){

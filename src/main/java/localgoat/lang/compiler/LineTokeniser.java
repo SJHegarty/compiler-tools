@@ -1,6 +1,7 @@
 package localgoat.lang.compiler;
 
 import localgoat.lang.compiler.automata.DFA;
+import localgoat.lang.compiler.automata.StringClass;
 import localgoat.lang.compiler.automata.Token;
 import localgoat.lang.compiler.automata.TokenString;
 import localgoat.lang.compiler.automata.expression.Converter;
@@ -13,7 +14,22 @@ import java.util.stream.Collectors;
 
 public class LineTokeniser{
 
-	public static final TokenString<Token<Character>> LINE_FEED = new TokenString<>(Collections.singleton("line-feed"), Collections.singletonList(Token.LINE_FEED));
+
+	public static final String WHITE_SPACE = "white-space";
+	public static final String IGNORED = "ignored";
+
+	public static final TokenString<Token<Character>> LINE_FEED = new TokenString<>(
+		Collections.singleton(
+			new StringClass(
+				"line-feed",
+				Collections.singleton(WHITE_SPACE)
+			)
+		),
+		Collections.singletonList(
+			Token.LINE_FEED
+		)
+	);
+
 	public static final int TAB_WIDTH = 4;
 
 	private final DFA<Token<Character>> dfa;
@@ -87,7 +103,7 @@ public class LineTokeniser{
 					break handler;
 				}
 				final var token = tokens.get(0);
-				if(!token.classes().contains("white-space")){
+				if(!token.hasClass(s -> s.hasFlag(IGNORED))){
 					break handler;
 				}
 				return token.value();

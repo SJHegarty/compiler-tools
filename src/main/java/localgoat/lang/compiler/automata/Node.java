@@ -13,7 +13,7 @@ public interface Node<T extends Token>{
 	Map<T, Set<Node<T>>> transitions();
 	Set<Node<T>> neighbours();
 	Set<T> tokens();
-	Set<String> classes();
+	Set<StringClass> classes();
 
 	default boolean isTerminating(){
 		return !classes().isEmpty();
