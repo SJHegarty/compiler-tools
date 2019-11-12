@@ -279,18 +279,21 @@ public class DFA<T extends TokenA> implements Automaton<T>{
 	}
 
 	public TokenString read(final ReadMode mode, final int index, final T...tokens){
-		class Terminating{
+		if(index == tokens.length){
+			throw new IllegalArgumentException();
+		}
+		class StateIndex{
 			final int index;
 			final Node<T> state;
 
-			public Terminating(int index, Node<T> state){
+			public StateIndex(int index, Node<T> state){
 				this.index = index;
 				this.state = state;
 			}
 		}
 
 		var state = node(0);
-		var t = state.isTerminating() ? new Terminating(index, state) : null;
+		var t = state.isTerminating() ? new StateIndex(index, state) : null;
 		int depth = index;
 		while(depth < tokens.length && state.isTerminable()){
 			state = state.transition(tokens[depth++]);
@@ -298,7 +301,7 @@ public class DFA<T extends TokenA> implements Automaton<T>{
 				break;
 			}
 			if(state.isTerminating()){
-				t = new Terminating(depth, state);
+				t = new StateIndex(depth, state);
 				if(mode == ReadMode.EAGER){
 					break;
 				}
@@ -311,7 +314,16 @@ public class DFA<T extends TokenA> implements Automaton<T>{
 			}
 			return new TokenString(t.state.classes(), result);
 		}
-		return null;
+		if(depth == index){
+			return new TokenString(Collections.emptySet(), Collections.singletonList(tokens[index]));
+		}
+		else{
+			final var list = new ArrayList<T>();
+			for(int i = index; i < depth; i++){
+				list.add(tokens[i]);
+			}
+			return new TokenString(Collections.emptySet(), list);
+		}
 	}
 
 	public ESupplier<TokenString> tokenise(T...input){

@@ -22,21 +22,25 @@ public class Converter{
 			if(classes[sub] != null){
 				throw new IllegalStateException(String.format("Unavailable class substitution character: '%s'.", sub));
 			}
-			final char[] buffer = new char[256];
-			int size = 0;
-			for(int i = 0; i < 256; i++){
-				final char c = (char)i;
-				if(members.test(c)){
-					buffer[size++] = c;
-				}
-			}
-			this.classes[sub] = new char[size];
-			System.arraycopy(buffer, 0, classes[sub], 0, size);
-			alphabet.addAll(Arrays.asList(TokenA.from(classes[sub])));
+			addClassP(sub, members);
 		}
 		else{
 			throw new IllegalArgumentException(String.format("Unsupported class substitution character: '%s'.", sub));
 		}
+	}
+
+	private void addClassP(char sub, CharPredicate members){
+		final char[] buffer = new char[256];
+		int size = 0;
+		for(int i = 0; i < 256; i++){
+			final char c = (char)i;
+			if(members.test(c)){
+				buffer[size++] = c;
+			}
+		}
+		this.classes[sub] = new char[size];
+		System.arraycopy(buffer, 0, classes[sub], 0, size);
+		alphabet.addAll(Arrays.asList(TokenA.from(classes[sub])));
 	}
 
 	private Map<Class<? extends Expression>, Function<Expression, Automaton<TokenA<Character>>>> handlers;
@@ -53,6 +57,7 @@ public class Converter{
 
 	public Converter(){
 		this.handlers = new HashMap<>();
+		addClassP('.', c -> true);
 		handlers.put(
 			LiteralExpression.class,
 			expression -> {

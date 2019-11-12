@@ -39,7 +39,7 @@ public interface Expression{
 			case '@': case '+': case '&': case '*': case '!': case '?': case '~':{
 				return new FunctionExpression(s, index);
 			}
-			case '^':{
+			case '.': case '^':{
 				return new Symbol(c);
 			}
 			case '\'':{

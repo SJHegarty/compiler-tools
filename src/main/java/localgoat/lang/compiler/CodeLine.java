@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 public class CodeLine{
 
 	static final DFA<TokenA<Character>> DFA;
+	static final String LINE_COMMENT = "line-comment";
 	static final String WHITE_SPACE = "white-space";
 	static final String CLASS_NAME = "class-name";
 	static final String CONSTANT = "constant";
@@ -22,6 +23,7 @@ public class CodeLine{
 	static final String STRING = "string";
 	static final String DECIMAL = "decimal";
 	static final String HEXADECIMAL = "hexadecimal";
+	static final String KEY_WORD = "key-word";
 
 	static{
 		final var converter = new Converter();
@@ -76,6 +78,8 @@ public class CodeLine{
 		expressions.put(STRING, "q*+(!q, eq)q");
 		expressions.put(DECIMAL, "*<1+>d");
 		expressions.put(HEXADECIMAL, "'0x'*<1+>x");
+		expressions.put(LINE_COMMENT, "'//'*.");
+		expressions.put(KEY_WORD, "'$'*<1+>l*(h*<1+>l)");
 	//	expressions.put()
 
 
@@ -138,6 +142,14 @@ public class CodeLine{
 									}
 									case SYMBOL:{
 										type = TokenType.SYMBOL;
+										break outer;
+									}
+									case LINE_COMMENT:{
+										type = TokenType.LINE_COMMENT;
+										break outer;
+									}
+									case KEY_WORD:{
+										type = TokenType.KEYWORD;
 										break outer;
 									}
 									default:{
