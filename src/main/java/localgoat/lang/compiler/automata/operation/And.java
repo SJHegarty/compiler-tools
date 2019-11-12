@@ -3,14 +3,14 @@
 //import localgoat.lang.compiler.automata.Automaton;
 //import localgoat.lang.compiler.automata.DFA;
 //import localgoat.lang.compiler.automata.NFA;
-//import localgoat.lang.compiler.automata.TokenA;
+//import localgoat.lang.compiler.automata.Token;
 //import localgoat.util.functional.operation.PolyOperation;
 //
 //import java.util.List;
 //import java.util.function.Function;
 //import java.util.stream.Collectors;
 //
-//public class And<T extends TokenA> implements PolyOperation<Automaton<T>>{
+//public class And<T extends Token> implements PolyOperation<Automaton<T>>{
 //
 //	private final Not<T> not = new Not<>();
 //	private final Or<T> or = new Or<>();

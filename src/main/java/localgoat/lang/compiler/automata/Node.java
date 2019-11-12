@@ -5,7 +5,7 @@ import localgoat.util.ESupplier;
 import java.util.Map;
 import java.util.Set;
 
-public interface Node<T extends TokenA>{
+public interface Node<T extends Token>{
 	Automaton<T> automaton();
 	int index();
 

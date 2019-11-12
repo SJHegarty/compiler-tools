@@ -1,21 +1,23 @@
 package localgoat.lang.compiler.automata;
 
-public interface TokenA<T>{
+public interface Token<T>{
 
-	static TokenA<Character>[] from(String s){
+	Token<Character> LINE_FEED = of('\n');
+
+	static Token<Character>[] from(String s){
 		return from(s.toCharArray());
 	}
 
-	static TokenA<Character>[] from(char...chars){
-		final TokenA<Character> rv[] = new TokenA[chars.length];
+	static Token<Character>[] from(char...chars){
+		final Token<Character> rv[] = new Token[chars.length];
 		for(int i = 0; i < rv.length; i++){
 			rv[i] = of(chars[i]);
 		}
 		return rv;
 	}
 
-	static TokenA<Character> of(char c){
-		return new TokenA<Character>(){
+	static Token<Character> of(char c){
+		return new Token<Character>(){
 			@Override
 			public Character value(){
 				return c;
@@ -24,7 +26,7 @@ public interface TokenA<T>{
 			@Override
 			public boolean equals(Object o){
 				if(o.getClass() == getClass()){
-					final var t = (TokenA<Character>)o;
+					final var t = (Token<Character>)o;
 					return c == t.value();
 				}
 				return false;

@@ -2,7 +2,7 @@ package localgoat.lang.compiler.automata;
 
 import java.util.*;
 
-public class NFA<T extends TokenA> implements Automaton<T>{
+public class NFA<T extends Token> implements Automaton<T>{
 
 	private final MutableNode<T>[] nodes;
 	private final Set<T> tokens;

@@ -1,5 +1,7 @@
 package localgoat.lang.compiler;
 
+import localgoat.lang.compiler.automata.Token;
+import localgoat.lang.compiler.automata.TokenString;
 import localgoat.util.ESupplier;
 
 import java.util.ArrayList;
@@ -55,72 +57,27 @@ public class CodeTree{
 		this.children = new ArrayList<>();
 		final int depth = head.depth();
 
-		//final int splitIndex;
-		/*block:{
-			final var tokens = head.contentTokens();
-			for(int i = 0; i < tokens.size(); i++){
-				final var t = tokens.get(i);
-				if(t.type == TokenType.SYMBOL && t.value.equals(SymbolHandler.LINE_CONTINUATION)){
-					splitIndex = i;
-					break block;
-				}
-			}
-			splitIndex = -1;
-		}*/
-		/*if(splitIndex != -1){
-			final var tokens = head.contentTokens();
-			final int index = head.lineindex;
-			{
-				final var deque = new ArrayDeque<TokenA>();
-				IntStream.range(0, splitIndex - 1).forEach(
-					i -> deque.add(tokens.get(i))
-				);
-				while(!deque.isEmpty() && deque.peekLast().type.ignored){
-					deque.pollLast();
-				}
-				var builder = new StringBuilder().append(head.prefix());
-				deque.forEach(token -> builder.append(token));
-				this.head = new CodeLine(builder.toString(), index);
-			}
-			{
-				final var queue = new ArrayDeque<TokenA>();
-				IntStream.range(splitIndex + 1, tokens.size()).forEach(
-					i -> queue.add(tokens.get(i))
-				);
-				while(!queue.isEmpty() && queue.peekFirst().type.ignored){
-					queue.pollFirst();
-				}
-				var builder = new StringBuilder().append(head.prefix());
-				queue.forEach(token -> builder.append(token));
-				lines.push(new CodeLine(builder.toString(), index));
-			}
-			children.add(new CodeTree(lines));
-			//TODO: if children.get(0).type == CONTINUED add validation error - unsupported confusing syntax
-			this.tail = null;
-			this.type = BlockType.UNCLOSED;
-		}*/
-		//else{
 			this.head = head;
 			final Predicate<CodeLine> filter = line -> line.depth() > depth || line.reconstruct().length() == 0;
 			while(lines.size() != 0 && filter.test(lines.peek())){
 				children.add(new CodeTree(lines));
 			}
-			final Token headEnd = head.last(t -> !t.ignored());
+			final TokenString<Token<Character>> headEnd = head.last(t -> !t.classes().contains(CodeLine.WHITE_SPACE));
 			final String OPENING_BRACKET = "{";
 			final String CLOSING_BRACKET = "}";
 			final String CONTINUING_BRACKET = "}&";
-			if(headEnd != null && headEnd.value.equals(OPENING_BRACKET)){
+			if(headEnd != null && headEnd.value().equals(OPENING_BRACKET)){
 				final var line = lines.peek();
 				handled:{
 					unhandled:{
 						if(line == null || line.depth() != depth){
 							break unhandled;
 						}
-						final Token lineEnd = line.last(t -> !t.ignored());
+						final TokenString<Token<Character>> lineEnd = line.last(t -> !t.classes().contains(CodeLine.WHITE_SPACE));
 						if(lineEnd == null){
 							break unhandled;
 						}
-						switch(lineEnd.value){
+						switch(lineEnd.value()){
 							case CONTINUING_BRACKET:{
 								this.type = BlockType.CONTINUED;
 								break;
@@ -166,15 +123,15 @@ public class CodeTree{
 		//}
 	}
 
-	static ESupplier<Token> tokenise(Iterable<CodeTree> trees){
+	static ESupplier<TokenString<Token<Character>>> tokenise(Iterable<CodeTree> trees){
 		return ESupplier.from(trees)
 			.map(child -> child.tokens())
-			.interleave(() -> ESupplier.of(Token.LINE_FEED))
+			.interleave(() -> ESupplier.of(CodeLine.LINE_FEED))
 			.flatMap(supplier -> supplier);
 	}
 
-	public ESupplier<Token> tokens(){
-		var sources = new ArrayList<ESupplier<Token>>();
+	public ESupplier<TokenString<Token<Character>>> tokens(){
+		var sources = new ArrayList<ESupplier<TokenString<Token<Character>>>>();
 		if(head != null){
 			sources.add(ESupplier.from(head.tokens));
 		}
@@ -185,7 +142,7 @@ public class CodeTree{
 			sources.add(ESupplier.from(tail.tokens));
 		}
 		return ESupplier.from(sources)
-			.interleave(() -> ESupplier.of(Token.LINE_FEED))
+			.interleave(() -> ESupplier.of(CodeLine.LINE_FEED))
 			.flatMap(supplier -> supplier);
 	};
 
@@ -196,7 +153,7 @@ public class CodeTree{
 	public String reconstruct(){
 		final var builder = new StringBuilder();
 		for(var t: tokens()){
-			builder.append(t);
+			builder.append(t.value());
 		}
 		return builder.toString();
 	}

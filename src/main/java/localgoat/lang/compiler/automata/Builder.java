@@ -3,7 +3,7 @@ package localgoat.lang.compiler.automata;
 import java.util.*;
 import java.util.function.Predicate;
 
-public class Builder<T extends TokenA>{
+public class Builder<T extends Token>{
 	final Set<T> tokens;
 	final List<MutableNode.Builder<T>> nodes = new ArrayList<>();
 

@@ -1,11 +1,10 @@
 package localgoat.lang.ui;
 
+import localgoat.lang.compiler.CodeLine;
 import localgoat.lang.compiler.ContentTree;
-import localgoat.lang.compiler.TokenType;
 import localgoat.util.ui.document.InsertRemoveListener;
 
 import javax.swing.*;
-import javax.swing.event.DocumentEvent;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.SimpleAttributeSet;
@@ -17,7 +16,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.Optional;
 import java.util.function.IntFunction;
 import java.util.stream.IntStream;
 
@@ -59,28 +58,32 @@ public class LangPane extends JTextPane{
 		);
 
 		final var missing = builder.apply(Color.ORANGE.getRGB());
-		final Map<TokenType, AttributeSet> atts = new HashMap<>();
+		final Map<String, AttributeSet> atts = new HashMap<>();
 		{
 			var a = builder.apply(0xffc0c0c0);
-			atts.put(TokenType.LINE_COMMENT, a);
-			atts.put(TokenType.HANDLED_COMMENT, a);
-			atts.put(TokenType.STRUCTURED_COMMENT, a);
+			atts.put(CodeLine.LINE_COMMENT, a);
+			//atts.put(TokenType.HANDLED_COMMENT, a);
+			//atts.put(TokenType.STRUCTURED_COMMENT, a);
 		}
+		final String HANGING = "hanging";
+		atts.put(HANGING, builder.apply(0xffff0000));
+		final String AMBIGUOUS = "ambiguous";
+		atts.put(AMBIGUOUS, builder.apply(0xff00ffff));
 		atts.put(
-			TokenType.STRING,
+			CodeLine.STRING,
 			builder.apply(0xff80ff80)
 		);
 		{
 			var a =	builder.apply(0xff80c0ff);
-			atts.put(TokenType.KEYWORD, a);
-			atts.put(TokenType.SYMBOL, a);
+			atts.put(CodeLine.KEY_WORD, a);
+			atts.put(CodeLine.SYMBOL, a);
 		}
 		atts.put(
-			TokenType.TYPE,
+			CodeLine.CLASS_NAME,
 			builder.apply(0xffffffff)
 		);
 		atts.put(
-			TokenType.UNHANDLED,
+			null,
 			builder.apply(0xffff0000)
 		);
 		doc.addDocumentListener(
@@ -90,18 +93,19 @@ public class LangPane extends JTextPane{
 					() -> {
 						int index = 0;
 						for(var token: content.tokens()){
-							final int length = token.value.length();
-							final var type = token.type;
+							final int length = token.value().length();
+							final var classes = token.classes();
 
-							if(type != TokenType.WHITESPACE){
+							if(!classes.contains(CodeLine.WHITE_SPACE)){
 								try{
 									var extract = doc.getText(index, length);
-									if(!token.value.equals(extract)){
+
+									if(!token.value().equals(extract)){
 										throw new IllegalStateException(
 											String.format(
-												"Extracted TokenA \"%s\" of type %s does not match text \"%s\" at text index %s",
+												"Extracted Token \"%s\" of type %s does not match text \"%s\" at text index %s",
 												token,
-												type,
+												classes,
 												extract,
 												index
 											)
@@ -111,10 +115,25 @@ public class LangPane extends JTextPane{
 								catch(BadLocationException e){
 									throw new IllegalStateException(e);
 								}
-								var attributes = atts.get(type);
-								if(attributes == null){
-									System.err.println("Missing type handler: " + type + " " + token);
-									attributes = missing;
+								final AttributeSet attributes;
+								switch(classes.size()){
+									case 0:{
+										attributes = atts.get(HANGING);
+										break;
+									}
+									case 1:{
+										attributes = Optional.ofNullable(atts.get(classes.iterator().next()))
+											.orElseGet(
+												() -> {
+													System.err.println("Missing type handler for token - " + token);
+													return missing;
+												}
+											);
+										break;
+									}
+									default:{
+										attributes = atts.get(AMBIGUOUS);
+									}
 								}
 								doc.setCharacterAttributes(index, length, attributes, true);
 							}

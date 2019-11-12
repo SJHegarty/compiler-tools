@@ -6,7 +6,7 @@ import localgoat.util.functional.operation.AssociativeOperation;
 
 import java.util.stream.IntStream;
 
-public class Concatenate<T extends TokenA> implements AssociativeOperation<Automaton<T>>{
+public class Concatenate<T extends Token> implements AssociativeOperation<Automaton<T>>{
 	@Override
 	public NFA<T> apply(Automaton<T> a0, Automaton<T> a1){
 		final var builder = new Builder<T>(

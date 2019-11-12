@@ -1,5 +1,7 @@
 package localgoat.lang.compiler;
 
+import localgoat.lang.compiler.automata.Token;
+import localgoat.lang.compiler.automata.TokenString;
 import localgoat.util.ESupplier;
 
 import java.util.ArrayDeque;
@@ -37,14 +39,14 @@ public class ContentTree{
 		return trees;
 	}
 
-	public ESupplier<Token> tokens(){
+	public ESupplier<TokenString<Token<Character>>> tokens(){
 		return CodeTree.tokenise(trees);
 	}
 
 	public String reconstruct(){
 		final var builder = new StringBuilder();
 		for(var t: tokens()){
-			builder.append(t);
+			builder.append(t.value());
 		}
 		return builder.toString();
 	}

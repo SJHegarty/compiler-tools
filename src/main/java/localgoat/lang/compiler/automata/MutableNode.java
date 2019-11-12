@@ -3,9 +3,9 @@ package localgoat.lang.compiler.automata;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class MutableNode<T extends TokenA> implements Node<T>{
+public class MutableNode<T extends Token> implements Node<T>{
 
-	public static class Builder<T extends TokenA>{
+	public static class Builder<T extends Token>{
 		private final int index;
 		private final Map<T, Set<Builder<T>>> transitions;
 		private final Set<String> classes;
@@ -94,7 +94,7 @@ public class MutableNode<T extends TokenA> implements Node<T>{
 		}
 		if(token != null && !automaton.tokens().contains(token)){
 			throw new IllegalArgumentException(
-				String.format("TokenA %s is not in the set of legal transition tokens", token)
+				String.format("Token %s is not in the set of legal transition tokens", token)
 			);
 		}
 		Set<Node<T>> set = transitions.get(token);

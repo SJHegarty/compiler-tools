@@ -2,10 +2,10 @@ package localgoat.lang.compiler.automata.expression;
 
 import localgoat.lang.compiler.automata.DFA;
 import localgoat.lang.compiler.automata.ReadMode;
-import localgoat.lang.compiler.automata.TokenA;
+import localgoat.lang.compiler.automata.Token;
 
 public class LiteralExpression implements Expression{
-	static final DFA<TokenA<Character>> DFA;
+	static final DFA<Token<Character>> DFA;
 
 	static{
 		final var converter = new Converter();
@@ -20,7 +20,7 @@ public class LiteralExpression implements Expression{
 	private final String value;
 
 	public LiteralExpression(String s, int index){
-		final var tokens = TokenA.from(s);
+		final var tokens = Token.from(s);
 		final var result = DFA.read(ReadMode.GREEDY, index, tokens);
 		if(result == null){
 			throw new IllegalArgumentException(s.substring(index));

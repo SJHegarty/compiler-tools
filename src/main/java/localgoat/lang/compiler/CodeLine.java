@@ -1,11 +1,11 @@
 package localgoat.lang.compiler;
 
 import localgoat.lang.compiler.automata.DFA;
-import localgoat.lang.compiler.automata.TokenA;
+import localgoat.lang.compiler.automata.Token;
+import localgoat.lang.compiler.automata.TokenString;
 import localgoat.lang.compiler.automata.expression.Converter;
 import localgoat.util.ESupplier;
 import localgoat.util.functional.CharPredicate;
-import localgoat.util.io.CharSource;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -13,17 +13,18 @@ import java.util.stream.Collectors;
 
 public class CodeLine{
 
-	static final DFA<TokenA<Character>> DFA;
-	static final String LINE_COMMENT = "line-comment";
-	static final String WHITE_SPACE = "white-space";
-	static final String CLASS_NAME = "class-name";
-	static final String CONSTANT = "constant";
-	static final String IDENTIFIER = "identifier";
-	static final String SYMBOL = "symbol";
-	static final String STRING = "string";
-	static final String DECIMAL = "decimal";
-	static final String HEXADECIMAL = "hexadecimal";
-	static final String KEY_WORD = "key-word";
+	static final DFA<Token<Character>> DFA;
+	public static final TokenString<Token<Character>> LINE_FEED = new TokenString<>(Collections.singleton("line-feed"), Collections.singletonList(Token.LINE_FEED));
+	public static final String LINE_COMMENT = "line-comment";
+	public static final String WHITE_SPACE = "white-space";
+	public static final String CLASS_NAME = "class-name";
+	public static final String CONSTANT = "constant";
+	public static final String IDENTIFIER = "identifier";
+	public static final String SYMBOL = "symbol";
+	public static final String STRING = "string";
+	public static final String DECIMAL = "decimal";
+	public static final String HEXADECIMAL = "hexadecimal";
+	public static final String KEY_WORD = "key-word";
 
 	static{
 		final var converter = new Converter();
@@ -51,10 +52,10 @@ public class CodeLine{
 			't',
 			CharPredicate.or(
 				c -> (c == '!'),
-				new CharRange('#', '/'),
+				new CharRange('#', '\''),
+				new CharRange('*', '/'),
 				new CharRange(':', '@'),
-				new CharRange('[', '`'),
-				new CharRange('{', '~')
+				c -> "\\^_`|~".indexOf(c) != -1
 			)
 		);
 		converter.addClass('d', new CharRange('0', '9'));
@@ -73,7 +74,7 @@ public class CodeLine{
 		expressions.put(WHITE_SPACE, "*<1+>w");
 		expressions.put(CLASS_NAME, "*<1+>(u*l)");
 		expressions.put(CONSTANT, "*<1+>u*(s*<1+>u)");
-		expressions.put(IDENTIFIER, "*<1+>l*(h*<1+>l)");
+		expressions.put(IDENTIFIER, "*<1+>l*(u*<1+>l)");
 		expressions.put(SYMBOL, "*<1+>t");
 		expressions.put(STRING, "q*+(!q, eq)q");
 		expressions.put(DECIMAL, "*<1+>d");
@@ -103,87 +104,29 @@ public class CodeLine{
 	}
 	public static final int TAB_WIDTH = 4;
 	public final int lineindex;
-	public final List<Token> tokens;
+	public final List<TokenString<Token<Character>>> tokens;
 
 	CodeLine(String line, int index){
 		this.lineindex = index;
-		final var tokens = new ArrayList<Token>();
-		this.tokens = Collections.unmodifiableList(tokens);
+		final var tokens = new ArrayList<Token<Character>>();
+		//this.tokens = Collections.unmodifiableList(tokens);
 
-		DFA.tokenise(TokenA.from(line))
-			.map(
-				tokena -> {
-					final TokenType type;
-					outer:{
-						var classes = tokena.classes();
-						switch(classes.size()){
-							case 0:{
-								type = TokenType.UNHANDLED;
-								break;
-							}
-							case 1:{
-								final String className = classes.iterator().next();
-								switch(className){
-									case WHITE_SPACE:{
-										type = TokenType.WHITESPACE;
-										break outer;
-									}
-									case CLASS_NAME:{
-										type = TokenType.TYPE;
-										break outer;
-									}
-									case CONSTANT:{
-										type = TokenType.CONST;
-										break outer;
-									}
-									case IDENTIFIER:{
-										type = TokenType.IDENTIFIER;
-										break outer;
-									}
-									case SYMBOL:{
-										type = TokenType.SYMBOL;
-										break outer;
-									}
-									case LINE_COMMENT:{
-										type = TokenType.LINE_COMMENT;
-										break outer;
-									}
-									case KEY_WORD:{
-										type = TokenType.KEYWORD;
-										break outer;
-									}
-									default:{
-										System.err.println("Unhandled unambiguous Token (" + tokena + ")");
-										type = TokenType.UNHANDLED;
-										break outer;
-									}
-								}
-							}
-							default:{
-								type = TokenType.AMBIGUOUS;
-								break;
-							}
-						}
-					}
-					return new Token(tokena.value(), type);
-				}
-			)
-			.forEach(token -> tokens.add(token));
+		this.tokens = Arrays.asList(DFA.tokenise(Token.from(line)).toStream().toArray(TokenString[]::new));
 
 	}
 
-	public List<Token> contentTokens(){
+	public List<TokenString<Token<Character>>> contentTokens(){
 		var deque = new ArrayDeque<>(tokens);
 		deque.pollFirst();
-		for(;!deque.isEmpty() && deque.peekFirst().type.ignored; deque.pollFirst());
-		for(;!deque.isEmpty() && deque.peekLast().type.ignored; deque.pollLast());
+		for(;!deque.isEmpty() && deque.peekFirst().classes().contains(WHITE_SPACE); deque.pollFirst());
+		for(;!deque.isEmpty() && deque.peekLast().classes().contains(WHITE_SPACE); deque.pollLast());
 		return Collections.unmodifiableList(
 			new ArrayList<>(deque)
 		);
 	}
 
-	public Token last(Predicate<Token> filter){
-		for(int i = tokens.size() - 1; i > 0; i--){
+	public TokenString<Token<Character>> last(Predicate<TokenString<Token<Character>>> filter){
+		for(int i = tokens.size() - 1; i >= 0; i--){
 			var token = tokens.get(i);
 			if(filter.test(token)){
 				return token;
@@ -192,7 +135,7 @@ public class CodeLine{
 		return null;
 	}
 
-	public Token first(Predicate<Token> filter){
+	public TokenString<Token<Character>> first(Predicate<TokenString<Token<Character>>> filter){
 		for(var token: tokens){
 			if(filter.test(token)){
 				return token;
@@ -201,7 +144,7 @@ public class CodeLine{
 		return null;
 	}
 
-	public List<Token> all(Predicate<Token> filter){
+	public List<TokenString<Token<Character>>> all(Predicate<TokenString<Token<Character>>> filter){
 		return Collections.unmodifiableList(
 			tokens.stream()
 				.filter(filter)
@@ -211,7 +154,7 @@ public class CodeLine{
 
 	public String content(){
 		var builder = new StringBuilder();
-		for(Token t: contentTokens()){
+		for(TokenString<Token<Character>> t: contentTokens()){
 			builder.append(t);
 		}
 		return builder.toString();
@@ -223,10 +166,10 @@ public class CodeLine{
 				break handler;
 			}
 			final var token = tokens.get(0);
-			if(token.type != TokenType.WHITESPACE){
+			if(!token.classes().contains(WHITE_SPACE)){
 				break handler;
 			}
-			return token.value;
+			return token.value();
 		}
 		return "";
 	}
@@ -234,7 +177,7 @@ public class CodeLine{
 	public String reconstruct(){
 		final var builder = new StringBuilder();
 		for(var token: tokens){
-			builder.append(token);
+			builder.append(token.value());
 		}
 		return builder.toString();
 	}

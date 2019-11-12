@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.function.IntFunction;
 import java.util.stream.IntStream;
 
-public class Kleene<T extends TokenA> implements UnaryOperation<Automaton<T>>{
+public class Kleene<T extends Token> implements UnaryOperation<Automaton<T>>{
 
 	public enum Op{
 		STAR,

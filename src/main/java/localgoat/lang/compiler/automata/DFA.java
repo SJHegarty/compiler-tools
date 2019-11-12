@@ -10,7 +10,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class DFA<T extends TokenA> implements Automaton<T>{
+public class DFA<T extends Token> implements Automaton<T>{
 	public static void main(String...args){
 
 		final var converter = new Converter();
@@ -47,10 +47,10 @@ public class DFA<T extends TokenA> implements Automaton<T>{
 		final var expr = Expression.parse(builder.toString());
 		final var dfa = converter.buildDFA(expr);
 
-		System.err.println(dfa.read(ReadMode.GREEDY, TokenA.from("ClassName")));
-		System.err.println(dfa.read(ReadMode.GREEDY, TokenA.from("HTTP_")));
-		System.err.println(dfa.read(ReadMode.GREEDY, TokenA.from("ENUM_CONSTANTsome-other-shit")));
-		System.err.println(dfa.read(ReadMode.GREEDY, TokenA.from("instance-identifier")));
+		System.err.println(dfa.read(ReadMode.GREEDY, Token.from("ClassName")));
+		System.err.println(dfa.read(ReadMode.GREEDY, Token.from("HTTP_")));
+		System.err.println(dfa.read(ReadMode.GREEDY, Token.from("ENUM_CONSTANTsome-other-shit")));
+		System.err.println(dfa.read(ReadMode.GREEDY, Token.from("instance-identifier")));
 
 	}
 
@@ -244,36 +244,6 @@ public class DFA<T extends TokenA> implements Automaton<T>{
 		return state.isTerminating();
 	}
 
-	public class TokenString{
-		private final List<T> tokens;
-		private final Set<String> classes;
-
-		private TokenString(Set<String> classes, List<T> tokens){
-			this.tokens = Collections.unmodifiableList(tokens);
-			this.classes = Collections.unmodifiableSet(classes);
-		}
-
-		public String toString(){
-			return classes + ": " + value();
-		}
-
-		public String value(){
-			final var builder = new StringBuilder();
-			for(var t: tokens){
-				builder.append(t);
-			}
-			return builder.toString();
-		}
-
-		public Set<String> classes(){
-			return classes;
-		}
-
-		public List<T> tokens(){
-			return tokens;
-		}
-	}
-
 	public TokenString read(final ReadMode mode, T...tokens){
 		return read(mode, 0, tokens);
 	}
@@ -346,7 +316,7 @@ public class DFA<T extends TokenA> implements Automaton<T>{
 						index = input.length;
 					}
 					else{
-						index += result.tokens.size();
+						index += result.tokens().size();
 					}
 					return result;
 				}
