@@ -36,7 +36,7 @@ public interface Expression{
 	static Expression parseSegment(String s, int index){
 		final char c = s.charAt(index);
 		switch(c){
-			case '@': case '+': case '&': case '*': case '!': case '?':{
+			case '@': case '+': case '&': case '*': case '!': case '?': case '~':{
 				return new FunctionExpression(s, index);
 			}
 			case '^':{

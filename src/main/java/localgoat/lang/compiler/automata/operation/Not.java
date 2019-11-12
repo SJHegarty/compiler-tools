@@ -4,16 +4,24 @@ import localgoat.lang.compiler.automata.Builder;
 import localgoat.lang.compiler.automata.DFA;
 import localgoat.lang.compiler.automata.MutableNode;
 import localgoat.lang.compiler.automata.TokenA;
+import localgoat.util.CollectionUtils;
 import localgoat.util.functional.operation.UnaryOperation;
 
 import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.IntStream;
 
 public class Not<T extends TokenA> implements UnaryOperation<DFA<T>>{
+	private final Set<T> baseAlphabet;
+
+	public Not(Set<T> alphabet){
+		this.baseAlphabet = alphabet;
+	}
+
 	@Override
 	public DFA<T> apply(DFA<T> source){
-		final var complete = source.complete();
-		final var tokens = new HashSet<>(source.tokens());
+		final var complete = source.isComplete(baseAlphabet) ? source : new DFA<T>(baseAlphabet, source);
+		final var tokens = (baseAlphabet == null) ? new HashSet<>(source.tokens()) : CollectionUtils.union(source.tokens(), baseAlphabet);
 
 		final var builder = new Builder<T>(tokens);
 
@@ -38,6 +46,7 @@ public class Not<T extends TokenA> implements UnaryOperation<DFA<T>>{
 				}
 			);
 		}
+
 
 		return builder.buildDFA();
 	}

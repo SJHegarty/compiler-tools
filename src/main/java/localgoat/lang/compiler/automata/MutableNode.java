@@ -13,7 +13,7 @@ public class MutableNode<T extends TokenA> implements Node<T>{
 		private MutableNode<T> node;
 
 		public Builder(int index, boolean terminating){
-			this(index, terminating ? new String[]{null} : new String[0]);
+			this(index, terminating ? new String[]{""} : new String[0]);
 		}
 
 		public Builder(int index, String...classes){
@@ -65,7 +65,7 @@ public class MutableNode<T extends TokenA> implements Node<T>{
 	private final Set<String> classes;
 
 	MutableNode(Automaton<T> automaton, int index, boolean terminating){
-		this(automaton, index, terminating ? Collections.singleton(null) : Collections.emptySet());
+		this(automaton, index, terminating ? Collections.singleton("") : Collections.emptySet());
 	}
 
 	MutableNode(Automaton<T> automaton, int index, String...classes){

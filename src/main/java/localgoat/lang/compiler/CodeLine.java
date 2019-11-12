@@ -4,6 +4,7 @@ import localgoat.lang.compiler.automata.DFA;
 import localgoat.lang.compiler.automata.TokenA;
 import localgoat.lang.compiler.automata.expression.Converter;
 import localgoat.util.ESupplier;
+import localgoat.util.functional.CharPredicate;
 import localgoat.util.io.CharSource;
 
 import java.util.*;
@@ -17,20 +18,53 @@ public class CodeLine{
 	static final String CLASS_NAME = "class-name";
 	static final String CONSTANT = "constant";
 	static final String IDENTIFIER = "identifier";
+	static final String SYMBOL = "symbol";
+	static final String STRING = "string";
 
 	static{
 		final var converter = new Converter();
-		converter.addClass('u', c -> 'A' <= c && c <= 'Z');
-		converter.addClass('l', c -> 'a' <= c && c <= 'z');
+		class CharRange implements CharPredicate{
+
+			final char char0;
+			final char charN;
+
+			CharRange(char char0, char charN){
+				this.char0 = char0;
+				this.charN = charN;
+			}
+			@Override
+			public boolean test(char c){
+				return char0 <= c && c <= charN;
+			}
+		}
+
+		converter.addClass('u', new CharRange('A', 'Z'));
+		converter.addClass('l', new CharRange('a', 'z'));
 		converter.addClass('w', c -> c == ' ' || c == '\t');
 		converter.addClass('h', c -> c == '-');
 		converter.addClass('s', c -> c == '_');
-
+		converter.addClass(
+			't',
+			CharPredicate.or(
+				c -> (c == '!'),
+				new CharRange('#', '/'),
+				new CharRange(':', '@'),
+				new CharRange('[', '`'),
+				new CharRange('{', '~')
+			)
+		);
+		converter.addClass('d', new CharRange('0', '9'));
+		converter.addClass('q', c -> c == '\"');
+		converter.addClass('e', c -> c == '\\');
 		final var expressions = new HashMap<>();
 		expressions.put(WHITE_SPACE, "*<1+>w");
 		expressions.put(CLASS_NAME, "*<1+>(u*l)");
 		expressions.put(CONSTANT, "*<1+>u*(s*<1+>u)");
 		expressions.put(IDENTIFIER, "*<1+>l*(h*<1+>l)");
+		expressions.put(SYMBOL, "*<1+>t");
+		expressions.put(STRING, "q*+(!q, eq)q");
+	//	expressions.put()
+
 
 		final var builder = new StringBuilder();
 		builder.append("+(");
@@ -71,7 +105,8 @@ public class CodeLine{
 								break;
 							}
 							case 1:{
-								switch(classes.iterator().next()){
+								final String className = classes.iterator().next();
+								switch(className){
 									case WHITE_SPACE:{
 										type = TokenType.WHITESPACE;
 										break outer;
@@ -88,7 +123,12 @@ public class CodeLine{
 										type = TokenType.IDENTIFIER;
 										break outer;
 									}
+									case SYMBOL:{
+										type = TokenType.SYMBOL;
+										break outer;
+									}
 									default:{
+										System.err.println("Unhandled unambiguous Token (" + tokena + ")");
 										type = TokenType.UNHANDLED;
 										break outer;
 									}

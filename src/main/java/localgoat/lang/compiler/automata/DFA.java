@@ -1,8 +1,11 @@
 package localgoat.lang.compiler.automata;
 
+import localgoat.lang.compiler.Token;
 import localgoat.lang.compiler.automata.expression.Converter;
+import localgoat.lang.compiler.automata.expression.Expression;
 import localgoat.lang.compiler.automata.operation.Concatenate;
 import localgoat.lang.compiler.automata.operation.Kleene;
+import localgoat.lang.compiler.automata.operation.Not;
 import localgoat.util.CollectionUtils;
 import localgoat.util.ESupplier;
 import localgoat.util.ValueCache;
@@ -20,8 +23,11 @@ public class DFA<T extends TokenA> implements Automaton<T>{
 		converter.addClass('l', c -> 'a' <= c && c <= 'z');
 		converter.addClass('s', c -> c == '_');
 		converter.addClass('h', c -> c == '-');
+		converter.addClass('q', c -> c == '\"');
+		converter.addClass('e', c -> c == '\\');
 
 		final var expressions = new HashMap<>();
+		expressions.put("string", "q*+(~q, eq)q");
 		expressions.put("class-name", "*<1+>(U*l)");
 		expressions.put("constant", "*<1+>U*(s*<1+>U)");
 		expressions.put("identifier", "*<1+>l*(h*<1+>l)");
@@ -37,12 +43,13 @@ public class DFA<T extends TokenA> implements Automaton<T>{
 					e.getValue()
 				)
 			)
-			.interleave(", ")
+			.interleave(",")
 			.forEach(s -> builder.append(s));
 
 		builder.append(")");
 
-		final var dfa = converter.buildDFA(builder.toString());
+		final var expr = Expression.parse(builder.toString());
+		final var dfa = converter.buildDFA(expr);
 
 		System.err.println(dfa.read(ReadMode.GREEDY, TokenA.from("ClassName")));
 		System.err.println(dfa.read(ReadMode.GREEDY, TokenA.from("HTTP_")));
@@ -53,15 +60,16 @@ public class DFA<T extends TokenA> implements Automaton<T>{
 
 	private final MutableNode<T>[] nodes;
 	private final Set<T> tokens;
-	private CachedBoolean complete = CachedBoolean.UNCACHED;
-	private DFA<T> completeDFA;
 
 	DFA(Builder<T> builder){
+		this.tokens = new HashSet<>(builder.tokens);
 		this.nodes = builder.nodes.stream()
 			.map(nbuilder -> nbuilder.initialise(this))
 			.toArray(MutableNode[]::new);
 
-		this.tokens = new HashSet<>(builder.tokens);
+		builder.nodes.stream()
+			.forEach(nbuilder -> nbuilder.finalise());
+
 	}
 
 	public DFA(NFA<T> nfa){
@@ -167,10 +175,11 @@ public class DFA<T extends TokenA> implements Automaton<T>{
 		nodes[0].addTransitions(this.tokens, nodes[1]);
 	}
 
-	public DFA(DFA<T> source){
-		this.tokens = new HashSet<>(source.tokens);
-		this.nodes = IntStream.range(0, source.nodes.length + (source.isComplete() ? 0 : 1))
-			.mapToObj(i -> new MutableNode<>(this, i, source.nodes[i].isTerminating()))
+	public DFA(Set<T> alphabet, DFA<T> source){
+		this.tokens = CollectionUtils.union(alphabet, source.tokens);
+		final boolean complete = source.isComplete(this.tokens);
+		this.nodes = IntStream.range(0, source.nodes.length + (complete ? 0 : 1))
+			.mapToObj(i -> new MutableNode<>(this, i, i < source.nodes.length && source.nodes[i].isTerminating()))
 			.toArray(MutableNode[]::new);
 
 		for(int i = 0; i < source.nodes.length; i++){
@@ -187,7 +196,7 @@ public class DFA<T extends TokenA> implements Automaton<T>{
 			);
 		}
 
-		if(!source.isComplete()){
+		if(!complete){
 			var sink = nodes[source.nodes.length];
 			for(var node: nodes){
 				node.addTransitions(
@@ -197,28 +206,15 @@ public class DFA<T extends TokenA> implements Automaton<T>{
 			}
 		}
 
-		complete = CachedBoolean.TRUE;
-		completeDFA = this;
 	}
 
-	public DFA<T> complete(){
-		if(completeDFA == null){
-			completeDFA = isComplete() ? this : new DFA<>(this);
+	public boolean isComplete(Set<T> alphabet){
+		if(!tokens.containsAll(alphabet)){
+			return false;
 		}
-		return completeDFA;
-	}
-
-	public boolean isComplete(){
-		if(complete == CachedBoolean.UNCACHED){
-			this.complete = CachedBoolean.of(
-				null == ESupplier.from(nodes)
-					.exclude(
-						node -> node.tokens().equals(tokens)
-					)
-					.get()
-			);
-		}
-		return complete.asBoolean();
+		return null == ESupplier.from(nodes)
+			.exclude(node -> node.tokens().equals(tokens))
+			.get();
 	}
 
 	@Override
@@ -342,7 +338,13 @@ public class DFA<T extends TokenA> implements Automaton<T>{
 							return new TokenString(Collections.emptySet(), tokens);
 						}
 					}
-					index += result.tokens.size();
+					final int size = tokens.size();
+					if(size == 0){
+						index = input.length;
+					}
+					else{
+						index += result.tokens.size();
+					}
 					return result;
 				}
 				return null;

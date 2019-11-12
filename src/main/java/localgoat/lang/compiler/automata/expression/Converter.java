@@ -1,22 +1,20 @@
 package localgoat.lang.compiler.automata.expression;
 
+import localgoat.lang.compiler.Token;
 import localgoat.lang.compiler.automata.Automaton;
 import localgoat.lang.compiler.automata.DFA;
 import localgoat.lang.compiler.automata.NFA;
 import localgoat.lang.compiler.automata.TokenA;
-import localgoat.lang.compiler.automata.operation.Concatenate;
-import localgoat.lang.compiler.automata.operation.Kleene;
-import localgoat.lang.compiler.automata.operation.Name;
-import localgoat.lang.compiler.automata.operation.Or;
+import localgoat.lang.compiler.automata.operation.*;
 import localgoat.util.functional.CharPredicate;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class Converter{
 	private final char[][] classes = new char[256][];
+	private final Set<TokenA<Character>> alphabet = new HashSet<>();
 
 	public void addClass(char sub, CharPredicate members){
 		if(('a' <= sub && sub <= 'z') || ('A' <= sub && sub <= 'Z')){
@@ -33,6 +31,7 @@ public class Converter{
 			}
 			this.classes[sub] = new char[size];
 			System.arraycopy(buffer, 0, classes[sub], 0, size);
+			alphabet.addAll(Arrays.asList(TokenA.from(classes[sub])));
 		}
 		else{
 			throw new IllegalArgumentException(String.format("Unsupported class substitution character: '%s'.", sub));
@@ -59,11 +58,43 @@ public class Converter{
 				final var function = (FunctionExpression)expression;
 				final char identifier = function.identifier();
 				switch(identifier){
+					case '!':{
+						final var children = function.children();
+						if(children.size() != 1){
+							throw new IllegalStateException("! function takes a single parameter.");
+						}
+						final var not = new Not<TokenA<Character>>(alphabet);
+						return not.apply(buildDFA(children.get(0)));
+					}
+					case '~':{
+						final var children = function.children();
+						final var accepted = new HashSet<TokenA<Character>>(alphabet);
+						for(var c: function.children()){
+							if(c instanceof Symbol){
+								final char symbol = ((Symbol)c).value();
+								if(classes[symbol] == null){
+									System.err.println(String.format("No character class defined for symbol '%s' using literal interpretation.", c));
+									accepted.remove(TokenA.of(symbol));
+								}
+								else{
+									accepted.removeAll(
+										Arrays.asList(
+											TokenA.from(classes[symbol])
+										)
+									);
+								}
+							}
+							else{
+								throw new UnsupportedOperationException("All children of ~ operation must be a single symbol.");
+							}
+						}
+						return new DFA<TokenA<Character>>(accepted.stream().toArray(TokenA[]::new));
+
+					}
 					case '+':{
 						final var children = function.children().stream()
 							.map(expr -> build(expr))
 							.collect(Collectors.toList());
-
 						final var or = new Or<TokenA<Character>>();
 						return or.apply(children);
 					}
@@ -147,9 +178,14 @@ public class Converter{
 	}
 
 	public DFA<TokenA<Character>> buildDFA(String pattern){
-		final var a = build(pattern);
+		return buildDFA(Expression.parse(pattern));
+	}
+
+	public DFA<TokenA<Character>> buildDFA(Expression expression){
+		final var a = build(expression);
 		return (a instanceof DFA) ? (DFA)a : new DFA<TokenA<Character>>((NFA)a);
 	}
+
 	public Automaton<TokenA<Character>> build(String pattern){
 		return build(Expression.parse(pattern));
 	}
