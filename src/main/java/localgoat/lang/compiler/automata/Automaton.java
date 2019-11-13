@@ -2,9 +2,7 @@ package localgoat.lang.compiler.automata;
 
 import localgoat.util.ESupplier;
 
-import java.util.AbstractList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public interface Automaton<T extends Token>{
@@ -39,7 +37,11 @@ public interface Automaton<T extends Token>{
 	default Set<StringClass> getStringClasses(){
 		return nodes().stream()
 			.flatMap(n -> n.classes().stream())
-			.collect(Collectors.toSet());
+			.collect(
+				Collectors.toCollection(
+					() -> new TreeSet<>(Comparator.comparing(c -> c.name()))
+				)
+			);
 	}
 
 	boolean isDeterministic();

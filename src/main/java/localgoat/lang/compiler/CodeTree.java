@@ -9,8 +9,17 @@ import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class CodeTree{
+
+
+	static ESupplier<TokenString<Token<Character>>> tokenise(Iterable<CodeTree> trees){
+		return ESupplier.from(trees)
+			.map(child -> child.tokens())
+			.interleave(() -> ESupplier.of(LineTokeniser.LINE_FEED))
+			.flatMap(supplier -> supplier);
+	}
 
 	enum BlockType{
 		CLOSED,
@@ -22,9 +31,9 @@ public class CodeTree{
 		UNSOUND;
 	}
 	final BlockType type;
-	public final LineTokeniser.CodeLine head;
+	public final CodeLine head;
 	private final List<CodeTree> children;
-	public final LineTokeniser.CodeLine tail;
+	public final CodeLine tail;
 
 	private CodeTree(){
 		this.type = BlockType.CONTINUATION;
@@ -33,7 +42,7 @@ public class CodeTree{
 		this.children = new ArrayList<>();
 	}
 
-	public CodeTree(Deque<LineTokeniser.CodeLine> lines){
+	public CodeTree(Deque<CodeLine> lines){
 
 		if(lines.isEmpty()){
 			this.head = null;
@@ -56,7 +65,7 @@ public class CodeTree{
 		final int depth = head.depth();
 
 			this.head = head;
-			final Predicate<LineTokeniser.CodeLine> filter = line -> line.depth() > depth || line.reconstruct().length() == 0;
+			final Predicate<CodeLine> filter = line -> line.depth() > depth || line.reconstruct().length() == 0;
 			while(lines.size() != 0 && filter.test(lines.peek())){
 				children.add(new CodeTree(lines));
 			}
@@ -119,11 +128,11 @@ public class CodeTree{
 		//}
 	}
 
-	static ESupplier<TokenString<Token<Character>>> tokenise(Iterable<CodeTree> trees){
-		return ESupplier.from(trees)
-			.map(child -> child.tokens())
-			.interleave(() -> ESupplier.of(LineTokeniser.LINE_FEED))
-			.flatMap(supplier -> supplier);
+	private CodeTree(BlockType type, CodeLine head, List<CodeTree> children, CodeLine tail){
+		this.type = type;
+		this.head = head;
+		this.children = children;
+		this.tail = tail;
 	}
 
 	public ESupplier<TokenString<Token<Character>>> tokens(){
@@ -154,4 +163,20 @@ public class CodeTree{
 		return builder.toString();
 	}
 
+
+	public CodeTree effective(){
+		final var result = new CodeTree(
+			type,
+			(head == null) ? null : head.effective(),
+			ESupplier.from(children)
+				.map(c -> c.effective())
+				.toStream()
+				.collect(Collectors.toList()),
+			(tail == null) ? null : tail.effective()
+		);
+		if(result.head == null && result.children.isEmpty() && result.tail == null){
+			return null;
+		}
+		return result;
+	}
 }

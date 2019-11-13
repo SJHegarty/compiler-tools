@@ -13,7 +13,6 @@ import java.util.stream.IntStream;
 
 public class ContentTree{
 
-	private final List<CodeTree> trees;
 	private static final LineTokeniser TOKENISER;
 	public static final Set<StringClass> CLASSES;
 
@@ -170,6 +169,8 @@ public class ContentTree{
 		TOKENISER = new LineTokeniser(dfa);
 	}
 
+	private final List<CodeTree> trees;
+
 	public ContentTree(String text){
 		final String lines[] = text.split("\r?\n", -1);
 
@@ -177,7 +178,7 @@ public class ContentTree{
 
 		final var queue = IntStream.range(0, lines.length)
 			.parallel()
-			.mapToObj(index -> TOKENISER.new CodeLine(lines[index], index))
+			.mapToObj(index -> TOKENISER.tokenise(lines[index], index))
 			.collect(Collectors.toCollection(ArrayDeque::new));
 
 		time = System.currentTimeMillis() - time;
@@ -188,6 +189,19 @@ public class ContentTree{
 		while(!queue.isEmpty()){
 			trees.add(new CodeTree(queue));
 		}
+	}
+
+	private ContentTree(List<CodeTree> trees){
+		this.trees = trees;
+	}
+
+	public ContentTree effective(){
+		return new ContentTree(
+			ESupplier.from(trees)
+				.map(t -> t.effective())
+				.toStream()
+				.collect(Collectors.toList())
+		);
 	}
 
 	public List<CodeTree> getCode(){

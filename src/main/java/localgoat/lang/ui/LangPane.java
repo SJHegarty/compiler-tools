@@ -19,6 +19,7 @@ import java.awt.Font;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.stream.Collectors;
@@ -70,7 +71,14 @@ public class LangPane extends JTextPane{
 				if(content == null){
 					throw new IllegalStateException();
 				}
-				final Map<String, Color> colours = new HashMap<>();
+
+				final Map<String, Color> colours = new TreeMap<>();
+				colours.put(ContentTree.CLASS_NAME, new Color(0xffffffff));
+				colours.put(ContentTree.CONSTANT, new Color(0xffffff00));
+				colours.put(ContentTree.CONTEXT_IDENTIFIER, new Color(0xffffffff));
+				colours.put(ContentTree.KEY_WORD, new Color(0xff40a0ff));
+
+				colours.put(ContentTree.LINE_COMMENT, new Color(0xffa0a0a0));
 
 				final ColourMap<String> generator = new ColourMap<>(.5 * Math.PI/3);
 
@@ -95,7 +103,7 @@ public class LangPane extends JTextPane{
 						.collect(
 							Collectors.toMap(
 								e -> e.getKey(),
-								e ->e.getValue().brighter()
+								e -> e.getValue().brighter()
 							)
 						)
 				);

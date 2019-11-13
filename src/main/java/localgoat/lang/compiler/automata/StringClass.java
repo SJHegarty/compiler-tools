@@ -2,6 +2,7 @@ package localgoat.lang.compiler.automata;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 public class StringClass{

@@ -18,7 +18,7 @@ public class Main{
 		final var tabs = new JTabbedPane();
 		tabs.add("Literal", new JScrollPane(pane));
 		tabs.add("Reconstruction", new JScrollPane(recpane));
-		//tabs.add("Effective", new JScrollPane(actualised));
+		tabs.add("Effective", new JScrollPane(actualised));
 		tabs.add("Tree", new JScrollPane(tree));
 		//final var recpane = new LangPane();
 		recpane.setEditable(false);
@@ -28,7 +28,7 @@ public class Main{
 				var text = pane.getText().replaceAll("\r\n", "\n");
 				var contentTree = new ContentTree(text);
 				recpane.setText(contentTree.reconstruct());
-				//actualised.setText(contentTree.effective());
+				actualised.setText(contentTree.effective().reconstruct());
 				var code = contentTree.getCode();
 				if(code.size() == 1){
 					tree.setCodeTree(code.get(0));
