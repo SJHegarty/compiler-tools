@@ -1,10 +1,14 @@
 package localgoat.lang.compiler.automata;
 
+import localgoat.util.ESupplier;
+
 import java.util.AbstractList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public interface Automaton<T extends Token>{
+
 
 
 	enum UnaryOperation{
@@ -30,6 +34,12 @@ public interface Automaton<T extends Token>{
 				return node(index);
 			}
 		};
+	}
+
+	default Set<StringClass> getStringClasses(){
+		return nodes().stream()
+			.flatMap(n -> n.classes().stream())
+			.collect(Collectors.toSet());
 	}
 
 	boolean isDeterministic();

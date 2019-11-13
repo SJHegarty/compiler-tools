@@ -3,6 +3,7 @@ package localgoat.lang.ui;
 import localgoat.lang.compiler.LineTokeniser;
 import localgoat.lang.compiler.ContentTree;
 import localgoat.lang.compiler.automata.Token;
+import localgoat.util.ESupplier;
 import localgoat.util.ui.document.InsertRemoveListener;
 
 import javax.swing.*;
@@ -62,29 +63,57 @@ public class LangPane extends JTextPane{
 
 		final var missing = builder.apply(Color.ORANGE);
 		final var hanging = builder.apply(Color.RED);
-		//;
-		final ColourMap<String> colours = new ColourMap<>(Math.PI/3);
+		final var ambiguous = builder.apply(Color.YELLOW);
 
-		colours.add("line-feed");
-		colours.add(ContentTree.LINE_COMMENT);
-		final String AMBIGUOUS = "ambiguous";
-		colours.add(AMBIGUOUS);
-		colours.add(ContentTree.IDENTIFIER);
-		colours.add(ContentTree.STRING);
-		colours.add(ContentTree.KEY_WORD);
-		colours.add(ContentTree.SYMBOL);
-		colours.add(ContentTree.CLASS_NAME);
-		colours.add(ContentTree.CONSTANT);
-		colours.add(ContentTree.DECIMAL);
-		colours.add(ContentTree.CONTEXT_IDENTIFIER);
+		final var attsCache = ESupplier.cache(
+			() -> {
+				if(content == null){
+					throw new IllegalStateException();
+				}
+				final Map<String, Color> colours = new HashMap<>();
 
-		final Map<String, AttributeSet> atts = colours.build().entrySet().stream()
-			.collect(
-				Collectors.toMap(
-					e -> e.getKey(),
-					e -> builder.apply(e.getValue().brighter())
-				)
-			);
+				final ColourMap<String> generator = new ColourMap<>(.5 * Math.PI/3);
+
+				ESupplier.from(ContentTree.CLASSES)
+					.exclude(c -> c.hasFlag(LineTokeniser.WHITE_SPACE))
+					.map(c -> c.name())
+					.exclude(name -> colours.containsKey(name))
+					.forEach(
+						name -> {
+							System.err.println(
+								String.format(
+									"No colour supplied for string class \"%s\" using generated default.",
+									name
+								)
+							);
+							generator.add(name);
+						}
+					);
+
+				colours.putAll(
+					generator.build().entrySet().stream()
+						.collect(
+							Collectors.toMap(
+								e -> e.getKey(),
+								e ->e.getValue().brighter()
+							)
+						)
+				);
+
+				final var atts = new HashMap<>(
+					colours.entrySet().stream()
+						.collect(
+							Collectors.toMap(
+								e -> e.getKey(),
+								e -> builder.apply(e.getValue())
+							)
+						)
+				);
+
+				return atts;
+			}
+		);
+
 
 		doc.addDocumentListener(
 			(InsertRemoveListener) event -> {
@@ -92,6 +121,7 @@ public class LangPane extends JTextPane{
 				SwingUtilities.invokeLater(
 					() -> {
 						int index = 0;
+						final var atts = attsCache.get();
 						for(var token: content.tokens()){
 							final int length = token.value().length();
 
@@ -135,7 +165,7 @@ public class LangPane extends JTextPane{
 										break;
 									}
 									default:{
-										attributes = atts.get(AMBIGUOUS);
+										attributes = ambiguous;
 									}
 								}
 								doc.setCharacterAttributes(index, length, attributes, true);

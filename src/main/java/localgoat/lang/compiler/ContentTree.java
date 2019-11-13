@@ -1,5 +1,6 @@
 package localgoat.lang.compiler;
 
+import localgoat.lang.compiler.automata.StringClass;
 import localgoat.lang.compiler.automata.Token;
 import localgoat.lang.compiler.automata.TokenString;
 import localgoat.lang.compiler.automata.expression.Converter;
@@ -14,6 +15,8 @@ public class ContentTree{
 
 	private final List<CodeTree> trees;
 	private static final LineTokeniser TOKENISER;
+	public static final Set<StringClass> CLASSES;
+
 	public static final String LINE_COMMENT ="line-comment";
 	public static final String CLASS_NAME = "class-name";
 	public static final String CONSTANT = "constant";
@@ -83,7 +86,7 @@ public class ContentTree{
 			"*<1+>w"
 		);
 		expressions.put(CLASS_NAME, "*<1+>(u*l)");
-		expressions.put(CONSTANT, "'@'*<1+>u*(s*<1+>u)");
+		expressions.put(CONSTANT, "'@'u*<1+>+(u, d)*(s*<1+>+(u, d))");
 		expressions.put(IDENTIFIER, "I");
 		expressions.put(CONTEXT_IDENTIFIER, "'@'I");
 		expressions.put(
@@ -162,7 +165,9 @@ public class ContentTree{
 
 		builder.append(")");
 
-		TOKENISER = new LineTokeniser(converter.buildDFA(builder.toString()));
+		final var dfa = converter.buildDFA(builder.toString());
+		CLASSES = Collections.unmodifiableSet(dfa.getStringClasses());
+		TOKENISER = new LineTokeniser(dfa);
 	}
 
 	public ContentTree(String text){

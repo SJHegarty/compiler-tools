@@ -35,6 +35,22 @@ public interface ESupplier<T> extends Supplier<T>, Iterable<T>{
 		};
 	}
 
+	static <T> ESupplier<T> cache(Supplier<T> source){
+		return new ESupplier<T>(){
+			T t;
+			@Override
+			public T get(){
+				if(t == null){
+					t = source.get();
+					if(t == null){
+						throw new IllegalStateException();
+					}
+				}
+				return t;
+			}
+		};
+	}
+
 	static ESupplier<Character> from(String s){
 		return new ESupplier<Character>(){
 			int index;
