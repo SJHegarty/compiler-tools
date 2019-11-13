@@ -1,9 +1,11 @@
 package localgoat.lang.compiler;
 
+import localgoat.lang.compiler.automata.DFA;
 import localgoat.lang.compiler.automata.StringClass;
 import localgoat.lang.compiler.automata.Token;
 import localgoat.lang.compiler.automata.TokenString;
 import localgoat.lang.compiler.automata.expression.Converter;
+import localgoat.lang.compiler.automata.expression.Expression;
 import localgoat.util.ESupplier;
 import localgoat.util.functional.CharPredicate;
 
@@ -26,9 +28,9 @@ public class ContentTree{
 	public static final String HEXADECIMAL = "hexadecimal";
 	public static final String KEY_WORD = "key-word";
 	public static final String CONTEXT_IDENTIFIER = "context-identifier";
+	public static final String LINE_CONTINUATION = "line-continuation";
 
 	public static final String CONTINUING_BRACKET = "}&";
-	public static final String LINE_CONTINUATION = "::";
 	public static final String OPENING_SQUARE = "[";
 	public static final String CLOSING_SQUARE = "]";
 	public static final String OPENING_BRACKET = "{";
@@ -38,6 +40,12 @@ public class ContentTree{
 	public static final String STATEMENT_TERMINATOR = ";";
 
 	static{
+		final var dfa = buildDFA();
+		CLASSES = Collections.unmodifiableSet(dfa.getStringClasses());
+		TOKENISER = new LineTokeniser(dfa);
+	}
+
+	private static DFA<Token<Character>> buildDFA(){
 		final var converter = new Converter();
 		class CharRange implements CharPredicate{
 
@@ -57,8 +65,6 @@ public class ContentTree{
 		converter.addClass('u', new CharRange('A', 'Z'));
 		converter.addClass('l', new CharRange('a', 'z'));
 		converter.addClass('w', c -> c == ' ' || c == '\t');
-		converter.addClass('h', c -> c == '-');
-		converter.addClass('s', c -> c == '_');
 		converter.addClass('d', new CharRange('0', '9'));
 		converter.addClass(
 			'x',
@@ -73,7 +79,7 @@ public class ContentTree{
 		converter.addClass('p', c -> c == ' ');
 
 		converter.addSubstitution('I', "*<1+>l*(u*<1+>l)");
-		converter.addSubstitution('K', "*<1+>l*(h*<1+>l)");
+		converter.addSubstitution('K', "*<1+>l*('-'*<1+>l)");
 		final var expressions = new HashMap<>();
 
 		expressions.put(
@@ -85,7 +91,7 @@ public class ContentTree{
 			"*<1+>w"
 		);
 		expressions.put(CLASS_NAME, "*<1+>(u*l)");
-		expressions.put(CONSTANT, "'@'u*<1+>+(u, d)*(s*<1+>+(u, d))");
+		expressions.put(CONSTANT, "'@'u*<1+>+(u, d)*('_'*<1+>+(u, d))");
 		expressions.put(IDENTIFIER, "I");
 		expressions.put(CONTEXT_IDENTIFIER, "'@'I");
 		expressions.put(
@@ -114,7 +120,6 @@ public class ContentTree{
 					CLOSING_PARENTHESIS,
 					STATEMENT_TERMINATOR,
 					CONTINUING_BRACKET,
-					LINE_CONTINUATION,
 					"->",
 					"!=",
 					"?=",
@@ -134,8 +139,8 @@ public class ContentTree{
 			)
 
 		);
-
-		expressions.put(STRING, "q*+(!q, eq)q");
+		expressions.put(LINE_CONTINUATION, "'::'");
+		expressions.put(STRING, "q*+(~q, eq)q");
 		expressions.put(DECIMAL, "*<1+>d");
 		expressions.put(HEXADECIMAL, "'0x'*<1+>x");
 		expressions.put(
@@ -164,9 +169,7 @@ public class ContentTree{
 
 		builder.append(")");
 
-		final var dfa = converter.buildDFA(builder.toString());
-		CLASSES = Collections.unmodifiableSet(dfa.getStringClasses());
-		TOKENISER = new LineTokeniser(dfa);
+		return converter.buildDFA(builder.toString());
 	}
 
 	private final List<CodeTree> trees;

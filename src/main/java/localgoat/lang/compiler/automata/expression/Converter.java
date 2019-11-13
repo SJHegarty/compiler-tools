@@ -23,12 +23,13 @@ public class Converter{
 		converter.addSubstitution('S', "*<1+>a*('-'*<1+>a)");
 		converter.addSubstitution('N', "S");
 		converter.addSubstitution('P', "'--'S");
-		NAME_PARSER = converter.buildDFA("+(N,P)");
+		NAME_PARSER = converter.buildDFA("+(N,P,' ')");
 	}
 
 	private StringClass classFor(String name){
 		final var tokens = NAME_PARSER.tokenise(Token.from(name))
 			.map(token -> token.value())
+			.retain(s -> s.indexOf(' ') == -1)
 			.toArray(String[]::new);
 
 		if(tokens.length == 0 || tokens[0].startsWith("--")){
@@ -99,6 +100,7 @@ public class Converter{
 				}
 			}
 			substitutions[sub] = expr;
+			build(expr);
 		}
 		else{
 			throw new IllegalArgumentException(String.format("Unsupported expression substitution character '%s'", sub));
@@ -164,22 +166,31 @@ public class Converter{
 						final var children = function.children();
 						final var accepted = new HashSet<Token<Character>>(alphabet);
 						for(var c: function.children()){
-							if(c instanceof Symbol){
-								final char symbol = ((Symbol)c).value();
-								if(classes[symbol] == null){
-									System.err.println(String.format("No character class defined for symbol '%s' using literal interpretation.", c));
+							handled:
+							{
+								if(c instanceof Symbol){
+									final char symbol = ((Symbol) c).value();
+									if(classes[symbol] == null){
+										System.err.println(String.format("No character class defined for symbol '%s' using literal interpretation.", c));
+										accepted.remove(Token.of(symbol));
+									}
+									else{
+										accepted.removeAll(
+											Arrays.asList(
+												Token.from(classes[symbol])
+											)
+										);
+									}
+								}
+								else if(c instanceof LiteralExpression && c.length() == 3){
+									final char symbol = ((LiteralExpression)c).value().charAt(0);
 									accepted.remove(Token.of(symbol));
 								}
 								else{
-									accepted.removeAll(
-										Arrays.asList(
-											Token.from(classes[symbol])
-										)
+									throw new UnsupportedOperationException(
+										String.format("All children of ~ operation must be a single symbol (%s is not).", c)
 									);
 								}
-							}
-							else{
-								throw new UnsupportedOperationException("All children of ~ operation must be a single symbol.");
 							}
 						}
 						return new DFA<Token<Character>>(accepted.stream().toArray(Token[]::new));
@@ -238,13 +249,19 @@ public class Converter{
 			ExpressionSeries.class,
 			expression -> {
 				final var series = (ExpressionSeries)expression;
-				final var children = series.children().stream()
+				final var children = ESupplier.from(series.children())
 					.map(seg -> build(seg))
+					.toStream()
 					.collect(Collectors.toList());
 
 				final var concat = new Concatenate<Token<Character>>();
 				return concat.apply(children);
 			}
+		);
+
+		handlers.put(
+			SpacesExpression.class,
+			expression -> null
 		);
 
 		handlers.put(

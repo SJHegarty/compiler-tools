@@ -7,14 +7,7 @@ public interface Expression{
 	int length();
 
 	static Expression parse(String s){
-		final var builder = new StringBuilder();
-		for(int i = 0; i < s.length(); i++){
-			final char c = s.charAt(i);
-			if(!Character.isWhitespace(c)){
-				builder.append(c);
-			}
-		}
-		return parseSeries(builder.toString(), 0);
+		return parseSeries(s, 0);
 	}
 
 	static Expression parseSeries(String s, int index){
@@ -41,6 +34,9 @@ public interface Expression{
 			}
 			case '.': case '^':{
 				return new Symbol(c);
+			}
+			case ' ':{
+				return new SpacesExpression(s, index);
 			}
 			case '\'':{
 				return new LiteralExpression(s, index);

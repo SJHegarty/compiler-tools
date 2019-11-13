@@ -45,7 +45,7 @@ public class FunctionExpression implements ExpressionTree{
 					case ')': break loop;
 					case ',': continue loop;
 					default: throw new IllegalArgumentException(
-						String.format("Unexpected token: '%s'", c)
+						String.format("Unexpected token: '%s' in %s", c, source.substring(index))
 					);
 				}
 			}
