@@ -1,19 +1,9 @@
 package localgoat.lang.compiler.automata;
 
-import localgoat.util.ESupplier;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
 public interface Automaton<T extends Token>{
-
-
-
-	enum UnaryOperation{
-		NOT,
-		KLEENE_STAR,
-		KLEENE_PLUS
-	}
 
 	int nodeCount();
 	Node<T> node(int index);
@@ -34,9 +24,9 @@ public interface Automaton<T extends Token>{
 		};
 	}
 
-	default Set<StringClass> getStringClasses(){
+	default Set<Type> types(){
 		return nodes().stream()
-			.flatMap(n -> n.classes().stream())
+			.flatMap(n -> n.types().stream())
 			.collect(
 				Collectors.toCollection(
 					() -> new TreeSet<>(Comparator.comparing(c -> c.name()))

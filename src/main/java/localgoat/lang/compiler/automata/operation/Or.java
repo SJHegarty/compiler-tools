@@ -24,7 +24,7 @@ public class Or<T extends Token> implements AssociativeOperation<Automaton<T>>{
 			IntStream.range(0, left.size())
 				.forEach(
 					index -> {
-						builder.addNode(left.get(index).classes());
+						builder.addNode(left.get(index).typeStates());
 					}
 				);
 
@@ -48,7 +48,7 @@ public class Or<T extends Token> implements AssociativeOperation<Automaton<T>>{
 			IntStream.range(0, right.size())
 				.forEach(
 					index -> {
-						builder.addNode(right.get(index).classes());
+						builder.addNode(right.get(index).typeStates());
 					}
 				);
 

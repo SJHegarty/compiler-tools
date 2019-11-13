@@ -95,8 +95,8 @@ public class DFA<T extends Token> implements Automaton<T>{
 					.flatMap(n -> lambdaTransitable.get(n).stream())
 					.collect(Collectors.toSet());
 
-				final Set<StringClass> names = ESupplier.from(reachable)
-					.flatMap(n -> ESupplier.from(n.classes()))
+				final Set<TypeState> names = ESupplier.from(reachable)
+					.flatMap(n -> ESupplier.from(n.typeStates()))
 					.toStream().collect(Collectors.toSet());
 
 				final var rv = new MutableNode<T>(this, nodesMap.size(), names);
@@ -293,7 +293,7 @@ public class DFA<T extends Token> implements Automaton<T>{
 			for(int i = index; i < t.index; i++){
 				result.add(tokens[i]);
 			}
-			return new TokenString(t.state.classes(), result);
+			return new TokenString(t.state.types(), result);
 		}
 		if(depth == index){
 			return new TokenString(Collections.emptySet(), Collections.singletonList(tokens[index]));

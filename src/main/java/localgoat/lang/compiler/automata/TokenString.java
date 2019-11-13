@@ -8,13 +8,13 @@ import java.util.function.Predicate;
 public class TokenString<T> implements Token{
 
 	private final List<T> tokens;
-	private final Set<StringClass> classes;
+	private final Set<Type> classes;
 
-	public TokenString(Set<StringClass> classes, List<T> tokens){
+	public TokenString(Set<Type> classes, List<T> tokens){
 		this.tokens = Collections.unmodifiableList(tokens);
 		this.classes = Collections.unmodifiableSet(classes);
 		for(var c: classes){
-			if(!(c instanceof StringClass)){
+			if(c != null && !(c instanceof Type)){
 				throw new IllegalStateException();
 			}
 		}
@@ -36,13 +36,13 @@ public class TokenString<T> implements Token{
 		return builder.toString();
 	}
 
-	public boolean hasClass(Predicate<StringClass> predicate){
+	public boolean hasClass(Predicate<Type> predicate){
 		return null != classes.stream()
 			.filter(predicate)
 			.findFirst()
 			.orElse(null);
 	}
-	public Set<StringClass> classes(){
+	public Set<Type> classes(){
 		return classes;
 	}
 

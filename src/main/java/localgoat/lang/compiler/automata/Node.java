@@ -2,8 +2,11 @@ package localgoat.lang.compiler.automata;
 
 import localgoat.util.ESupplier;
 
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 public interface Node<T extends Token>{
 	Automaton<T> automaton();
@@ -13,10 +16,17 @@ public interface Node<T extends Token>{
 	Map<T, Set<Transition<T>>> transitions();
 	Set<Node<T>> neighbours();
 	Set<T> tokens();
-	Set<StringClass> classes();
+	Set<TypeState> typeStates();
+
+	default	Set<Type> types(){
+		return typeStates().stream()
+			.filter(ts -> ts.isTerminating())
+			.map(ts -> ts.type())
+			.collect(Collectors.toSet());
+	}
 
 	default boolean isTerminating(){
-		return !classes().isEmpty();
+		return !types().isEmpty();
 	}
 
 	default Transition<T> transition(T token){

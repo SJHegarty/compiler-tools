@@ -1,7 +1,12 @@
 package localgoat.lang.compiler.automata;
 
+import localgoat.util.ESupplier;
+
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 
 public class Builder<T extends Token>{
 	final Set<T> tokens;
@@ -11,11 +16,11 @@ public class Builder<T extends Token>{
 		this.tokens = tokens;
 	}
 
-	public MutableNode.Builder<T> addNode(StringClass...classes){
+	public MutableNode.Builder<T> addNode(TypeState...classes){
 		return addNode(new HashSet<>(Arrays.asList(classes)));
 	}
 
-	public MutableNode.Builder<T> addNode(Set<StringClass> classes){
+	public MutableNode.Builder<T> addNode(Set<TypeState> classes){
 		final var rv = new MutableNode.Builder<T>(nodes.size(), classes);
 		nodes.add(rv);
 		return rv;
@@ -27,16 +32,18 @@ public class Builder<T extends Token>{
 		return rv;
 	}
 
-	public void copy(Automaton<T> a){
-		copy(a, node -> node.isTerminating());
-	}
-
-	public void copy(Automaton<T> a, Predicate<Node<T>> terminating){
+	public void copy(Automaton<T> a, UnaryOperator<TypeState> stateOp){
 		final int offset = nodes.size();
 		final int nodecount = a.nodeCount();
 
 		for(int i = 0; i < nodecount; i++){
-			addNode(terminating.test(a.node(i)));
+			addNode(
+				ESupplier.from(a.node(i).typeStates())
+					.map(stateOp)
+					.exclude(ts -> ts.type() == null && ts.depth() < 0)
+					.toStream()
+					.collect(Collectors.toSet())
+			);
 		}
 		for(int i = 0; i < nodecount; i++){
 			final var srcnode = a.node(i);

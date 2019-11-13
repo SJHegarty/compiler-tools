@@ -6,17 +6,18 @@ import localgoat.util.functional.operation.UnaryOperation;
 import java.util.Collections;
 
 public class Name<T extends Token> implements UnaryOperation<Automaton<T>>{
-	private final StringClass name;
+	private final Type name;
 
-	public Name(StringClass name){
+	public Name(Type name){
 		this.name = name;
 	}
 
 	@Override
 	public Automaton<T> apply(Automaton<T> automaton){
 		final var builder = new Builder(automaton.tokens());
+		final TypeState terminating = new TypeState(name, State.TERMINATING);
 		for(var node: automaton.nodes()){
-			builder.addNode(node.isTerminating() ? Collections.singleton(name) : Collections.emptySet());
+			builder.addNode(node.isTerminating() ? Collections.singleton(terminating) : Collections.emptySet());
 		}
 		for(var node: automaton.nodes()){
 			var nbuilder = builder.nodeBuilder(node.index());

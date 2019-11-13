@@ -2,16 +2,14 @@ package localgoat.lang.compiler.automata;
 
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
-public class StringClass{
-	public static final StringClass NONE = new StringClass(null, Collections.emptySet());
+public class Type{
 
 	private final String type;
 	private final Set<String> flags;
 
-	public StringClass(String type, Set<String> flags){
+	public Type(String type, Set<String> flags){
 		this.type = type;
 		this.flags = new HashSet<>(flags);
 	}

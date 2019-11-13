@@ -1,7 +1,7 @@
 package localgoat.lang.compiler;
 
 import localgoat.lang.compiler.automata.DFA;
-import localgoat.lang.compiler.automata.StringClass;
+import localgoat.lang.compiler.automata.Type;
 import localgoat.lang.compiler.automata.Token;
 import localgoat.lang.compiler.automata.TokenString;
 
@@ -15,7 +15,7 @@ public class LineTokeniser{
 
 	public static final TokenString<Token<Character>> LINE_FEED = new TokenString<>(
 		Collections.singleton(
-			new StringClass(
+			new Type(
 				"line-feed",
 				Collections.singleton(WHITE_SPACE)
 			)

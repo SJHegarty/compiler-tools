@@ -8,24 +8,24 @@ public class MutableNode<T extends Token> implements Node<T>{
 	public static class Builder<T extends Token>{
 		private final int index;
 		private final Map<T, Set<Builder<T>>> transitions;
-		private final Set<StringClass> classes;
+		private final Set<TypeState> typestates;
 		private Automaton<T> automaton;
 		private MutableNode<T> node;
 
 		public Builder(int index, boolean terminating){
-			this(index, terminating ? new StringClass[]{StringClass.NONE} : new StringClass[0]);
+			this(index, terminating ? new TypeState[]{TypeState.TERMINATING} : new TypeState[0]);
 		}
 
-		public Builder(int index, StringClass...classes){
+		public Builder(int index, TypeState...classes){
 			this(index, new HashSet<>(Arrays.asList(classes)));
 		}
 
-		public Builder(int index, Set<StringClass> classes){
+		public Builder(int index, Set<TypeState> classes){
 			this.index = index;
-			this.classes = new HashSet<>(classes);
+			this.typestates = new HashSet<>(classes);
 			this.transitions = new HashMap<>();
 			for(var v: classes){
-				if(!(v instanceof StringClass)){
+				if(!(v instanceof TypeState)){
 					throw new IllegalStateException();
 				}
 			}
@@ -46,7 +46,7 @@ public class MutableNode<T extends Token> implements Node<T>{
 
 		MutableNode<T> initialise(Automaton<T> automaton){
 			this.automaton = automaton;
-			this.node = new MutableNode<T>(automaton, index, classes);
+			this.node = new MutableNode<T>(automaton, index, typestates);
 			return node;
 		}
 
@@ -63,25 +63,29 @@ public class MutableNode<T extends Token> implements Node<T>{
 				)
 			);
 		}
+
+		public void addState(TypeState ts){
+			typestates.add(ts);
+		}
 	}
 	private final Automaton<T> automaton;
 	private final int index;
 	private final Map<T, Set<Transition<T>>> transitions;
-	private final Set<StringClass> classes;
+	private final Set<TypeState> typeStates;
 
 	MutableNode(Automaton<T> automaton, int index, boolean terminating){
-		this(automaton, index, terminating ? Collections.singleton(StringClass.NONE) : Collections.emptySet());
+		this(automaton, index, terminating ? Collections.singleton(TypeState.TERMINATING) : Collections.emptySet());
 	}
 
-	MutableNode(Automaton<T> automaton, int index, StringClass...classes){
-		this(automaton, index, new HashSet<>(Arrays.asList(classes)));
+	MutableNode(Automaton<T> automaton, int index, TypeState...typestates){
+		this(automaton, index, new HashSet<>(Arrays.asList(typestates)));
 	}
 
-	MutableNode(Automaton<T> automaton, int index, Set<StringClass> classes){
+	MutableNode(Automaton<T> automaton, int index, Set<TypeState> typestates){
 		this.automaton = automaton;
 		this.index = index;
 		this.transitions = new HashMap<>();
-		this.classes = classes;
+		this.typeStates = typestates;
 	}
 
 	void addTransitions(Set<T> tokens, Node<T> destination){
@@ -119,8 +123,8 @@ public class MutableNode<T extends Token> implements Node<T>{
 	}
 
 	@Override
-	public Set<StringClass> classes(){
-		return Collections.unmodifiableSet(classes);
+	public Set<TypeState> typeStates(){
+		return Collections.unmodifiableSet(typeStates);
 	}
 
 	private CachedBoolean terminable = CachedBoolean.UNCACHED;

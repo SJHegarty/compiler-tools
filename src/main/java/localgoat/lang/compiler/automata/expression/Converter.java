@@ -26,7 +26,7 @@ public class Converter{
 		NAME_PARSER = converter.buildDFA("+(N,P,' ')");
 	}
 
-	private StringClass classFor(String name){
+	private Type classFor(String name){
 		final var tokens = NAME_PARSER.tokenise(Token.from(name))
 			.map(token -> token.value())
 			.retain(s -> s.indexOf(' ') == -1)
@@ -42,7 +42,7 @@ public class Converter{
 			}
 			flags.add(tokens[i].substring(2));
 		}
-		return new StringClass(tokens[0], flags);
+		return new Type(tokens[0], flags);
 	}
 
 	public void addClass(char sub, CharPredicate members){
