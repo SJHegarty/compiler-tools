@@ -76,7 +76,11 @@ public class DFA<T extends Token> implements Automaton<T>{
 				Collectors.toMap(
 					node -> node,
 					node -> ESupplier.of(node)
-						.branchingMap(true, n -> ESupplier.from(n.transitions(null)))
+						.branchingMap(
+							true,
+							n -> ESupplier.from(n.transitions(null))
+								.map(t -> t.node())
+						)
 						.toStream()
 						.collect(Collectors.toSet())
 				)
@@ -127,6 +131,7 @@ public class DFA<T extends Token> implements Automaton<T>{
 					e -> {
 						T token = e.getKey();
 						return e.getValue().stream()
+							.map(t -> t.node())
 							.map(n -> new Transition(token, n));
 					}
 				)
@@ -181,13 +186,15 @@ public class DFA<T extends Token> implements Automaton<T>{
 		for(int i = 0; i < source.nodes.length; i++){
 			final var node = nodes[i];
 			source.nodes[node.index()].transitions().forEach(
-				(token, srcdests) -> {
-					if(srcdests.size() != 1){
+				(token, srctransitions) -> {
+					if(srctransitions.size() != 1){
 						throw new IllegalStateException();
 					}
-					srcdests.forEach(
-						srcdest -> node.addTransition(token, nodes[srcdest.index()])
-					);
+					srctransitions.stream()
+						.map(t -> t.node())
+						.forEach(
+							srcdest -> node.addTransition(token, nodes[srcdest.index()])
+						);
 				}
 			);
 		}
@@ -236,7 +243,7 @@ public class DFA<T extends Token> implements Automaton<T>{
 	public boolean accepts(T...tokens){
 		var state = node(0);
 		for(T token: tokens){
-			state = state.transition(token);
+			state = state.transition(token).node();
 			if(state == null){
 				return false;
 			}
@@ -248,28 +255,32 @@ public class DFA<T extends Token> implements Automaton<T>{
 		return read(mode, 0, tokens);
 	}
 
+	public static class StateIndex<T extends Token>{
+		final int index;
+		final Node<T> state;
+
+		public StateIndex(int index, Node<T> state){
+			this.index = index;
+			this.state = state;
+		}
+	}
+
 	public TokenString read(final ReadMode mode, final int index, final T...tokens){
 		if(index == tokens.length){
 			throw new IllegalArgumentException();
 		}
-		class StateIndex{
-			final int index;
-			final Node<T> state;
 
-			public StateIndex(int index, Node<T> state){
-				this.index = index;
-				this.state = state;
-			}
-		}
 
 		var state = node(0);
 		var t = state.isTerminating() ? new StateIndex(index, state) : null;
 		int depth = index;
 		while(depth < tokens.length && state.isTerminable()){
-			state = state.transition(tokens[depth++]);
-			if(state == null){
+			final var transition = state.transition(tokens[depth++]);
+			if(transition == null){
+				state = null;
 				break;
 			}
+			state = transition.node();
 			if(state.isTerminating()){
 				t = new StateIndex(depth, state);
 				if(mode == ReadMode.EAGER){

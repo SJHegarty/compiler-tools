@@ -42,17 +42,20 @@ public class Builder<T extends Token>{
 			final var srcnode = a.node(i);
 			final var builder = nodeBuilder(i + offset);
 			srcnode.transitions().forEach(
-				(token, srcdests) -> srcdests.forEach(
-					srcdest -> {
-						builder.addTransition(
-							token,
-							nodeBuilder(offset + srcdest.index())
-						);
-					}
-				)
+				(token, srctransitions) -> srctransitions.stream()
+					.map(t -> t.node())
+					.forEach(
+						srcdest -> {
+							builder.addTransition(
+								token,
+								nodeBuilder(offset + srcdest.index())
+							);
+						}
+					)
 			);
 		}
 	}
+
 	public MutableNode.Builder<T> nodeBuilder(int index){
 		return nodes.get(index);
 	}

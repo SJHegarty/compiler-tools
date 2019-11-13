@@ -32,10 +32,12 @@ public class Or<T extends Token> implements AssociativeOperation<Automaton<T>>{
 			for(var l : left){
 				final var node = builder.nodeBuilder(loff + l.index());
 				l.transitions().forEach(
-					(token, ldests) -> {
-						ldests.forEach(
-							ldest -> node.addTransition(token, builder.nodeBuilder(loff + ldest.index()))
-						);
+					(token, transitions) -> {
+						transitions.stream()
+							.map(t -> t.node())
+							.forEach(
+								ldest -> node.addTransition(token, builder.nodeBuilder(loff + ldest.index()))
+							);
 					}
 				);
 			}
@@ -55,10 +57,12 @@ public class Or<T extends Token> implements AssociativeOperation<Automaton<T>>{
 			for(var r : right){
 				final var node = builder.nodeBuilder(roff + r.index());
 				r.transitions().forEach(
-					(token, rdests) -> {
-						rdests.forEach(
-							ldest -> node.addTransition(token, builder.nodeBuilder(roff + ldest.index()))
-						);
+					(token, transitions) -> {
+						transitions.stream()
+							.map(t -> t.node())
+							.forEach(
+								rdest -> node.addTransition(token, builder.nodeBuilder(roff + rdest.index()))
+							);
 					}
 				);
 			}

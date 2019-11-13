@@ -21,8 +21,10 @@ public class Name<T extends Token> implements UnaryOperation<Automaton<T>>{
 		for(var node: automaton.nodes()){
 			var nbuilder = builder.nodeBuilder(node.index());
 			node.transitions().forEach(
-				(token, destinations) -> {
-					destinations.stream().mapToInt(dest -> dest.index())
+				(token, transitions) -> {
+					transitions.stream()
+						.map(t -> t.node())
+						.mapToInt(dest -> dest.index())
 						.mapToObj(index -> builder.nodeBuilder(index))
 						.forEach(
 							dest -> {

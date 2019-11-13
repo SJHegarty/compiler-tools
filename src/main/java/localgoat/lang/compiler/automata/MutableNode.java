@@ -66,7 +66,7 @@ public class MutableNode<T extends Token> implements Node<T>{
 	}
 	private final Automaton<T> automaton;
 	private final int index;
-	private final Map<T, Set<Node<T>>> transitions;
+	private final Map<T, Set<Transition<T>>> transitions;
 	private final Set<StringClass> classes;
 
 	MutableNode(Automaton<T> automaton, int index, boolean terminating){
@@ -91,6 +91,10 @@ public class MutableNode<T extends Token> implements Node<T>{
 	}
 
 	void addTransition(T token, Node<T> destination){
+		addTransition(token, new Transition<>(destination));
+	}
+	void addTransition(T token, Transition<T> transition){
+		final var destination = transition.node();
 		if(destination.automaton() != automaton){
 			throw new IllegalArgumentException("Destination Node does not belong to the same automaton as this Node.");
 		}
@@ -102,7 +106,7 @@ public class MutableNode<T extends Token> implements Node<T>{
 				String.format("Token %s is not in the set of legal transition tokens", token)
 			);
 		}
-		Set<Node<T>> set = transitions.get(token);
+		Set<Transition<T>> set = transitions.get(token);
 		if(set == null){
 			set = new HashSet<>();
 			transitions.put(token, set);
@@ -111,7 +115,7 @@ public class MutableNode<T extends Token> implements Node<T>{
 			throw new IllegalArgumentException("Transitions from the same node to different destinations on the same token are only permitted in non-deterministic automata.");
 		}
 		terminable = CachedBoolean.UNCACHED;
-		set.add(destination);
+		set.add(transition);
 	}
 
 	@Override
@@ -139,19 +143,20 @@ public class MutableNode<T extends Token> implements Node<T>{
 		return Collections.unmodifiableSet(
 			transitions.values().stream()
 				.flatMap(nodes -> nodes.stream())
+				.map(t -> t.node())
 				.collect(Collectors.toSet())
 		);
 	}
 
 	@Override
-	public Set<Node<T>> transitions(T token){
+	public Set<Transition<T>> transitions(T token){
 		return Optional.ofNullable(transitions.get(token))
 			.map(Collections::unmodifiableSet)
 			.orElseGet(Collections::emptySet);
 	}
 
 	@Override
-	public Map<T, Set<Node<T>>> transitions(){
+	public Map<T, Set<Transition<T>>> transitions(){
 		return Collections.unmodifiableMap(
 			transitions.entrySet().stream()
 			.collect(

@@ -9,8 +9,8 @@ public interface Node<T extends Token>{
 	Automaton<T> automaton();
 	int index();
 
-	Set<Node<T>> transitions(T token);
-	Map<T, Set<Node<T>>> transitions();
+	Set<Transition<T>> transitions(T token);
+	Map<T, Set<Transition<T>>> transitions();
 	Set<Node<T>> neighbours();
 	Set<T> tokens();
 	Set<StringClass> classes();
@@ -19,7 +19,7 @@ public interface Node<T extends Token>{
 		return !classes().isEmpty();
 	}
 
-	default Node<T> transition(T token){
+	default Transition<T> transition(T token){
 		final var tokenTransitions = transitions(token);
 		switch(tokenTransitions.size()){
 			case 0: return null;

@@ -25,7 +25,6 @@ public class Not<T extends Token> implements UnaryOperation<DFA<T>>{
 
 		final var builder = new Builder<T>(tokens);
 
-		//noinspection unchecked
 		var nbuilders = IntStream.range(0, complete.nodeCount())
 			.mapToObj(
 				i -> builder.addNode(!complete.node(i).isTerminating())
@@ -41,6 +40,7 @@ public class Not<T extends Token> implements UnaryOperation<DFA<T>>{
 						throw new IllegalStateException();
 					}
 					transitions.stream()
+						.map(t -> t.node())
 						.map(srcdest -> nbuilders[srcdest.index()])
 						.forEach(dest -> nbuilder.addTransition(token, dest));
 				}

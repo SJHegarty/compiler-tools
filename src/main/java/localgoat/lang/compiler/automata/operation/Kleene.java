@@ -53,7 +53,8 @@ public class Kleene<T extends Token> implements UnaryOperation<Automaton<T>>{
 					final var srcNode = a.node(i);
 					final var node = abuilder.nodeBuilder(i);
 					srcNode.transitions().forEach(
-						(token, destinations) -> destinations.stream()
+						(token, transitions) -> transitions.stream()
+							.map(t -> t.node())
 							.map(srcdest -> abuilder.nodeBuilder(srcdest.index()))
 							.forEach(dest -> node.addTransition(token, dest))
 					);
