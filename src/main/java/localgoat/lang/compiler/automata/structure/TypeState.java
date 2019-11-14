@@ -36,7 +36,7 @@ public class TypeState{
 	}
 
 	public boolean isTerminating(){
-		return (depth == 0) && (state == State.TERMINATING) && !negated;
+		return (depth == 0) && ((state == State.TERMINATING) ^ negated);
 	}
 
 	public int depth(){

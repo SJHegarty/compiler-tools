@@ -34,6 +34,19 @@ public interface Automaton<T extends Token>{
 			.collect(Collectors.toSet());
 	}
 
-	boolean isDeterministic();
+	default boolean isDeterministic(){
+		for(var n: nodes()){
+			final var transitions = n.transitions();
+			if(transitions.containsKey(null)){
+				return false;
+			}
+			for(var e: transitions.entrySet()){
+				if(e.getValue().size() != 1){
+					return false;
+				}
+			}
+		}
+		return true;
+	}
 
 }

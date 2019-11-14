@@ -8,69 +8,6 @@ import java.util.stream.Collectors;
 
 public class MutableNode<T extends Token> implements Node<T>{
 
-	public static class Builder<T extends Token>{
-		private final int index;
-		private final Map<T, Set<Builder<T>>> transitions;
-		private final Set<TypeState> typestates;
-		private Automaton<T> automaton;
-		private MutableNode<T> node;
-
-		public Builder(int index, boolean terminating){
-			this(index, terminating ? new TypeState[]{TypeState.TERMINATING} : new TypeState[0]);
-		}
-
-		public Builder(int index, TypeState...classes){
-			this(index, new HashSet<>(Arrays.asList(classes)));
-		}
-
-		public Builder(int index, Set<TypeState> classes){
-			this.index = index;
-			this.typestates = new HashSet<>(classes);
-			this.transitions = new HashMap<>();
-			for(var v: classes){
-				if(!(v instanceof TypeState)){
-					throw new IllegalStateException();
-				}
-			}
-		}
-
-		public int index(){
-			return index;
-		}
-
-		public void addTransition(T token, Builder<T> destination){
-			var set = transitions.get(token);
-			if(set == null){
-				set = new HashSet<>();
-				transitions.put(token, set);
-			}
-			set.add(destination);
-		}
-
-		MutableNode<T> initialise(Automaton<T> automaton){
-			this.automaton = automaton;
-			this.node = new MutableNode<T>(automaton, index, typestates);
-			return node;
-		}
-
-		void finalise(){
-			if(automaton == null){
-				throw new IllegalStateException();
-			}
-			transitions.forEach(
-				(token, builders) -> builders.forEach(
-					builder -> node.addTransition(
-						token,
-						automaton.node(builder.index)
-					)
-				)
-			);
-		}
-
-		public void addState(TypeState ts){
-			typestates.add(ts);
-		}
-	}
 	private final Automaton<T> automaton;
 	private final int index;
 	private final Map<T, Set<Transition<T>>> transitions;
@@ -84,7 +21,7 @@ public class MutableNode<T extends Token> implements Node<T>{
 		this(automaton, index, new HashSet<>(Arrays.asList(typestates)));
 	}
 
-	MutableNode(Automaton<T> automaton, int index, Set<TypeState> typestates){
+	public MutableNode(Automaton<T> automaton, int index, Set<TypeState> typestates){
 		this.automaton = automaton;
 		this.index = index;
 		this.transitions = new HashMap<>();
@@ -97,16 +34,14 @@ public class MutableNode<T extends Token> implements Node<T>{
 		}
 	}
 
-	void addTransition(T token, Node<T> destination){
+	public void addTransition(T token, Node<T> destination){
 		addTransition(token, new Transition<>(destination));
 	}
+
 	void addTransition(T token, Transition<T> transition){
 		final var destination = transition.node();
 		if(destination.automaton() != automaton){
 			throw new IllegalArgumentException("Destination Node does not belong to the same automaton as this Node.");
-		}
-		if(token == null && automaton.isDeterministic()){
-			throw new IllegalArgumentException("Null transitions are only permitted in non-deterministic automata.");
 		}
 		if(token != null && !automaton.tokens().contains(token)){
 			throw new IllegalArgumentException(
@@ -117,9 +52,6 @@ public class MutableNode<T extends Token> implements Node<T>{
 		if(set == null){
 			set = new HashSet<>();
 			transitions.put(token, set);
-		}
-		else if(automaton.isDeterministic()){
-			throw new IllegalArgumentException("Transitions from the same node to different destinations on the same token are only permitted in non-deterministic automata.");
 		}
 		terminable = CachedBoolean.UNCACHED;
 		set.add(transition);

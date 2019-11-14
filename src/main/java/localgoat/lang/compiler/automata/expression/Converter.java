@@ -146,7 +146,7 @@ public class Converter{
 				final var literal = (LiteralExpression)expression;
 				final var tokens = Token.from(literal.value());
 				final var machines = Stream.of(tokens)
-					.map(t -> new DFA<>(t))
+					.map(t -> DFA.of(t))
 					.toArray(DFA[]::new);
 
 				return new Concatenate<Token<Character>>().apply(machines);
@@ -197,7 +197,7 @@ public class Converter{
 								}
 							}
 						}
-						return new DFA<Token<Character>>(accepted.stream().toArray(Token[]::new));
+						return DFA.of(accepted.stream().toArray(Token[]::new));
 
 					}
 					case '+':{
@@ -274,7 +274,7 @@ public class Converter{
 				final var symbol = (Symbol)expression;
 				final char c = symbol.value();
 				if(c == '^'){
-					return new DFA<Token<Character>>();
+					return DFA.lambda();
 				}
 				if((c & 0xffffff00) == 0){
 					if('A' <= c && c <= 'Z'){
@@ -286,11 +286,11 @@ public class Converter{
 					else{
 						final char[] chars = classes[c];
 						if(chars != null){
-							return new DFA<Token<Character>>(Token.from(chars));
+							return DFA.of(Token.from(chars));
 						}
 					}
 					System.err.println(String.format("No character class defined for symbol '%s' using literal interpretation.", c));
-					return new DFA<Token<Character>>(Token.of(c));
+					return DFA.of(Token.of(c));
 				}
 				throw new IllegalStateException();
 			}
@@ -303,7 +303,7 @@ public class Converter{
 
 	public DFA<Token<Character>> buildDFA(Expression expression){
 		final var a = build(expression);
-		return (a instanceof DFA) ? (DFA)a : new DFA<Token<Character>>((NFA)a);
+		return (a instanceof DFA) ? (DFA)a : new Convert<>().apply((NFA)a);
 	}
 
 	public Automaton<Token<Character>> build(String pattern){

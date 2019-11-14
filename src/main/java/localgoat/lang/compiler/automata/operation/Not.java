@@ -1,5 +1,6 @@
 package localgoat.lang.compiler.automata.operation;
 
+import localgoat.lang.compiler.automata.structure.TypeState;
 import localgoat.lang.compiler.automata.utility.Builder;
 import localgoat.lang.compiler.automata.structure.DFA;
 import localgoat.lang.compiler.automata.structure.MutableNode;
@@ -7,6 +8,7 @@ import localgoat.lang.compiler.automata.data.Token;
 import localgoat.util.CollectionUtils;
 import localgoat.util.functional.operation.UnaryOperation;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.IntStream;
@@ -18,35 +20,27 @@ public class Not<T extends Token> implements UnaryOperation<DFA<T>>{
 		this.baseAlphabet = alphabet;
 	}
 
+	public Not(){
+		this(Collections.emptySet());
+	}
+
 	@Override
 	public DFA<T> apply(DFA<T> source){
-		final var complete = source.isComplete(baseAlphabet) ? source : new DFA<T>(baseAlphabet, source);
-		final var tokens = (baseAlphabet == null) ? new HashSet<>(source.tokens()) : CollectionUtils.union(source.tokens(), baseAlphabet);
-
-		final var builder = new Builder<T>(tokens);
-
-		var nbuilders = IntStream.range(0, complete.nodeCount())
-			.mapToObj(
-				i -> builder.addNode(!complete.node(i).isTerminating())
-			)
-			.toArray(MutableNode.Builder[]::new);
-
-		for(var nbuilder: nbuilders){
-			var srcnode = complete.node(nbuilder.index());
-			srcnode.tokens().forEach(
-				token -> {
-					final var transitions = srcnode.transitions(token);
-					if(transitions.size() != 1){
-						throw new IllegalStateException();
-					}
-					transitions.stream()
-						.map(t -> t.node())
-						.map(srcdest -> nbuilders[srcdest.index()])
-						.forEach(dest -> nbuilder.addTransition(token, dest));
+		final var complete = new Complete<>(baseAlphabet).apply(source);
+		final var builder = new Builder<T>(complete.tokens());
+		builder.copy(complete, s -> s.negate());
+		IntStream.range(0, complete.nodeCount())
+			.filter(
+				i -> {
+					final boolean srcNT = !complete.node(i).isTerminating();
+					final boolean dstNT = !builder.nodeBuilder(i).isTerminating();
+					return srcNT && dstNT;
 				}
+			)
+			.mapToObj(i -> builder.nodeBuilder(i))
+			.forEach(
+				node -> node.addState(TypeState.TERMINATING)
 			);
-		}
-
 
 		return builder.buildDFA();
 	}

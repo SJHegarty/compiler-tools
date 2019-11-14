@@ -10,24 +10,24 @@ import java.util.stream.Collectors;
 
 public class Builder<T extends Token>{
 	final Set<T> tokens;
-	final List<MutableNode.Builder<T>> nodes = new ArrayList<>();
+	final List<NodeBuilder<T>> nodes = new ArrayList<>();
 
 	public Builder(Set<T> tokens){
 		this.tokens = tokens;
 	}
 
-	public MutableNode.Builder<T> addNode(TypeState...classes){
+	public NodeBuilder<T> addNode(TypeState...classes){
 		return addNode(new HashSet<>(Arrays.asList(classes)));
 	}
 
-	public MutableNode.Builder<T> addNode(Set<TypeState> classes){
-		final var rv = new MutableNode.Builder<T>(nodes.size(), classes);
+	public NodeBuilder<T> addNode(Set<TypeState> classes){
+		final var rv = new NodeBuilder<T>(nodes.size(), classes);
 		nodes.add(rv);
 		return rv;
 	}
 
-	public MutableNode.Builder<T> addNode(boolean terminating){
-		final var rv = new MutableNode.Builder<T>(nodes.size(), terminating);
+	public NodeBuilder<T> addNode(boolean terminating){
+		final var rv = new NodeBuilder<T>(nodes.size(), terminating);
 		nodes.add(rv);
 		return rv;
 	}
@@ -40,7 +40,7 @@ public class Builder<T extends Token>{
 			addNode(
 				ESupplier.from(a.node(i).typeStates())
 					.map(stateOp)
-					.exclude(ts -> ts.type() == null && ts.depth() < 0)
+					.exclude(ts -> ts.type() == null && !ts.isTerminating())
 					.toStream()
 					.collect(Collectors.toSet())
 			);
@@ -63,7 +63,7 @@ public class Builder<T extends Token>{
 		}
 	}
 
-	public MutableNode.Builder<T> nodeBuilder(int index){
+	public NodeBuilder<T> nodeBuilder(int index){
 		return nodes.get(index);
 	}
 
@@ -94,7 +94,7 @@ public class Builder<T extends Token>{
 		return tokens;
 	}
 
-	public List<MutableNode.Builder<T>> nodes(){
+	public List<NodeBuilder<T>> nodes(){
 		return Collections.unmodifiableList(nodes);
 	}
 }

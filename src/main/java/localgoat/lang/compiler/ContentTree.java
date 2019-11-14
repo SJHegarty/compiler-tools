@@ -39,30 +39,20 @@ public class ContentTree{
 	public static final String STATEMENT_TERMINATOR = ";";
 
 	static{
-		final var dfa = buildTestDFA();
+		final var dfa = buildDFA();
 		CLASSES = Collections.unmodifiableSet(dfa.types());
 		TOKENISER = new LineTokeniser(dfa);
 	}
 
 	private static DFA<Token<Character>> buildTestDFA(){
 		final var converter = new Converter();
+		{
+			final var dfa = converter.buildDFA("!(ab)");
+			final boolean accepts = dfa.accepts(Token.from("abb"));
+			System.err.println(accepts);
+		}
 		converter.addSubstitution('A', "@<child>(*<1+>+(a, b))");
 		final var rv = converter.buildDFA("@<test-case>('['A*(' 'A)']')");
-		rv.nodes().forEach(
-			n -> {
-				var states = n.typeStates();
-				if(!states.isEmpty()){
-					System.err.println(n.index());
-					for(var s: states){
-						System.err.println("\t" + s);
-					}
-					System.err.println();
-				}
-			}
-		);
-		for(var v: rv.tokenise(Token.from("[abba aba bbaba][ababb abb]"))){
-			System.err.println(v);
-		}
 		return rv;
 	}
 
