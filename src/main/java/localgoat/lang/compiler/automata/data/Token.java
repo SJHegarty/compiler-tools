@@ -1,4 +1,4 @@
-package localgoat.lang.compiler.automata;
+package localgoat.lang.compiler.automata.data;
 
 public interface Token<T>{
 

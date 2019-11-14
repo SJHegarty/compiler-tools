@@ -1,7 +1,11 @@
 package localgoat.lang.compiler.automata.expression;
 
-import localgoat.lang.compiler.automata.*;
+import localgoat.lang.compiler.automata.data.Token;
 import localgoat.lang.compiler.automata.operation.*;
+import localgoat.lang.compiler.automata.structure.Automaton;
+import localgoat.lang.compiler.automata.structure.DFA;
+import localgoat.lang.compiler.automata.structure.NFA;
+import localgoat.lang.compiler.automata.structure.Type;
 import localgoat.util.ESupplier;
 import localgoat.util.functional.CharPredicate;
 

@@ -1,9 +1,9 @@
 package localgoat.lang.compiler.automata.operation;
 
-import localgoat.lang.compiler.automata.Builder;
-import localgoat.lang.compiler.automata.DFA;
-import localgoat.lang.compiler.automata.MutableNode;
-import localgoat.lang.compiler.automata.Token;
+import localgoat.lang.compiler.automata.utility.Builder;
+import localgoat.lang.compiler.automata.structure.DFA;
+import localgoat.lang.compiler.automata.structure.MutableNode;
+import localgoat.lang.compiler.automata.data.Token;
 import localgoat.util.CollectionUtils;
 import localgoat.util.functional.operation.UnaryOperation;
 

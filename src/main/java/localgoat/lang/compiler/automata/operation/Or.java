@@ -1,13 +1,12 @@
 package localgoat.lang.compiler.automata.operation;
 
-import localgoat.lang.compiler.automata.*;
-import localgoat.util.CollectionUtils;
-import localgoat.util.functional.operation.AssociativeOperation;
+import localgoat.lang.compiler.automata.data.Token;
+import localgoat.lang.compiler.automata.structure.Automaton;
+import localgoat.lang.compiler.automata.utility.Builder;
 import localgoat.util.functional.operation.PolyOperation;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public class Or<T extends Token> implements PolyOperation<Automaton<T>>{
 

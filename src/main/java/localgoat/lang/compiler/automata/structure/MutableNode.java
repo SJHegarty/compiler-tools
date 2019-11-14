@@ -1,4 +1,7 @@
-package localgoat.lang.compiler.automata;
+package localgoat.lang.compiler.automata.structure;
+
+import localgoat.lang.compiler.automata.data.Token;
+import localgoat.lang.compiler.automata.utility.CachedBoolean;
 
 import java.util.*;
 import java.util.stream.Collectors;

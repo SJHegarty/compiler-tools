@@ -1,4 +1,6 @@
-package localgoat.lang.compiler.automata;
+package localgoat.lang.compiler.automata.data;
+
+import localgoat.lang.compiler.automata.structure.Type;
 
 import java.util.Collections;
 import java.util.List;

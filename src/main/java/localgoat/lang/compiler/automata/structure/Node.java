@@ -1,11 +1,10 @@
-package localgoat.lang.compiler.automata;
+package localgoat.lang.compiler.automata.structure;
 
+import localgoat.lang.compiler.automata.data.Token;
 import localgoat.util.ESupplier;
 
-import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 public interface Node<T extends Token>{

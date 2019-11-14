@@ -1,4 +1,7 @@
-package localgoat.lang.compiler.automata;
+package localgoat.lang.compiler.automata.structure;
+
+import localgoat.lang.compiler.automata.utility.Builder;
+import localgoat.lang.compiler.automata.data.Token;
 
 import java.util.*;
 
@@ -7,14 +10,14 @@ public class NFA<T extends Token> implements Automaton<T>{
 	private final MutableNode<T>[] nodes;
 	private final Set<T> tokens;
 
-	NFA(Builder<T> builder){
-		this.tokens = new HashSet<>(builder.tokens);
+	public NFA(Builder<T> builder){
+		this.tokens = new HashSet<>(builder.tokens());
 
-		this.nodes = builder.nodes.stream()
+		this.nodes = builder.nodes().stream()
 			.map(nbuilder -> nbuilder.initialise(this))
 			.toArray(MutableNode[]::new);
 
-		for(var n: builder.nodes){
+		for(var n: builder.nodes()){
 			n.finalise();
 		}
 	}

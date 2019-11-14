@@ -2,7 +2,6 @@ package localgoat.lang.ui;
 
 import localgoat.lang.compiler.LineTokeniser;
 import localgoat.lang.compiler.ContentTree;
-import localgoat.lang.compiler.automata.Token;
 import localgoat.util.ESupplier;
 import localgoat.util.ui.document.InsertRemoveListener;
 
@@ -21,7 +20,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.TreeMap;
 import java.util.function.Function;
-import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 

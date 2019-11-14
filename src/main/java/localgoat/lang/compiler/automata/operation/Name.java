@@ -1,9 +1,12 @@
 package localgoat.lang.compiler.automata.operation;
 
-import localgoat.lang.compiler.automata.*;
+import localgoat.lang.compiler.automata.data.Token;
+import localgoat.lang.compiler.automata.structure.Automaton;
+import localgoat.lang.compiler.automata.structure.State;
+import localgoat.lang.compiler.automata.structure.Type;
+import localgoat.lang.compiler.automata.structure.TypeState;
+import localgoat.lang.compiler.automata.utility.Builder;
 import localgoat.util.functional.operation.UnaryOperation;
-
-import java.util.Collections;
 
 public class Name<T extends Token> implements UnaryOperation<Automaton<T>>{
 	private final Type name;

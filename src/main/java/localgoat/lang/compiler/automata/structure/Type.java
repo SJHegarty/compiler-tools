@@ -1,4 +1,4 @@
-package localgoat.lang.compiler.automata;
+package localgoat.lang.compiler.automata.structure;
 
 import java.util.Collections;
 import java.util.HashSet;

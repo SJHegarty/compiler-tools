@@ -1,9 +1,9 @@
 package localgoat.lang.compiler;
 
-import localgoat.lang.compiler.automata.DFA;
-import localgoat.lang.compiler.automata.Type;
-import localgoat.lang.compiler.automata.Token;
-import localgoat.lang.compiler.automata.TokenString;
+import localgoat.lang.compiler.automata.structure.DFA;
+import localgoat.lang.compiler.automata.structure.Type;
+import localgoat.lang.compiler.automata.data.Token;
+import localgoat.lang.compiler.automata.data.TokenString;
 import localgoat.lang.compiler.automata.expression.Converter;
 import localgoat.util.ESupplier;
 import localgoat.util.functional.CharPredicate;

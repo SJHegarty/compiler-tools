@@ -1,7 +1,7 @@
 package localgoat.lang.compiler;
 
-import localgoat.lang.compiler.automata.Token;
-import localgoat.lang.compiler.automata.TokenString;
+import localgoat.lang.compiler.automata.data.Token;
+import localgoat.lang.compiler.automata.data.TokenString;
 import localgoat.util.ESupplier;
 
 import java.util.ArrayList;

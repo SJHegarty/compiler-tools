@@ -1,10 +1,13 @@
 package localgoat.lang.compiler.automata.operation;
 
-import localgoat.lang.compiler.automata.*;
+import localgoat.lang.compiler.automata.data.Token;
+import localgoat.lang.compiler.automata.structure.Automaton;
+import localgoat.lang.compiler.automata.structure.NFA;
+import localgoat.lang.compiler.automata.structure.TypeState;
+import localgoat.lang.compiler.automata.utility.Builder;
 import localgoat.util.CollectionUtils;
 import localgoat.util.functional.operation.AssociativeOperation;
 
-import java.util.function.UnaryOperator;
 import java.util.stream.IntStream;
 
 public class Concatenate<T extends Token> implements AssociativeOperation<Automaton<T>>{

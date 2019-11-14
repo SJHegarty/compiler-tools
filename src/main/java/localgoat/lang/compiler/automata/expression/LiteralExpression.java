@@ -1,8 +1,8 @@
 package localgoat.lang.compiler.automata.expression;
 
-import localgoat.lang.compiler.automata.DFA;
-import localgoat.lang.compiler.automata.ReadMode;
-import localgoat.lang.compiler.automata.Token;
+import localgoat.lang.compiler.automata.structure.DFA;
+import localgoat.lang.compiler.automata.data.ReadMode;
+import localgoat.lang.compiler.automata.data.Token;
 
 public class LiteralExpression implements Expression{
 	static final DFA<Token<Character>> DFA;

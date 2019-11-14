@@ -1,4 +1,4 @@
-package localgoat.lang.compiler.automata;
+package localgoat.lang.compiler.automata.structure;
 
 public class TypeState{
 	public static final TypeState TERMINATING = new TypeState(null, State.TERMINATING);

@@ -1,11 +1,11 @@
 package localgoat.lang.compiler.automata.operation;
 
-import localgoat.lang.compiler.automata.*;
+import localgoat.lang.compiler.automata.data.Token;
+import localgoat.lang.compiler.automata.structure.Automaton;
+import localgoat.lang.compiler.automata.structure.NFA;
+import localgoat.lang.compiler.automata.structure.TypeState;
+import localgoat.lang.compiler.automata.utility.Builder;
 import localgoat.util.functional.operation.UnaryOperation;
-
-import java.util.HashSet;
-import java.util.function.IntFunction;
-import java.util.stream.IntStream;
 
 public class Kleene<T extends Token> implements UnaryOperation<Automaton<T>>{
 

@@ -1,7 +1,11 @@
-package localgoat.lang.compiler.automata;
+package localgoat.lang.compiler.automata.structure;
 
+import localgoat.lang.compiler.automata.data.ReadMode;
+import localgoat.lang.compiler.automata.data.Token;
+import localgoat.lang.compiler.automata.data.TokenString;
 import localgoat.lang.compiler.automata.expression.Converter;
 import localgoat.lang.compiler.automata.expression.Expression;
+import localgoat.lang.compiler.automata.utility.Builder;
 import localgoat.util.CollectionUtils;
 import localgoat.util.ESupplier;
 import localgoat.util.ValueCache;
@@ -57,13 +61,13 @@ public class DFA<T extends Token> implements Automaton<T>{
 	private final MutableNode<T>[] nodes;
 	private final Set<T> tokens;
 
-	DFA(Builder<T> builder){
-		this.tokens = new HashSet<>(builder.tokens);
-		this.nodes = builder.nodes.stream()
+	public DFA(Builder<T> builder){
+		this.tokens = new HashSet<>(builder.tokens());
+		this.nodes = builder.nodes().stream()
 			.map(nbuilder -> nbuilder.initialise(this))
 			.toArray(MutableNode[]::new);
 
-		builder.nodes.stream()
+		builder.nodes().stream()
 			.forEach(nbuilder -> nbuilder.finalise());
 
 	}

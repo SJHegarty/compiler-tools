@@ -1,10 +1,10 @@
-package localgoat.lang.compiler.automata;
+package localgoat.lang.compiler.automata.utility;
 
+import localgoat.lang.compiler.automata.data.Token;
+import localgoat.lang.compiler.automata.structure.*;
 import localgoat.util.ESupplier;
 
 import java.util.*;
-import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
@@ -88,5 +88,13 @@ public class Builder<T extends Token>{
 
 	public int nodeCount(){
 		return nodes.size();
+	}
+
+	public Set<T> tokens(){
+		return tokens;
+	}
+
+	public List<MutableNode.Builder<T>> nodes(){
+		return Collections.unmodifiableList(nodes);
 	}
 }
