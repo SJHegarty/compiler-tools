@@ -1,11 +1,10 @@
 package localgoat.lang.compiler;
 
 import localgoat.lang.compiler.automata.DFA;
-import localgoat.lang.compiler.automata.StringClass;
+import localgoat.lang.compiler.automata.Type;
 import localgoat.lang.compiler.automata.Token;
 import localgoat.lang.compiler.automata.TokenString;
 import localgoat.lang.compiler.automata.expression.Converter;
-import localgoat.lang.compiler.automata.expression.Expression;
 import localgoat.util.ESupplier;
 import localgoat.util.functional.CharPredicate;
 
@@ -16,7 +15,7 @@ import java.util.stream.IntStream;
 public class ContentTree{
 
 	private static final LineTokeniser TOKENISER;
-	public static final Set<StringClass> CLASSES;
+	public static final Set<Type> CLASSES;
 
 	public static final String LINE_COMMENT ="line-comment";
 	public static final String CLASS_NAME = "class-name";
@@ -40,9 +39,31 @@ public class ContentTree{
 	public static final String STATEMENT_TERMINATOR = ";";
 
 	static{
-		final var dfa = buildDFA();
-		CLASSES = Collections.unmodifiableSet(dfa.getStringClasses());
+		final var dfa = buildTestDFA();
+		CLASSES = Collections.unmodifiableSet(dfa.types());
 		TOKENISER = new LineTokeniser(dfa);
+	}
+
+	private static DFA<Token<Character>> buildTestDFA(){
+		final var converter = new Converter();
+		converter.addSubstitution('A', "@<child>(*<1+>+(a, b))");
+		final var rv = converter.buildDFA("@<test-case>('['A*(' 'A)']')");
+		rv.nodes().forEach(
+			n -> {
+				var states = n.typeStates();
+				if(!states.isEmpty()){
+					System.err.println(n.index());
+					for(var s: states){
+						System.err.println("\t" + s);
+					}
+					System.err.println();
+				}
+			}
+		);
+		for(var v: rv.tokenise(Token.from("[abba aba bbaba][ababb abb]"))){
+			System.err.println(v);
+		}
+		return rv;
 	}
 
 	private static DFA<Token<Character>> buildDFA(){

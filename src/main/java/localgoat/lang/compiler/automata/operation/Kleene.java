@@ -22,51 +22,35 @@ public class Kleene<T extends Token> implements UnaryOperation<Automaton<T>>{
 
 	@Override
 	public NFA<T> apply(Automaton<T> a){
+		final var builder = new Builder<T>(a.tokens());
+		builder.copy(a, s -> s.drop());
 
-		final var tokens = new HashSet<>(a.tokens());
-		final var abuilder = new Builder<T>(tokens);
-		final IntFunction<MutableNode.Builder<T>> builder;
-		final MutableNode.Builder<T> nbuilder0;
+		final var node0 = builder.nodeBuilder(0);
+		a.nodes().stream()
+			.filter(n -> n.isTerminating())
+			.mapToInt(n -> n.index())
+			.mapToObj(i -> builder.nodeBuilder(i))
+			.forEach(node -> node.addTransition(null, node0));
 
 		switch(op){
 			case PLUS:{
-				nbuilder0 = abuilder.addNode(a.node(0).isTerminating());
-				builder = i -> abuilder.addNode(a.node(i).isTerminating());
+				a.nodes().stream()
+					.filter(n -> n.isTerminating())
+					.mapToInt(n -> n.index())
+					.mapToObj(i -> builder.nodeBuilder(i))
+					.forEach(node -> node.addState(TypeState.TERMINATING));
+
 				break;
 			}
 			case STAR:{
-				nbuilder0 = abuilder.addNode(true);
-				builder = i -> abuilder.addNode(false);
+				node0.addState(TypeState.TERMINATING);
 				break;
 			}
 			default:{
 				throw new IllegalStateException();
 			}
 		}
-		for(int i = 1; i < a.nodeCount(); i++){
-			builder.apply(i);
-		}
-
-		IntStream.range(0, a.nodeCount())
-			.forEach(
-				i -> {
-					final var srcNode = a.node(i);
-					final var node = abuilder.nodeBuilder(i);
-					srcNode.transitions().forEach(
-						(token, transitions) -> transitions.stream()
-							.map(t -> t.node())
-							.map(srcdest -> abuilder.nodeBuilder(srcdest.index()))
-							.forEach(dest -> node.addTransition(token, dest))
-					);
-				}
-			);
-
-		IntStream.range(0, a.nodeCount())
-			.filter(i -> a.node(i).isTerminating())
-			.mapToObj(i -> abuilder.nodeBuilder(i))
-			.forEach(node -> node.addTransition(null, nbuilder0));
-
-		return abuilder.buildNFA();
+		return builder.buildNFA();
 	}
 
 }
