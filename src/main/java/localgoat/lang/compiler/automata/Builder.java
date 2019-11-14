@@ -74,4 +74,19 @@ public class Builder<T extends Token>{
 	public DFA<T> buildDFA(){
 		return new DFA<T>(this);
 	}
+
+	//TODO: implement build based upon determinism check, rather than passed in type.
+	public Automaton<T> build(Class<? extends Automaton> type){
+		if(type == DFA.class){
+			return buildDFA();
+		}
+		if(type == NFA.class){
+			return buildNFA();
+		}
+		throw new UnsupportedOperationException();
+	}
+
+	public int nodeCount(){
+		return nodes.size();
+	}
 }

@@ -14,34 +14,18 @@ public class Name<T extends Token> implements UnaryOperation<Automaton<T>>{
 
 	@Override
 	public Automaton<T> apply(Automaton<T> automaton){
-		final var builder = new Builder(automaton.tokens());
+		final var builder = new Builder<T>(automaton.tokens());
 		final TypeState terminating = new TypeState(name, State.TERMINATING);
-		for(var node: automaton.nodes()){
-			builder.addNode(node.isTerminating() ? Collections.singleton(terminating) : Collections.emptySet());
-		}
-		for(var node: automaton.nodes()){
-			var nbuilder = builder.nodeBuilder(node.index());
-			node.transitions().forEach(
-				(token, transitions) -> {
-					transitions.stream()
-						.map(t -> t.node())
-						.mapToInt(dest -> dest.index())
-						.mapToObj(index -> builder.nodeBuilder(index))
-						.forEach(
-							dest -> {
-								nbuilder.addTransition(token, dest);
-							}
-						);
-				}
-			);
-		}
+
+		builder.copy(automaton, state -> state.drop());
+
+		automaton.nodes().stream()
+			.filter(n -> n.isTerminating())
+			.mapToInt(n -> n.index())
+			.mapToObj(i -> builder.nodeBuilder(i))
+			.forEach(nbuilder -> nbuilder.addState(terminating));
+
 		final var type = automaton.getClass();
-		if(type == DFA.class){
-			return builder.buildDFA();
-		}
-		if(type == NFA.class){
-			return builder.buildNFA();
-		}
-		throw new IllegalStateException("Unknown automata class " + type.getName());
+		return builder.build(automaton.getClass());
 	}
 }

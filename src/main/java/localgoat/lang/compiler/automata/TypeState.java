@@ -6,19 +6,25 @@ public class TypeState{
 	private final Type type;
 	private final State state;
 	private final int depth;
+	private final boolean negated;
 
 	public TypeState(Type type, State state){
-		this(type, state, 0);
+		this(type, state, 0, false);
 	}
 
-	private TypeState(Type type, State state, int depth){
+	private TypeState(Type type, State state, int depth, boolean negated){
 		this.type = type;
 		this.state = state;
 		this.depth = depth;
+		this.negated = negated;
 	}
 
 	public TypeState drop(){
-		return new TypeState(type, state, depth - 1);
+		return new TypeState(type, state, depth - 1, negated);
+	}
+
+	public TypeState negate(){
+		return new TypeState(type, state, depth, !negated);
 	}
 
 	public Type type(){
@@ -30,10 +36,14 @@ public class TypeState{
 	}
 
 	public boolean isTerminating(){
-		return (depth == 0) && (state == State.TERMINATING);
+		return (depth == 0) && (state == State.TERMINATING) && !negated;
 	}
 
 	public int depth(){
 		return depth;
+	}
+
+	public String toString(){
+		return String.format("[%s, %s, %s, %s]", type, state, depth, negated);
 	}
 }

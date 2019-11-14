@@ -3,70 +3,30 @@ package localgoat.lang.compiler.automata.operation;
 import localgoat.lang.compiler.automata.*;
 import localgoat.util.CollectionUtils;
 import localgoat.util.functional.operation.AssociativeOperation;
+import localgoat.util.functional.operation.PolyOperation;
 
+import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class Or<T extends Token> implements AssociativeOperation<Automaton<T>>{
+public class Or<T extends Token> implements PolyOperation<Automaton<T>>{
 
 	@Override
-	public NFA<T> apply(Automaton<T> a0, Automaton<T> a1){
+	public Automaton<T> apply(List<Automaton<T>> automata){
 
-		final var tokens = CollectionUtils.union(a0.tokens(), a1.tokens());
-		final var left = a0.nodes();
-		final var right = a1.nodes();
+		final var tokens = automata.stream()
+			.flatMap(a -> a.tokens().stream())
+			.collect(Collectors.toSet());
+
 		final var builder = new Builder<T>(tokens);
+		final var node0 = builder.addNode(false);
 
-		final var nbuilder0 = builder.addNode(false);
-
-		{
-			final int loff = 1;
-
-			IntStream.range(0, left.size())
-				.forEach(
-					index -> {
-						builder.addNode(left.get(index).typeStates());
-					}
-				);
-
-			nbuilder0.addTransition(null, builder.nodeBuilder(loff));
-			for(var l : left){
-				final var node = builder.nodeBuilder(loff + l.index());
-				l.transitions().forEach(
-					(token, transitions) -> {
-						transitions.stream()
-							.map(t -> t.node())
-							.forEach(
-								ldest -> node.addTransition(token, builder.nodeBuilder(loff + ldest.index()))
-							);
-					}
-				);
-			}
+		for(var a: automata){
+			final int index = builder.nodeCount();
+			builder.copy(a, s -> s);
+			node0.addTransition(null, builder.nodeBuilder(index));
 		}
-		{
-			final int roff = 1 + left.size();
 
-			IntStream.range(0, right.size())
-				.forEach(
-					index -> {
-						builder.addNode(right.get(index).typeStates());
-					}
-				);
-
-
-			nbuilder0.addTransition(null, builder.nodeBuilder(roff));
-			for(var r : right){
-				final var node = builder.nodeBuilder(roff + r.index());
-				r.transitions().forEach(
-					(token, transitions) -> {
-						transitions.stream()
-							.map(t -> t.node())
-							.forEach(
-								rdest -> node.addTransition(token, builder.nodeBuilder(roff + rdest.index()))
-							);
-					}
-				);
-			}
-		}
 		return builder.buildNFA();
 	}
 }

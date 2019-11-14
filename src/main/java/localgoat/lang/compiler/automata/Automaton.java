@@ -27,11 +27,7 @@ public interface Automaton<T extends Token>{
 	default Set<Type> types(){
 		return nodes().stream()
 			.flatMap(n -> n.types().stream())
-			.collect(
-				Collectors.toCollection(
-					() -> new TreeSet<>(Comparator.comparing(c -> c.name()))
-				)
-			);
+			.collect(Collectors.toSet());
 	}
 
 	boolean isDeterministic();
