@@ -1,53 +1,24 @@
 package localgoat.lang.compiler.automata.expression;
 
 import localgoat.lang.compiler.automata.data.Token;
+import localgoat.lang.compiler.automata.expression.handlers.FunctionHandler;
+import localgoat.lang.compiler.automata.expression.handlers.LiteralHandler;
+import localgoat.lang.compiler.automata.expression.handlers.SeriesHandler;
+import localgoat.lang.compiler.automata.expression.handlers.SymbolHandler;
 import localgoat.lang.compiler.automata.operation.*;
 import localgoat.lang.compiler.automata.structure.Automaton;
 import localgoat.lang.compiler.automata.structure.DFA;
 import localgoat.lang.compiler.automata.structure.NFA;
-import localgoat.lang.compiler.automata.structure.Type;
 import localgoat.util.ESupplier;
 import localgoat.util.functional.CharPredicate;
 
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class Converter{
 	private final char[][] classes = new char[256][];
 	private final Expression[] substitutions = new Expression[256];
 	private final Set<Token<Character>> alphabet = new HashSet<>();
-
-
-	private static final DFA<Token<Character>> NAME_PARSER;
-	static{
-		final var converter = new Converter();
-		converter.addClass('a', c -> 'a' <= c && c <= 'z');
-		converter.addSubstitution('S', "*<1+>a*('-'*<1+>a)");
-		converter.addSubstitution('N', "S");
-		converter.addSubstitution('P', "'--'S");
-		NAME_PARSER = converter.buildDFA("+(N,P,' ')");
-	}
-
-	private Type classFor(String name){
-		final var tokens = NAME_PARSER.tokenise(Token.from(name))
-			.map(token -> token.value())
-			.retain(s -> s.indexOf(' ') == -1)
-			.toArray(String[]::new);
-
-		if(tokens.length == 0 || tokens[0].startsWith("--")){
-			throw new IllegalArgumentException(name);
-		}
-		final Set<String> flags = new HashSet<>();
-		for(int i = 1; i < tokens.length; i++){
-			if(!tokens[i].startsWith("--")){
-				throw new IllegalArgumentException(name);
-			}
-			flags.add(tokens[i].substring(2));
-		}
-		return new Type(tokens[0], flags);
-	}
 
 	public void addClass(char sub, CharPredicate members){
 		if(('a' <= sub && sub <= 'z')){
@@ -142,125 +113,16 @@ public class Converter{
 		addClassP('.', c -> true);
 		handlers.put(
 			LiteralExpression.class,
-			expression -> {
-				final var literal = (LiteralExpression)expression;
-				final var tokens = Token.from(literal.value());
-				final var machines = Stream.of(tokens)
-					.map(t -> DFA.of(t))
-					.toArray(DFA[]::new);
-
-				return new Concatenate<Token<Character>>().apply(machines);
-			}
+			new LiteralHandler()
 		);
 		handlers.put(
 			FunctionExpression.class,
-			expression -> {
-				final var function = (FunctionExpression)expression;
-				final char identifier = function.identifier();
-				switch(identifier){
-					case '!':{
-						final var children = function.children();
-						if(children.size() != 1){
-							throw new IllegalStateException("! function takes a single parameter.");
-						}
-						final var not = new Not<Token<Character>>(alphabet);
-						return not.apply(buildDFA(children.get(0)));
-					}
-					case '~':{
-						final var children = function.children();
-						final var accepted = new HashSet<Token<Character>>(alphabet);
-						for(var c: function.children()){
-							handled:
-							{
-								if(c instanceof Symbol){
-									final char symbol = ((Symbol) c).value();
-									if(classes[symbol] == null){
-										System.err.println(String.format("No character class defined for symbol '%s' using literal interpretation.", c));
-										accepted.remove(Token.of(symbol));
-									}
-									else{
-										accepted.removeAll(
-											Arrays.asList(
-												Token.from(classes[symbol])
-											)
-										);
-									}
-								}
-								else if(c instanceof LiteralExpression && c.length() == 3){
-									final char symbol = ((LiteralExpression)c).value().charAt(0);
-									accepted.remove(Token.of(symbol));
-								}
-								else{
-									throw new UnsupportedOperationException(
-										String.format("All children of ~ operation must be a single symbol (%s is not).", c)
-									);
-								}
-							}
-						}
-						return DFA.of(accepted.stream().toArray(Token[]::new));
-
-					}
-					case '+':{
-						final var children = function.children().stream()
-							.map(expr -> build(expr))
-							.collect(Collectors.toList());
-						final var or = new Or<Token<Character>>();
-						return or.apply(children);
-					}
-					case '@':{
-						final var name = function.modifiers();
-						if(name == null){
-							throw new IllegalStateException("@ function requires defined modifiers.");
-						}
-						final var children = function.children();
-						if(children.size() != 1){
-							throw new IllegalStateException("@ function only supports a single argument.");
-						}
-						final var naming = new Name<Token<Character>>(classFor(name));
-						return naming.apply(build(children.get(0)));
-					}
-					case '*':{
-						final int minCount;
-						final int maxCount = -1;
-						{
-							final String modifiers = function.modifiers();
-							if(modifiers == null){
-								minCount = 0;
-							}
-							else{
-								if(!modifiers.equals("1+")){
-									throw new UnsupportedOperationException("Not yet implemented: " + modifiers);
-								}
-								minCount = 1;
-							}
-
-						}
-						final var children = function.children();
-						if(children.size() != 1){
-							throw new IllegalStateException("Kleene functions only support a single argument.");
-						}
-						final var kleen = new Kleene<Token<Character>>((minCount == 0) ? Kleene.Op.STAR : Kleene.Op.PLUS);
-						return kleen.apply(build(children.get(0)));
-					}
-					default:{
-						throw new UnsupportedOperationException("Unknown function identifier: " + identifier);
-					}
-				}
-			}
+			new FunctionHandler(this)
 		);
 
 		handlers.put(
 			ExpressionSeries.class,
-			expression -> {
-				final var series = (ExpressionSeries)expression;
-				final var children = ESupplier.from(series.children())
-					.map(seg -> build(seg))
-					.toStream()
-					.collect(Collectors.toList());
-
-				final var concat = new Concatenate<Token<Character>>();
-				return concat.apply(children);
-			}
+			new SeriesHandler(this)
 		);
 
 		handlers.put(
@@ -270,30 +132,7 @@ public class Converter{
 
 		handlers.put(
 			Symbol.class,
-			expression -> {
-				final var symbol = (Symbol)expression;
-				final char c = symbol.value();
-				if(c == '^'){
-					return DFA.lambda();
-				}
-				if((c & 0xffffff00) == 0){
-					if('A' <= c && c <= 'Z'){
-						final var expr = substitutions[c];
-						if(expr != null){
-							return buildDFA(expr);
-						}
-					}
-					else{
-						final char[] chars = classes[c];
-						if(chars != null){
-							return DFA.of(Token.from(chars));
-						}
-					}
-					System.err.println(String.format("No character class defined for symbol '%s' using literal interpretation.", c));
-					return DFA.of(Token.of(c));
-				}
-				throw new IllegalStateException();
-			}
+			new SymbolHandler(this)
 		);
 	}
 
@@ -310,12 +149,24 @@ public class Converter{
 		return build(Expression.parse(pattern));
 	}
 
-	private Automaton<Token<Character>> build(Expression expression){
+	public Automaton<Token<Character>> build(Expression expression){
 		final var type = expression.getClass();
 		final var handler = handlers.get(type);
 		if(handler == null){
 			throw new UnsupportedOperationException("No handler provided for expression class " + type.getName());
 		}
 		return handler.apply(expression);
+	}
+
+	public Set<Token<Character>> alphabet(){
+		return Collections.unmodifiableSet(alphabet);
+	}
+
+	public char[] chars(char symbol){
+		return classes[symbol];
+	}
+
+	public Expression substitutions(char c){
+		return substitutions[c];
 	}
 }

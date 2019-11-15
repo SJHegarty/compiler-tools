@@ -23,6 +23,8 @@ public class Brutish{
 	public static final String KEY_WORD = "key-word";
 	public static final String CONTEXT_IDENTIFIER = "context-identifier";
 	public static final String LINE_CONTINUATION = "line-continuation";
+	public static final String MATCHED = "matched";
+	public static final String STATEMENT_TERMINATOR = "statement-terminator";
 
 	public static final String CONTINUING_BRACKET = "}&";
 	public static final String OPENING_SQUARE = "[";
@@ -31,8 +33,6 @@ public class Brutish{
 	public static final String CLOSING_BRACKET = "}";
 	public static final String OPENING_PARENTHESIS = "(";
 	public static final String CLOSING_PARENTHESIS = ")";
-	public static final String STATEMENT_TERMINATOR = ";";
-
 
 	private static final Converter CONVERTER = new Converter();
 	private static final Map<String, String> EXPRESSIONS = new TreeMap<>();
@@ -88,8 +88,8 @@ public class Brutish{
 	}
 
 	private static void configureExpressions(){
-
-
+		configureSymbols();
+		configureMatched();
 		EXPRESSIONS.put(
 			String.format(
 				LineTokeniser.WHITE_SPACE + " --%s --%s",
@@ -98,55 +98,11 @@ public class Brutish{
 			),
 			"*<1+>w"
 		);
+		EXPRESSIONS.put(STATEMENT_TERMINATOR, "';'");
 		EXPRESSIONS.put(CLASS_NAME, "*<1+>(u*l)");
 		EXPRESSIONS.put(CONSTANT, "'@'u*<1+>+(u, d)*('_'*<1+>+(u, d))");
 		EXPRESSIONS.put(IDENTIFIER, "I");
 		EXPRESSIONS.put(CONTEXT_IDENTIFIER, "'@'I");
-		EXPRESSIONS.put(
-			SYMBOL,
-			String.format(
-				"+(%s)",
-				ESupplier.from(
-					".",
-					"..",
-					"...",
-					"^",
-					"~",
-					"!",
-					"&",
-					"|",
-					"-",
-					"+",
-					"/",
-					"*",
-					":",
-					OPENING_SQUARE,
-					CLOSING_SQUARE,
-					OPENING_BRACKET,
-					CLOSING_BRACKET,
-					OPENING_PARENTHESIS,
-					CLOSING_PARENTHESIS,
-					STATEMENT_TERMINATOR,
-					CONTINUING_BRACKET,
-					"->",
-					"!=",
-					"?=",
-					"<=",
-					">=",
-					">",
-					"<",
-					"--",
-					"++",
-					"-=",
-					"+="
-				)
-					.map(s -> String.format("\'%s\'", s))
-					.interleave(",")
-					.toStream()
-					.reduce((s0, s1) -> s0 + s1).get()
-			)
-
-		);
 		EXPRESSIONS.put(LINE_CONTINUATION, "'::'");
 		EXPRESSIONS.put(STRING, "q*+(~q, eq)q");
 		EXPRESSIONS.put(DECIMAL, "*<1+>d");
@@ -158,6 +114,68 @@ public class Brutish{
 			),
 			"'//'*."
 		);
+
 		EXPRESSIONS.put(KEY_WORD, "'$'+(K, '['K*<1+>(pK)']')");
+	}
+
+	private static void configureMatched(){
+		configureOr(
+			MATCHED,
+			new String[]{
+				OPENING_SQUARE,
+				CLOSING_SQUARE,
+				OPENING_BRACKET,
+				CLOSING_BRACKET,
+				OPENING_PARENTHESIS,
+				CLOSING_PARENTHESIS,
+				CONTINUING_BRACKET
+			}
+		);
+	}
+
+	private static void configureSymbols(){
+		configureOr(
+			SYMBOL,
+			new String[]{
+				".",
+				"..",
+				"...",
+				"^",
+				"~",
+				"!",
+				"&",
+				"|",
+				"-",
+				"+",
+				"/",
+				"*",
+				":",
+				"->",
+				"!=",
+				"?=",
+				"<=",
+				">=",
+				">",
+				"<",
+				"--",
+				"++",
+				"-=",
+				"+="
+			}
+		);
+	}
+
+	private static void configureOr(String key, String[] values){
+		EXPRESSIONS.put(
+			key,
+			String.format(
+				"+(%s)",
+				ESupplier.from(values)
+					.map(s -> String.format("\'%s\'", s))
+					.interleave(",")
+					.toStream()
+					.reduce((s0, s1) -> s0 + s1).get()
+			)
+		);
 	}
 }
