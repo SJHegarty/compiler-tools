@@ -31,7 +31,11 @@ public interface Automaton<T extends Token>{
 	default Set<Type> types(){
 		return nodes().stream()
 			.flatMap(n -> n.types().stream())
-			.collect(Collectors.toSet());
+			.collect(
+				Collectors.toCollection(
+					() -> new TreeSet<>(Comparator.comparing(t -> String.valueOf(t)))
+				)
+			);
 	}
 
 	default boolean isDeterministic(){

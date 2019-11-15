@@ -1,5 +1,6 @@
 package localgoat.lang.compiler.automata.operation;
 
+import localgoat.lang.compiler.automata.structure.Automaton;
 import localgoat.lang.compiler.automata.structure.TypeState;
 import localgoat.lang.compiler.automata.utility.Builder;
 import localgoat.lang.compiler.automata.structure.DFA;
@@ -13,7 +14,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.IntStream;
 
-public class Not<T extends Token> implements UnaryOperation<DFA<T>>{
+public class Not<T extends Token> implements UnaryOperation<Automaton<T>>{
 	private final Set<T> baseAlphabet;
 
 	public Not(Set<T> alphabet){
@@ -25,7 +26,7 @@ public class Not<T extends Token> implements UnaryOperation<DFA<T>>{
 	}
 
 	@Override
-	public DFA<T> apply(DFA<T> source){
+	public DFA<T> apply(Automaton<T> source){
 		final var complete = new Complete<>(baseAlphabet).apply(source);
 		final var builder = new Builder<T>(complete.tokens());
 		builder.copy(complete, s -> s.negate());

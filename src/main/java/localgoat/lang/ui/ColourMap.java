@@ -18,7 +18,7 @@ public class ColourMap<T>{
 	}
 
 	public Map<T, Color> build(){
-		final Map<T, Color> rv = new HashMap<>();
+		final Map<T, Color> rv = new TreeMap<>(Comparator.comparing(t -> String.valueOf(t)));
 
 		final double twopi = 2 * Math.PI;
 		final double offsetr = offset;

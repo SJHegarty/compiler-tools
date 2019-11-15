@@ -19,16 +19,6 @@ public class CodeLine{
 		this.tokens = Collections.unmodifiableList(tokens);
 	}
 
-	public List<TokenString<Token<Character>>> contentTokens(){
-		var deque = new ArrayDeque<>(tokens);
-		deque.pollFirst();
-		for(; !deque.isEmpty() && deque.peekFirst().classes().contains("white-space"); deque.pollFirst()) ;
-		for(; !deque.isEmpty() && deque.peekLast().classes().contains("white-space"); deque.pollLast()) ;
-		return Collections.unmodifiableList(
-			new ArrayList<>(deque)
-		);
-	}
-
 	public TokenString<Token<Character>> last(Predicate<TokenString<Token<Character>>> filter){
 		for(int i = tokens.size() - 1; i >= 0; i--){
 			var token = tokens.get(i);
@@ -54,14 +44,6 @@ public class CodeLine{
 				.filter(filter)
 				.collect(Collectors.toList())
 		);
-	}
-
-	public String content(){
-		var builder = new StringBuilder();
-		for(TokenString<Token<Character>> t : contentTokens()){
-			builder.append(t);
-		}
-		return builder.toString();
 	}
 
 	public String prefix(){

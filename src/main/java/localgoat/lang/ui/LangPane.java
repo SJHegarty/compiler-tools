@@ -2,6 +2,7 @@ package localgoat.lang.ui;
 
 import localgoat.lang.compiler.LineTokeniser;
 import localgoat.lang.compiler.ContentTree;
+import localgoat.lang.compiler.brutish.Brutish;
 import localgoat.util.ESupplier;
 import localgoat.util.ui.document.InsertRemoveListener;
 
@@ -18,6 +19,7 @@ import java.awt.Font;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Random;
 import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -25,6 +27,72 @@ import java.util.stream.IntStream;
 
 public class LangPane extends JTextPane{
 
+	private static final AttributeSet MISSING;
+	private static final AttributeSet HANGING;
+	private static final AttributeSet AMBIGUOUS;
+	private static final Map<String, AttributeSet> ATTRIBUTES;
+
+	static{
+		var context = StyleContext.getDefaultStyleContext();
+
+		final Function<Color, AttributeSet> builder = (colour) -> context.addAttribute(
+			context.getEmptySet(),
+			StyleConstants.Foreground,
+			colour
+		);
+
+		MISSING = builder.apply(Color.ORANGE);
+		HANGING = builder.apply(Color.RED);
+		AMBIGUOUS = builder.apply(Color.YELLOW);
+
+		final Map<String, Color> colours = new TreeMap<>();
+		colours.put(Brutish.CLASS_NAME, new Color(0xffffffff));
+		colours.put(Brutish.CONSTANT, new Color(0xffffff00));
+		colours.put(Brutish.CONTEXT_IDENTIFIER, new Color(0xffffffff));
+		colours.put(Brutish.KEY_WORD, new Color(0xff40a0ff));
+
+		colours.put(Brutish.LINE_COMMENT, new Color(0xffa0a0a0));
+		final double r = new Random().nextDouble() * 2 * Math.PI;
+		System.err.println("Wheel offset: " + r);
+		final ColourMap<String> generator = new ColourMap<>(r);
+
+		ESupplier.from(ContentTree.CLASSES)
+			.exclude(c -> c.hasFlag(LineTokeniser.WHITE_SPACE))
+			.map(c -> c.name())
+			.exclude(name -> colours.containsKey(name))
+			.forEach(name -> generator.add(name));
+
+		colours.putAll(
+			generator.build().entrySet().stream()
+				.collect(
+					Collectors.toMap(
+						e -> e.getKey(),
+						e -> {
+							final var c = e.getValue().brighter();
+							System.err.println(
+								String.format(
+									"No colour supplied for string class \"%s\" using generated default (%s).",
+									e.getKey(),
+									Integer.toHexString(c.getRGB())
+								)
+							);
+							return c;
+						}
+					)
+				)
+		);
+
+		ATTRIBUTES = new HashMap<>(
+			colours.entrySet().stream()
+				.collect(
+					Collectors.toMap(
+						e -> e.getKey(),
+						e -> builder.apply(e.getValue())
+					)
+				)
+		);
+
+	}
 	private ContentTree content;
 
 	public LangPane(){
@@ -52,74 +120,6 @@ public class LangPane extends JTextPane{
 		setParagraphAttributes(paraSet, false);
 
 		var doc = getStyledDocument();
-		var context = StyleContext.getDefaultStyleContext();
-
-		final Function<Color, AttributeSet> builder = (colour) -> context.addAttribute(
-			context.getEmptySet(),
-			StyleConstants.Foreground,
-			colour
-		);
-
-		final var missing = builder.apply(Color.ORANGE);
-		final var hanging = builder.apply(Color.RED);
-		final var ambiguous = builder.apply(Color.YELLOW);
-
-		final var attsCache = ESupplier.cache(
-			() -> {
-				if(content == null){
-					throw new IllegalStateException();
-				}
-
-				final Map<String, Color> colours = new TreeMap<>();
-				colours.put(ContentTree.CLASS_NAME, new Color(0xffffffff));
-				colours.put(ContentTree.CONSTANT, new Color(0xffffff00));
-				colours.put(ContentTree.CONTEXT_IDENTIFIER, new Color(0xffffffff));
-				colours.put(ContentTree.KEY_WORD, new Color(0xff40a0ff));
-
-				colours.put(ContentTree.LINE_COMMENT, new Color(0xffa0a0a0));
-
-				final ColourMap<String> generator = new ColourMap<>(.5 * Math.PI/3);
-
-				ESupplier.from(ContentTree.CLASSES)
-					.exclude(c -> c.hasFlag(LineTokeniser.WHITE_SPACE))
-					.map(c -> c.name())
-					.exclude(name -> colours.containsKey(name))
-					.forEach(
-						name -> {
-							System.err.println(
-								String.format(
-									"No colour supplied for string class \"%s\" using generated default.",
-									name
-								)
-							);
-							generator.add(name);
-						}
-					);
-
-				colours.putAll(
-					generator.build().entrySet().stream()
-						.collect(
-							Collectors.toMap(
-								e -> e.getKey(),
-								e -> e.getValue().brighter()
-							)
-						)
-				);
-
-				final var atts = new HashMap<>(
-					colours.entrySet().stream()
-						.collect(
-							Collectors.toMap(
-								e -> e.getKey(),
-								e -> builder.apply(e.getValue())
-							)
-						)
-				);
-
-				return atts;
-			}
-		);
-
 
 		doc.addDocumentListener(
 			(InsertRemoveListener) event -> {
@@ -127,7 +127,6 @@ public class LangPane extends JTextPane{
 				SwingUtilities.invokeLater(
 					() -> {
 						int index = 0;
-						final var atts = attsCache.get();
 						for(var token: content.tokens()){
 							final int length = token.value().length();
 
@@ -157,21 +156,21 @@ public class LangPane extends JTextPane{
 
 								switch(classes.size()){
 									case 0:{
-										attributes = hanging;
+										attributes = HANGING;
 										break;
 									}
 									case 1:{
-										attributes = Optional.ofNullable(atts.get(classes.iterator().next()))
+										attributes = Optional.ofNullable(ATTRIBUTES.get(classes.iterator().next()))
 											.orElseGet(
 												() -> {
 													System.err.println("Missing name handler for token - " + token);
-													return missing;
+													return MISSING;
 												}
 											);
 										break;
 									}
 									default:{
-										attributes = ambiguous;
+										attributes = AMBIGUOUS;
 									}
 								}
 								doc.setCharacterAttributes(index, length, attributes, true);

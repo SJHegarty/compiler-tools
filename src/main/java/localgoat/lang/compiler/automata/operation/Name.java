@@ -28,6 +28,7 @@ public class Name<T extends Token> implements UnaryOperation<Automaton<T>>{
 			.mapToObj(i -> builder.nodeBuilder(i))
 			.forEach(nbuilder -> nbuilder.addState(terminating));
 
+		builder.nodeBuilder(0).addState(new TypeState(name, State.INITIALISING));
 		final var type = automaton.getClass();
 		return builder.build(automaton.getClass());
 	}

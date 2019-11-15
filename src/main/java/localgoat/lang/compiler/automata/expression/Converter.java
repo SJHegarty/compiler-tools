@@ -264,7 +264,7 @@ public class Converter{
 		);
 
 		handlers.put(
-			SpacesExpression.class,
+			WhitespaceExpression.class,
 			expression -> null
 		);
 

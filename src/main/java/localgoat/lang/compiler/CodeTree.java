@@ -2,6 +2,7 @@ package localgoat.lang.compiler;
 
 import localgoat.lang.compiler.automata.data.Token;
 import localgoat.lang.compiler.automata.data.TokenString;
+import localgoat.lang.compiler.brutish.Brutish;
 import localgoat.util.ESupplier;
 
 import java.util.ArrayList;
@@ -71,7 +72,7 @@ public class CodeTree{
 			}
 			final Predicate<TokenString<Token<Character>>> stringPredicate = t -> !t.hasClass(sc -> sc.hasFlag(LineTokeniser.IGNORED));
 			final TokenString<Token<Character>> headEnd = head.last(stringPredicate);
-			if(headEnd != null && headEnd.value().equals(ContentTree.OPENING_BRACKET)){
+			if(headEnd != null && headEnd.value().equals(Brutish.OPENING_BRACKET)){
 				final var line = lines.peek();
 				handled:{
 					unhandled:{
@@ -83,11 +84,11 @@ public class CodeTree{
 							break unhandled;
 						}
 						switch(lineEnd.value()){
-							case ContentTree.CONTINUING_BRACKET:{
+							case Brutish.CONTINUING_BRACKET:{
 								this.type = BlockType.CONTINUED;
 								break;
 							}
-							case ContentTree.CLOSING_BRACKET:{
+							case Brutish.CLOSING_BRACKET:{
 								this.type = BlockType.CLOSED;
 								break;
 							}

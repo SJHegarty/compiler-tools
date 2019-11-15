@@ -35,8 +35,8 @@ public interface Expression{
 			case '.': case '^':{
 				return new Symbol(c);
 			}
-			case ' ':{
-				return new SpacesExpression(s, index);
+			case '\n': case '\t': case ' ':{
+				return new WhitespaceExpression(s, index);
 			}
 			case '\'':{
 				return new LiteralExpression(s, index);

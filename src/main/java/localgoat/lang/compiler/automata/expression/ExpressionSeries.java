@@ -9,7 +9,7 @@ public class ExpressionSeries implements ExpressionTree{
 	private final Expression[] segments;
 
 	public ExpressionSeries(List<Expression> segments){
-		if(segments.size() == 1 && segments.get(0) instanceof SpacesExpression){
+		if(segments.size() == 1 && segments.get(0) instanceof WhitespaceExpression){
 			throw new IllegalArgumentException();
 		}
 		this.segments = segments.stream().toArray(Expression[]::new);

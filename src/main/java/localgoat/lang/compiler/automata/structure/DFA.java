@@ -119,7 +119,6 @@ public class DFA<T extends Token> extends AbstractAutomaton<T>{
 			throw new IllegalArgumentException();
 		}
 
-
 		var state = node(0);
 		var t = state.isTerminating() ? new StateIndex(index, state) : null;
 		int depth = index;
@@ -157,6 +156,9 @@ public class DFA<T extends Token> extends AbstractAutomaton<T>{
 	}
 
 	public ESupplier<TokenString> tokenise(T...input){
+		if(accepts()){
+			throw new UnsupportedOperationException("Cannot tokenise if the empty String is accepted.");
+		}
 		return new ESupplier<>(){
 			int index = 0;
 			@Override
