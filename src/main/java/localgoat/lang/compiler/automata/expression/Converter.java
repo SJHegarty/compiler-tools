@@ -1,6 +1,7 @@
 package localgoat.lang.compiler.automata.expression;
 
 import localgoat.lang.compiler.automata.data.Token;
+import localgoat.lang.compiler.automata.data.TokenSeries;
 import localgoat.lang.compiler.automata.data.TokenTree;
 import localgoat.lang.compiler.automata.expression.handlers.FunctionHandler;
 import localgoat.lang.compiler.automata.expression.handlers.LiteralHandler;
@@ -20,6 +21,7 @@ public class Converter{
 	private final char[][] classes = new char[256][];
 	private final Token[] substitutions = new Token[256];
 	private final Set<Token> alphabet = new HashSet<>();
+	private final ExpressionParser parser = new ExpressionParser();
 
 	public void addClass(char sub, CharPredicate members){
 		if(('a' <= sub && sub <= 'z')){
@@ -38,7 +40,7 @@ public class Converter{
 			if(substitutions[sub] != null){
 				throw new IllegalStateException(String.format("Unavailable expression substitution character: '%s'.", sub));
 			}
-			final var expr = ExpressionParser.parse(expression);
+			final var expr = parser.parse(expression);
 			final Queue<Token> loopCheck = new ArrayDeque<>();
 			loopCheck.add(expr);
 			while(!loopCheck.isEmpty()){
@@ -122,7 +124,7 @@ public class Converter{
 		);
 
 		handlers.put(
-			ExpressionSeries.class,
+			TokenSeries.class,
 			new SeriesHandler(this)
 		);
 
@@ -138,7 +140,12 @@ public class Converter{
 	}
 
 	public DFA buildDFA(String pattern){
-		return buildDFA(ExpressionParser.parse(pattern));
+		final var expression = parser.parse(pattern);
+		final var rebuilt = expression.value();
+		if(!rebuilt.equals(pattern)){
+			throw new IllegalStateException(rebuilt + " != " + pattern);
+		}
+		return buildDFA(parser.parse(pattern));
 	}
 
 	public DFA buildDFA(Token expression){
@@ -147,7 +154,12 @@ public class Converter{
 	}
 
 	public Automaton build(String pattern){
-		return build(ExpressionParser.parse(pattern));
+		final var expression = parser.parse(pattern);
+		final var rebuilt = expression.value();
+		if(!rebuilt.equals(pattern)){
+			throw new IllegalStateException(rebuilt + " != " + pattern);
+		}
+		return build(parser.parse(pattern));
 	}
 
 	public Automaton build(Token expression){

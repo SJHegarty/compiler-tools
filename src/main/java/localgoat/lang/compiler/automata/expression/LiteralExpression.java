@@ -17,7 +17,7 @@ public class LiteralExpression implements Token{
 		DFA = converter.buildDFA("q*+(~q, eq)q");
 	}
 
-	private final String value;
+	private final String wrapped;
 
 	public LiteralExpression(String s, int index){
 		final var tokens = Token.from(s);
@@ -26,20 +26,25 @@ public class LiteralExpression implements Token{
 			throw new IllegalArgumentException(s.substring(index));
 		}
 		final var extracted = result.value();
-		this.value = extracted.substring(1, extracted.length() - 1);
+		this.wrapped = extracted.substring(1, extracted.length() - 1);
 	}
 
 	@Override
 	public int length(){
-		return 2 + value.length();
+		return 2 + wrapped.length();
+	}
+
+	@Override
+	public String value(){
+		return "'" + wrapped + "'";
 	}
 
 	@Override
 	public String toString(){
-		return "'" + value + "'";
+		return value();
 	}
 
-	public String value(){
-		return value;
+	public String wrapped(){
+		return wrapped;
 	}
 }

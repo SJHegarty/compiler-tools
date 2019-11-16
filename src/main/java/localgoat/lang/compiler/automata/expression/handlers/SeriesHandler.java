@@ -2,8 +2,7 @@ package localgoat.lang.compiler.automata.expression.handlers;
 
 import localgoat.lang.compiler.automata.data.Token;
 import localgoat.lang.compiler.automata.expression.Converter;
-import localgoat.lang.compiler.automata.expression.ExpressionParser;
-import localgoat.lang.compiler.automata.expression.ExpressionSeries;
+import localgoat.lang.compiler.automata.data.TokenSeries;
 import localgoat.lang.compiler.automata.operation.Concatenate;
 import localgoat.lang.compiler.automata.structure.Automaton;
 import localgoat.util.ESupplier;
@@ -21,7 +20,7 @@ public class SeriesHandler implements Function<Token, Automaton>{
 
 	@Override
 	public Automaton apply(Token expression){
-		final var series = (ExpressionSeries)expression;
+		final var series = (TokenSeries)expression;
 		final var children = ESupplier.from(series.children())
 			.map(seg -> converter.build(seg))
 			.toStream()

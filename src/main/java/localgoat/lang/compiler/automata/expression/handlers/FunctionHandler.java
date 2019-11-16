@@ -1,11 +1,7 @@
 package localgoat.lang.compiler.automata.expression.handlers;
 
 import localgoat.lang.compiler.automata.data.Token;
-import localgoat.lang.compiler.automata.expression.Converter;
-import localgoat.lang.compiler.automata.expression.ExpressionParser;
-import localgoat.lang.compiler.automata.expression.FunctionExpression;
-import localgoat.lang.compiler.automata.expression.LiteralExpression;
-import localgoat.lang.compiler.automata.expression.Symbol;
+import localgoat.lang.compiler.automata.expression.*;
 import localgoat.lang.compiler.automata.operation.Kleene;
 import localgoat.lang.compiler.automata.operation.Name;
 import localgoat.lang.compiler.automata.operation.Not;
@@ -95,7 +91,7 @@ public class FunctionHandler implements Function<Token, Automaton>{
 							}
 						}
 						else if(c instanceof LiteralExpression && c.length() == 3){
-							final char symbol = ((LiteralExpression)c).value().charAt(0);
+							final char symbol = ((LiteralExpression)c).value().charAt(1);
 							accepted.remove(Token.of(symbol));
 						}
 						else{
@@ -113,6 +109,7 @@ public class FunctionHandler implements Function<Token, Automaton>{
 			'+',
 			function -> {
 				final var children = function.children().stream()
+					.filter(t -> !(t instanceof FormattingExpression))
 					.map(expr -> converter.build(expr))
 					.collect(Collectors.toList());
 				final var or = new Or();

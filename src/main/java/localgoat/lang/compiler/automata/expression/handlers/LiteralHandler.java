@@ -14,7 +14,7 @@ public class LiteralHandler implements Function<Token, Automaton>{
 	@Override
 	public Automaton apply(Token expression){
 		final var literal = (LiteralExpression)expression;
-		final var tokens = Token.from(literal.value());
+		final var tokens = Token.from(literal.wrapped());
 		final var machines = Stream.of(tokens)
 			.map(t -> DFA.of(t))
 			.toArray(DFA[]::new);

@@ -1,18 +1,21 @@
 package localgoat.lang.compiler.automata.expression;
 
+import localgoat.lang.compiler.Parser;
 import localgoat.lang.compiler.automata.data.Token;
+import localgoat.lang.compiler.automata.data.TokenSeries;
 
 import java.util.ArrayList;
 
-public class ExpressionParser{
+public class ExpressionParser implements Parser{
 
-	public static Token parse(String s){
+	@Override
+	public Token parse(String s){
 		return parseSeries(s, 0);
 	}
 
-	public static Token parseSeries(String s, int index){
+	public Token parseSeries(String s, int index){
 		if(index == s.length()){
-			return new ExpressionSeries();
+			return new TokenSeries();
 		}
 		final var segments = new ArrayList<Token>();
 		while(index < s.length()){
@@ -23,14 +26,14 @@ public class ExpressionParser{
 			segments.add(seg);
 			index += seg.length();
 		}
-		return (segments.size() == 1) ? segments.get(0) : new ExpressionSeries(segments);
+		return (segments.size() == 1) ? segments.get(0) : new TokenSeries(segments);
 	}
 
-	public static Token parseSegment(String s, int index){
+	public Token parseSegment(String s, int index){
 		final char c = s.charAt(index);
 		switch(c){
 			case '@': case '+': case '&': case '*': case '!': case '?': case '~':{
-				return new FunctionExpression(s, index);
+				return new FunctionExpression(this, s, index);
 			}
 			case '.': case '^':{
 				return new Symbol(c);
@@ -50,5 +53,6 @@ public class ExpressionParser{
 		}
 
 	}
+
 
 }

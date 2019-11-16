@@ -44,7 +44,8 @@ public class DFA extends AbstractAutomaton{
 
 		builder.append(")");
 
-		final var expr = ExpressionParser.parse(builder.toString());
+		final var parser = new ExpressionParser();
+		final var expr = parser.parse(builder.toString());
 		final var dfa = converter.buildDFA(expr);
 
 		System.err.println(dfa.read(ReadMode.GREEDY, Token.from("ClassName")));
@@ -88,10 +89,11 @@ public class DFA extends AbstractAutomaton{
 	public boolean accepts(Token...tokens){
 		var state = node(0);
 		for(Token token: tokens){
-			state = state.transition(token).node();
-			if(state == null){
+			final var transition = state.transition(token);
+			if(transition == null){
 				return false;
 			}
+			state = transition.node();
 		}
 		return state.isTerminating();
 	}

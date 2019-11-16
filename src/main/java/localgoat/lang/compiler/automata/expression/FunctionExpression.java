@@ -1,6 +1,7 @@
 package localgoat.lang.compiler.automata.expression;
 
 import localgoat.lang.compiler.automata.data.Token;
+import localgoat.lang.compiler.automata.data.TokenSeries;
 import localgoat.lang.compiler.automata.data.TokenTree;
 import localgoat.util.ESupplier;
 
@@ -8,43 +9,46 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class FunctionExpression implements TokenTree{
 
-	private final boolean bracketed;
-	private final char identifier;
-	private final String modifiers;
+	private final ExpressionParser parser;
+	private final Token head;
 	private final Token[] children;
+	private final Token tail;
 
-	public FunctionExpression(String source, int index){
-		this.identifier = source.charAt(index++);
+	public FunctionExpression(ExpressionParser parser, String source, int index){
+		this.parser = parser;
+		final List<Token> head = new ArrayList<>();
+		head.add(new Symbol(source.charAt(index++)));
 
 		if(source.charAt(index) == '<'){
 			final var builder = new StringBuilder();
 			while(true){
 				final char c = source.charAt(++index);
 				if(c == '>'){
-					modifiers = builder.toString();
+					head.add(new Modifiers(builder.toString()));
 					index++;
 					break;
 				}
 				builder.append(c);
 			}
 		}
-		else{
-			modifiers = null;
-		}
 
 		if(source.charAt(index) == '('){
-			bracketed = true;
+			head.add(new Symbol('('));
 			final var segments = new ArrayList<Token>();
 			loop: while(true){
-				final var seg = ExpressionParser.parseSeries(source, ++index);
+				final var seg = parser.parseSeries(source, ++index);
 				segments.add(seg);
 				index+=seg.length();
 				final char c = source.charAt(index);
 				switch(c){
-					case ')': break loop;
+					case ')':{
+						this.tail = new Symbol(')');
+						break loop;
+					}
 					case ',': continue loop;
 					default: throw new IllegalArgumentException(
 						String.format("Unexpected token: '%s' in %s", c, source.substring(index))
@@ -57,49 +61,17 @@ public class FunctionExpression implements TokenTree{
 			this.children = segments.stream().toArray(Token[]::new);
 		}
 		else{
-			bracketed = false;
 			this.children = new Token[]{
-				ExpressionParser.parseSegment(source, index)
+				parser.parseSegment(source, index)
 			};
+			this.tail = null;
 		}
-	}
-
-	@Override
-	public int length(){
-		int rv = 1;
-		if(modifiers != null){
-			rv += 2 + modifiers.length();
+		if(head.size() == 1){
+			this.head = head.get(0);
 		}
-		if(bracketed){
-			rv += 2;
+		else{
+			this.head = new TokenSeries(head);
 		}
-		rv += children.length - 1;
-		for(var c: children){
-			rv += c.length();
-		}
-		return rv;
-	}
-
-	@Override
-	public String value(){
-		final var builder = new StringBuilder();
-		builder.append(identifier);
-		if(modifiers != null){
-			builder.append('<').append(modifiers).append('>');
-		}
-		if(bracketed){
-			builder.append('(');
-		}
-
-		ESupplier.from(children)
-			.map(c -> c.toString())
-			.interleave(",")
-			.forEach(s -> builder.append(s));
-
-		if(bracketed){
-			builder.append(')');
-		}
-		return builder.toString();
 	}
 
 	@Override
@@ -108,16 +80,40 @@ public class FunctionExpression implements TokenTree{
 	}
 
 	public char identifier(){
-		return identifier;
+		return ((Symbol)headTokens().get()).charValue();
+	}
+
+	private ESupplier<Token> headTokens(){
+		if(head instanceof TokenTree){
+			return ESupplier.of((TokenTree)head)
+				.flatMap(tree -> ESupplier.from(tree.children()));
+		}
+		return ESupplier.of(head);
 	}
 
 	public String modifiers(){
-		return modifiers;
+		return headTokens().retain(t -> t instanceof Modifiers)
+			.map(t -> (Modifiers)t)
+			.map(m -> m.childrenString())
+			.get();
+	}
+
+	@Override
+	public Token head(){
+		return head;
 	}
 
 	@Override
 	public List<Token> children(){
-		return Collections.unmodifiableList(Arrays.asList(children));
+		return ESupplier.from(children)
+			.interleave(new FormattingExpression(","))
+			.toStream()
+			.collect(Collectors.toList());
+	}
+
+	@Override
+	public Token tail(){
+		return tail;
 	}
 
 }

@@ -55,7 +55,17 @@ public class TokenString implements TokenTree{
 	}
 
 	@Override
+	public Token head(){
+		return null;
+	}
+
+	@Override
 	public List<Token> children(){
 		return tokens;
+	}
+
+	@Override
+	public Token tail(){
+		return null;
 	}
 }
