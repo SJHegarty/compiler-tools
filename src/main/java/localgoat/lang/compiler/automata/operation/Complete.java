@@ -13,21 +13,21 @@ import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.IntStream;
 
-public class Complete<T extends Token> implements UnaryOperator<Automaton<T>>{
-	private final Set<T> alphabet;
+public class Complete implements UnaryOperator<Automaton>{
+	private final Set<Token> alphabet;
 
-	public Complete(Set<T> alphabet){
+	public Complete(Set<Token> alphabet){
 		this.alphabet = alphabet;
 	}
 
 	@Override
-	public DFA<T> apply(Automaton<T> a){
-		final DFA<T> dfa;
+	public DFA apply(Automaton a){
+		final DFA dfa;
 		if(a instanceof DFA){
-			dfa = (DFA<T>)a;
+			dfa = (DFA)a;
 		}
 		else{
-			dfa = new Convert<T>().apply((NFA<T>)a);
+			dfa = new Convert().apply((NFA)a);
 		}
 		final var tokens = CollectionUtils.union(alphabet, dfa.tokens());
 
@@ -35,7 +35,7 @@ public class Complete<T extends Token> implements UnaryOperator<Automaton<T>>{
 			return dfa;
 		}
 
-		final var builder = new Builder<T>(tokens);
+		final var builder = new Builder(tokens);
 		builder.copy(dfa, s -> s);
 		final var sink = builder.addNode();
 

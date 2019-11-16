@@ -7,7 +7,7 @@ import localgoat.lang.compiler.automata.structure.TypeState;
 import localgoat.lang.compiler.automata.utility.Builder;
 import localgoat.util.functional.operation.UnaryOperation;
 
-public class Kleene<T extends Token> implements UnaryOperation<Automaton<T>>{
+public class Kleene implements UnaryOperation<Automaton>{
 
 	public enum Op{
 		STAR,
@@ -21,8 +21,8 @@ public class Kleene<T extends Token> implements UnaryOperation<Automaton<T>>{
 	}
 
 	@Override
-	public NFA<T> apply(Automaton<T> a){
-		final var builder = new Builder<T>(a.tokens());
+	public NFA apply(Automaton a){
+		final var builder = new Builder(a.tokens());
 		builder.copy(a, s -> s.drop());
 
 		final var node0 = builder.nodeBuilder(0);

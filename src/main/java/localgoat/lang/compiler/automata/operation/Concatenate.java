@@ -10,10 +10,10 @@ import localgoat.util.functional.operation.AssociativeOperation;
 
 import java.util.stream.IntStream;
 
-public class Concatenate<T extends Token> implements AssociativeOperation<Automaton<T>>{
+public class Concatenate implements AssociativeOperation<Automaton>{
 	@Override
-	public NFA<T> apply(Automaton<T> a0, Automaton<T> a1){
-		final var builder = new Builder<T>(
+	public NFA apply(Automaton a0, Automaton a1){
+		final var builder = new Builder(
 			CollectionUtils.union(
 				a0.tokens(),
 				a1.tokens()

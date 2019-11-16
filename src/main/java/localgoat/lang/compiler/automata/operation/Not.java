@@ -14,10 +14,10 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.IntStream;
 
-public class Not<T extends Token> implements UnaryOperation<Automaton<T>>{
-	private final Set<T> baseAlphabet;
+public class Not implements UnaryOperation<Automaton>{
+	private final Set<Token> baseAlphabet;
 
-	public Not(Set<T> alphabet){
+	public Not(Set<Token> alphabet){
 		this.baseAlphabet = alphabet;
 	}
 
@@ -26,9 +26,9 @@ public class Not<T extends Token> implements UnaryOperation<Automaton<T>>{
 	}
 
 	@Override
-	public DFA<T> apply(Automaton<T> source){
-		final var complete = new Complete<>(baseAlphabet).apply(source);
-		final var builder = new Builder<T>(complete.tokens());
+	public DFA apply(Automaton source){
+		final var complete = new Complete(baseAlphabet).apply(source);
+		final var builder = new Builder(complete.tokens());
 		builder.copy(complete, s -> s.negate());
 		IntStream.range(0, complete.nodeCount())
 			.filter(

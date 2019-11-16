@@ -25,7 +25,7 @@ public class ContentTree{
 		TOKENISER = new LineTokeniser(dfa);
 	}
 
-	private static DFA<Token<Character>> buildTestDFA(){
+	private static DFA buildTestDFA(){
 		final var converter = new Converter();
 		{
 			final var dfa = converter.buildDFA("!(ab)");
@@ -76,7 +76,7 @@ public class ContentTree{
 		return trees;
 	}
 
-	public ESupplier<TokenString<Token<Character>>> tokens(){
+	public ESupplier<TokenString> tokens(){
 		return CodeTree.tokenise(trees);
 	}
 

@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 public class CodeTree{
 
 
-	static ESupplier<TokenString<Token<Character>>> tokenise(Iterable<CodeTree> trees){
+	static ESupplier<TokenString> tokenise(Iterable<CodeTree> trees){
 		return ESupplier.from(trees)
 			.map(child -> child.tokens())
 			.interleave(() -> ESupplier.of(LineTokeniser.LINE_FEED))
@@ -70,8 +70,8 @@ public class CodeTree{
 			while(lines.size() != 0 && filter.test(lines.peek())){
 				children.add(new CodeTree(lines));
 			}
-			final Predicate<TokenString<Token<Character>>> stringPredicate = t -> !t.hasClass(sc -> sc.hasFlag(LineTokeniser.IGNORED));
-			final TokenString<Token<Character>> headEnd = head.last(stringPredicate);
+			final Predicate<TokenString> stringPredicate = t -> !t.hasClass(sc -> sc.hasFlag(LineTokeniser.IGNORED));
+			final TokenString headEnd = head.last(stringPredicate);
 			if(headEnd != null && headEnd.value().equals(Brutish.OPENING_BRACKET)){
 				final var line = lines.peek();
 				handled:{
@@ -79,7 +79,7 @@ public class CodeTree{
 						if(line == null || line.depth() != depth){
 							break unhandled;
 						}
-						final TokenString<Token<Character>> lineEnd = line.last(stringPredicate);
+						final TokenString lineEnd = line.last(stringPredicate);
 						if(lineEnd == null){
 							break unhandled;
 						}
@@ -136,8 +136,8 @@ public class CodeTree{
 		this.tail = tail;
 	}
 
-	public ESupplier<TokenString<Token<Character>>> tokens(){
-		var sources = new ArrayList<ESupplier<TokenString<Token<Character>>>>();
+	public ESupplier<TokenString> tokens(){
+		var sources = new ArrayList<ESupplier<TokenString>>();
 		if(head != null){
 			sources.add(ESupplier.from(head.tokens));
 		}

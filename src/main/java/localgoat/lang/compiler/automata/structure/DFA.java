@@ -14,7 +14,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class DFA<T extends Token> extends AbstractAutomaton<T>{
+public class DFA extends AbstractAutomaton{
 	public static void main(String...args){
 
 		final var converter = new Converter();
@@ -58,15 +58,15 @@ public class DFA<T extends Token> extends AbstractAutomaton<T>{
 
 	}
 
-	public static <T extends Token> DFA<T> lambda(){
-		final var builder = new Builder<T>(Collections.emptySet());
+	public static DFA lambda(){
+		final var builder = new Builder(Collections.emptySet());
 		builder.addNode(true);
 		return builder.buildDFA();
 	}
 
-	public static <T extends Token> DFA<T> of(T...tokens){
+	public static DFA of(Token...tokens){
 		final var tokenSet = new HashSet<>(Arrays.asList(tokens));
-		final var builder = new Builder<>(tokenSet);
+		final var builder = new Builder(tokenSet);
 		final var n0 = builder.addNode();
 		final var n1 = builder.addNode(true);
 		n0.addTransitions(tokenSet, n1);
@@ -80,7 +80,7 @@ public class DFA<T extends Token> extends AbstractAutomaton<T>{
 		}
 	}
 
-	public boolean isComplete(Set<T> alphabet){
+	public boolean isComplete(Set<Token> alphabet){
 		if(!tokens.containsAll(alphabet)){
 			return false;
 		}
@@ -89,9 +89,9 @@ public class DFA<T extends Token> extends AbstractAutomaton<T>{
 			.get();
 	}
 
-	public boolean accepts(T...tokens){
+	public boolean accepts(Token...tokens){
 		var state = node(0);
-		for(T token: tokens){
+		for(Token token: tokens){
 			state = state.transition(token).node();
 			if(state == null){
 				return false;
@@ -100,21 +100,21 @@ public class DFA<T extends Token> extends AbstractAutomaton<T>{
 		return state.isTerminating();
 	}
 
-	public TokenString read(final ReadMode mode, T...tokens){
+	public TokenString read(final ReadMode mode, Token...tokens){
 		return read(mode, 0, tokens);
 	}
 
-	public static class StateIndex<T extends Token>{
+	public static class StateIndex{
 		final int index;
-		final Node<T> state;
+		final Node state;
 
-		public StateIndex(int index, Node<T> state){
+		public StateIndex(int index, Node state){
 			this.index = index;
 			this.state = state;
 		}
 	}
 
-	public TokenString read(final ReadMode mode, final int index, final T...tokens){
+	public TokenString read(final ReadMode mode, final int index, final Token...tokens){
 		if(index == tokens.length){
 			throw new IllegalArgumentException();
 		}
@@ -137,7 +137,7 @@ public class DFA<T extends Token> extends AbstractAutomaton<T>{
 			}
 		}
 		if(t != null){
-			final var result = new ArrayList<T>();
+			final var result = new ArrayList<Token>();
 			for(int i = index; i < t.index; i++){
 				result.add(tokens[i]);
 			}
@@ -147,7 +147,7 @@ public class DFA<T extends Token> extends AbstractAutomaton<T>{
 			return new TokenString(Collections.emptySet(), Collections.singletonList(tokens[index]));
 		}
 		else{
-			final var list = new ArrayList<T>();
+			final var list = new ArrayList<Token>();
 			for(int i = index; i < depth; i++){
 				list.add(tokens[i]);
 			}
@@ -155,7 +155,7 @@ public class DFA<T extends Token> extends AbstractAutomaton<T>{
 		}
 	}
 
-	public ESupplier<TokenString> tokenise(T...input){
+	public ESupplier<TokenString> tokenise(Token...input){
 		if(accepts()){
 			throw new UnsupportedOperationException("Cannot tokenise if the empty String is accepted.");
 		}
@@ -166,7 +166,7 @@ public class DFA<T extends Token> extends AbstractAutomaton<T>{
 				if(index < input.length){
 					final var result = read(ReadMode.GREEDY, index, input);
 					if(result == null){
-						final List<T> tokens = new ArrayList<>();
+						final List<Token> tokens = new ArrayList<>();
 						for(int i = index; i < input.length; i++){
 							tokens.add(input[i]);
 							index = input.length;

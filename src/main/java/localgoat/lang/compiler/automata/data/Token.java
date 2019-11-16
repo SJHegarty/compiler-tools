@@ -1,48 +1,51 @@
 package localgoat.lang.compiler.automata.data;
 
-public interface Token<T>{
+public interface Token{
 
-	Token<Character> LINE_FEED = of('\n');
+	Token LINE_FEED = of('\n');
 
-	static Token<Character>[] from(String s){
+	static Token[] from(String s){
 		return from(s.toCharArray());
 	}
 
-	static Token<Character>[] from(char...chars){
-		final Token<Character> rv[] = new Token[chars.length];
+	static Token[] from(char...chars){
+		final Token rv[] = new Token[chars.length];
 		for(int i = 0; i < rv.length; i++){
 			rv[i] = of(chars[i]);
 		}
 		return rv;
 	}
 
-	static Token<Character> of(char c){
-		return new Token<Character>(){
+	static Token of(char c){
+		return of(Character.toString(c));
+	}
+
+	static Token of(String s){
+		return new Token(){
 			@Override
-			public Character value(){
-				return c;
+			public String value(){
+				return s;
 			}
 
 			@Override
 			public boolean equals(Object o){
 				if(o.getClass() == getClass()){
-					final var t = (Token<Character>)o;
-					return c == t.value();
+					final var t = (Token)o;
+					return s.equals(t.value());
 				}
 				return false;
 			}
 
 			@Override
 			public int hashCode(){
-				return c;
+				return toString().hashCode() ^ getClass().hashCode();
 			}
 
 			@Override
 			public String toString(){
-				return Character.toString(c);
+				return s;
 			}
 		};
 	}
-
-	T value();
+	String value();
 }

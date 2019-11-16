@@ -13,11 +13,11 @@ public class LineTokeniser{
 	public static final String WHITE_SPACE = "white-space";
 	public static final String IGNORED = "ignored";
 
-	public static final TokenString<Token<Character>> LINE_FEED = new TokenString<>(
+	public static final TokenString LINE_FEED = new TokenString(
 		Collections.singleton(
 			new Type(
 				"line-feed",
-				Collections.singleton(WHITE_SPACE)
+				new HashSet<>(Arrays.asList(WHITE_SPACE, IGNORED))
 			)
 		),
 		Collections.singletonList(
@@ -27,9 +27,9 @@ public class LineTokeniser{
 
 	public static final int TAB_WIDTH = 4;
 
-	private final DFA<Token<Character>> dfa;
+	private final DFA dfa;
 
-	public LineTokeniser(DFA<Token<Character>> dfa){
+	public LineTokeniser(DFA dfa){
 		this.dfa = dfa;
 	}
 

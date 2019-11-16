@@ -8,16 +8,16 @@ import localgoat.util.functional.operation.PolyOperation;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class Or<T extends Token> implements PolyOperation<Automaton<T>>{
+public class Or implements PolyOperation<Automaton>{
 
 	@Override
-	public Automaton<T> apply(List<Automaton<T>> automata){
+	public Automaton apply(List<Automaton> automata){
 
 		final var tokens = automata.stream()
 			.flatMap(a -> a.tokens().stream())
 			.collect(Collectors.toSet());
 
-		final var builder = new Builder<T>(tokens);
+		final var builder = new Builder(tokens);
 		final var node0 = builder.addNode(false);
 
 		for(var a: automata){

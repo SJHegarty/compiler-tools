@@ -5,7 +5,7 @@ import localgoat.lang.compiler.automata.data.ReadMode;
 import localgoat.lang.compiler.automata.data.Token;
 
 public class LiteralExpression implements Expression{
-	static final DFA<Token<Character>> DFA;
+	static final DFA DFA;
 
 	static{
 		final var converter = new Converter();

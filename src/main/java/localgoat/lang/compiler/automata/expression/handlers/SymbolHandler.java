@@ -9,7 +9,7 @@ import localgoat.lang.compiler.automata.structure.DFA;
 
 import java.util.function.Function;
 
-public class SymbolHandler implements Function<Expression, Automaton<Token<Character>>>{
+public class SymbolHandler implements Function<Expression, Automaton>{
 
 	private final Converter converter;
 
@@ -18,7 +18,7 @@ public class SymbolHandler implements Function<Expression, Automaton<Token<Chara
 	}
 
 	@Override
-	public Automaton<Token<Character>> apply(Expression expression){
+	public Automaton apply(Expression expression){
 		final var symbol = (Symbol)expression;
 		final char c = symbol.value();
 		if(c == '^'){

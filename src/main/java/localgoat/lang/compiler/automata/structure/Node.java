@@ -7,14 +7,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public interface Node<T extends Token>{
-	Automaton<T> automaton();
+public interface Node{
+	Automaton automaton();
 	int index();
 
-	Set<Transition<T>> transitions(T token);
-	Map<T, Set<Transition<T>>> transitions();
-	Set<Node<T>> neighbours();
-	Set<T> tokens();
+	Set<Transition> transitions(Token token);
+	Map<Token, Set<Transition>> transitions();
+	Set<Node> neighbours();
+	Set<Token> tokens();
 	Set<TypeState> typeStates();
 
 	default	Set<Type> types(){
@@ -28,7 +28,7 @@ public interface Node<T extends Token>{
 		return !types().isEmpty();
 	}
 
-	default Transition<T> transition(T token){
+	default Transition transition(Token token){
 		final var tokenTransitions = transitions(token);
 		switch(tokenTransitions.size()){
 			case 0: return null;

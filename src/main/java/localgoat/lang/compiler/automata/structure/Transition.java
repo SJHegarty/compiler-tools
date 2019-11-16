@@ -2,14 +2,14 @@ package localgoat.lang.compiler.automata.structure;
 
 import localgoat.lang.compiler.automata.data.Token;
 
-public class Transition<T extends Token>{
-	private final Node<T> destination;
+public class Transition{
+	private final Node destination;
 
-	Transition(Node<T> destination){
+	Transition(Node destination){
 		this.destination = destination;
 	}
 
-	public Node<T> node(){
+	public Node node(){
 		return destination;
 	}
 }

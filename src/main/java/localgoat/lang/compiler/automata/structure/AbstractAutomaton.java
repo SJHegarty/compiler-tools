@@ -7,11 +7,11 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-public abstract class AbstractAutomaton<T extends Token> implements Automaton<T>{
-	protected final MutableNode<T>[] nodes;
-	protected final Set<T> tokens;
+public abstract class AbstractAutomaton implements Automaton{
+	protected final MutableNode[] nodes;
+	protected final Set<Token> tokens;
 
-	public AbstractAutomaton(Builder<T> builder){
+	public AbstractAutomaton(Builder builder){
 		this.tokens = new HashSet<>(builder.tokens());
 		this.nodes = builder.nodes().stream()
 			.map(nbuilder -> nbuilder.initialise(this))
@@ -23,7 +23,7 @@ public abstract class AbstractAutomaton<T extends Token> implements Automaton<T>
 	}
 
 	@Override
-	public final Node<T> node(int index){
+	public final Node node(int index){
 		return nodes[index];
 	}
 
@@ -33,7 +33,7 @@ public abstract class AbstractAutomaton<T extends Token> implements Automaton<T>
 	}
 
 	@Override
-	public final Set<T> tokens(){
+	public final Set<Token> tokens(){
 		return Collections.unmodifiableSet(tokens);
 	}
 }

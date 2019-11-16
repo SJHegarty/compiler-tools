@@ -8,31 +8,31 @@ import java.util.*;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
-public class Builder<T extends Token>{
-	final Set<T> tokens;
-	final List<NodeBuilder<T>> nodes = new ArrayList<>();
+public class Builder{
+	final Set<Token> tokens;
+	final List<NodeBuilder<Token>> nodes = new ArrayList<>();
 
-	public Builder(Set<T> tokens){
+	public Builder(Set<Token> tokens){
 		this.tokens = tokens;
 	}
 
-	public NodeBuilder<T> addNode(TypeState...classes){
+	public NodeBuilder<Token> addNode(TypeState...classes){
 		return addNode(new HashSet<>(Arrays.asList(classes)));
 	}
 
-	public NodeBuilder<T> addNode(Set<TypeState> classes){
-		final var rv = new NodeBuilder<T>(nodes.size(), classes);
+	public NodeBuilder<Token> addNode(Set<TypeState> classes){
+		final var rv = new NodeBuilder<Token>(nodes.size(), classes);
 		nodes.add(rv);
 		return rv;
 	}
 
-	public NodeBuilder<T> addNode(boolean terminating){
-		final var rv = new NodeBuilder<T>(nodes.size(), terminating);
+	public NodeBuilder<Token> addNode(boolean terminating){
+		final var rv = new NodeBuilder<Token>(nodes.size(), terminating);
 		nodes.add(rv);
 		return rv;
 	}
 
-	public void copy(Automaton<T> a, UnaryOperator<TypeState> stateOp){
+	public void copy(Automaton a, UnaryOperator<TypeState> stateOp){
 		final int offset = nodes.size();
 		final int nodecount = a.nodeCount();
 
@@ -63,20 +63,20 @@ public class Builder<T extends Token>{
 		}
 	}
 
-	public NodeBuilder<T> nodeBuilder(int index){
+	public NodeBuilder<Token> nodeBuilder(int index){
 		return nodes.get(index);
 	}
 
-	public NFA<T> buildNFA(){
-		return new NFA<T>(this);
+	public NFA buildNFA(){
+		return new NFA(this);
 	}
 
-	public DFA<T> buildDFA(){
-		return new DFA<T>(this);
+	public DFA buildDFA(){
+		return new DFA(this);
 	}
 
 	//TODO: implement build based upon determinism check, rather than passed in type.
-	public Automaton<T> build(Class<? extends Automaton> type){
+	public Automaton build(Class<? extends Automaton> type){
 		if(type == DFA.class){
 			return buildDFA();
 		}
@@ -90,11 +90,11 @@ public class Builder<T extends Token>{
 		return nodes.size();
 	}
 
-	public Set<T> tokens(){
+	public Set tokens(){
 		return tokens;
 	}
 
-	public List<NodeBuilder<T>> nodes(){
+	public List<NodeBuilder> nodes(){
 		return Collections.unmodifiableList(nodes);
 	}
 }

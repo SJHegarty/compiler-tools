@@ -22,9 +22,9 @@ import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class FunctionHandler implements Function<Expression, Automaton<Token<Character>>>{
+public class FunctionHandler implements Function<Expression, Automaton>{
 
-	private static final DFA<Token<Character>> NAME_PARSER;
+	private static final DFA NAME_PARSER;
 	static{
 		final var converter = new Converter();
 		converter.addClass('a', c -> 'a' <= c && c <= 'z');
@@ -54,7 +54,7 @@ public class FunctionHandler implements Function<Expression, Automaton<Token<Cha
 	}
 
 	private final Converter converter;
-	private final Map<Character, Function<FunctionExpression, Automaton<Token<Character>>>> subhandlers = new TreeMap<>();
+	private final Map<Character, Function<FunctionExpression, Automaton>> subhandlers = new TreeMap<>();
 	public FunctionHandler(final Converter converter){
 		this.converter = converter;
 
@@ -65,7 +65,7 @@ public class FunctionHandler implements Function<Expression, Automaton<Token<Cha
 				if(children.size() != 1){
 					throw new IllegalStateException("! function takes a single parameter.");
 				}
-				final var not = new Not<Token<Character>>(converter.alphabet());
+				final var not = new Not(converter.alphabet());
 				return not.apply(converter.buildDFA(children.get(0)));
 			}
 		);
@@ -75,7 +75,7 @@ public class FunctionHandler implements Function<Expression, Automaton<Token<Cha
 			function -> {
 				final var alphabet = converter.alphabet();
 				final var children = function.children();
-				final var accepted = new HashSet<Token<Character>>(alphabet);
+				final var accepted = new HashSet<Token>(alphabet);
 				for(var c: function.children()){
 					handled:
 					{
@@ -115,7 +115,7 @@ public class FunctionHandler implements Function<Expression, Automaton<Token<Cha
 				final var children = function.children().stream()
 					.map(expr -> converter.build(expr))
 					.collect(Collectors.toList());
-				final var or = new Or<Token<Character>>();
+				final var or = new Or();
 				return or.apply(children);
 			}
 		);
@@ -131,7 +131,7 @@ public class FunctionHandler implements Function<Expression, Automaton<Token<Cha
 				if(children.size() != 1){
 					throw new IllegalStateException("@ function only supports a single argument.");
 				}
-				final var naming = new Name<Token<Character>>(classFor(name));
+				final var naming = new Name(classFor(name));
 				return naming.apply(converter.build(children.get(0)));
 			}
 		);
@@ -158,14 +158,14 @@ public class FunctionHandler implements Function<Expression, Automaton<Token<Cha
 				if(children.size() != 1){
 					throw new IllegalStateException("Kleene functions only support a single argument.");
 				}
-				final var kleen = new Kleene<Token<Character>>((minCount == 0) ? Kleene.Op.STAR : Kleene.Op.PLUS);
+				final var kleen = new Kleene((minCount == 0) ? Kleene.Op.STAR : Kleene.Op.PLUS);
 				return kleen.apply(converter.build(children.get(0)));
 			}
 		);
 	}
 
 	@Override
-	public Automaton<Token<Character>> apply(Expression expression){
+	public Automaton apply(Expression expression){
 		final var function = (FunctionExpression)expression;
 		final char identifier = function.identifier();
 		final var handler = subhandlers.get(identifier);

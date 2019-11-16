@@ -12,11 +12,11 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class Convert<T extends Token> implements Function<NFA<T>, DFA<T>>{
+public class Convert implements Function<NFA, DFA>{
 	@Override
-	public DFA<T> apply(NFA<T> nfa){
+	public DFA apply(NFA nfa){
 		final var builder = new Builder(nfa.tokens());
-		final Map<Node<T>, Set<Node<T>>> lambdaTransitable = IntStream.range(0, nfa.nodeCount())
+		final Map<Node, Set<Node>> lambdaTransitable = IntStream.range(0, nfa.nodeCount())
 			.mapToObj(nfa::node)
 			.collect(
 				Collectors.toMap(
@@ -32,12 +32,12 @@ public class Convert<T extends Token> implements Function<NFA<T>, DFA<T>>{
 				)
 			);
 
-		final var nodesMap = new LinkedHashMap<Set<Node<T>>, NodeBuilder<T>>();
-		final var reverseMap = new HashMap<NodeBuilder<T>, Set<Node<T>>>();
-		final var nodeBuilder = new ValueCache<Set<Node<T>>, NodeBuilder<T>>(
+		final var nodesMap = new LinkedHashMap<Set<Node>, NodeBuilder>();
+		final var reverseMap = new HashMap<NodeBuilder, Set<Node>>();
+		final var nodeBuilder = new ValueCache<Set<Node>, NodeBuilder>(
 			nodesMap,
 			nodeset -> {
-				final Set<Node<T>> reachable = nodeset.stream()
+				final Set<Node> reachable = nodeset.stream()
 					.flatMap(n -> lambdaTransitable.get(n).stream())
 					.collect(Collectors.toSet());
 
@@ -52,17 +52,17 @@ public class Convert<T extends Token> implements Function<NFA<T>, DFA<T>>{
 			}
 		);
 
-		final Queue<NodeBuilder<T>> nodesQueue = new ArrayDeque<>();
+		final Queue<NodeBuilder> nodesQueue = new ArrayDeque<>();
 		nodesQueue.add(
 			nodeBuilder.get(
 				lambdaTransitable.get(nfa.node(0))
 			)
 		);
 		class Transition{
-			final T token;
-			final Node<T> destination;
+			final Token token;
+			final Node destination;
 
-			Transition(T token, Node<T> destination){
+			Transition(Token token, Node destination){
 				this.token = token;
 				this.destination = destination;
 			}
@@ -75,7 +75,7 @@ public class Convert<T extends Token> implements Function<NFA<T>, DFA<T>>{
 				.flatMap(n -> n.transitions().entrySet().stream())
 				.flatMap(
 					e -> {
-						T token = e.getKey();
+						Token token = e.getKey();
 						return e.getValue().stream()
 							.map(t -> t.node())
 							.map(n -> new Transition(token, n));

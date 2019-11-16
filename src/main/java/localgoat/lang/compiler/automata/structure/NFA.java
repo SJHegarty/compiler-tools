@@ -5,9 +5,9 @@ import localgoat.lang.compiler.automata.data.Token;
 
 import java.util.*;
 
-public class NFA<T extends Token> extends AbstractAutomaton<T>{
+public class NFA extends AbstractAutomaton{
 
-	public NFA(Builder<T> builder){
+	public NFA(Builder builder){
 		super(builder);
 	}
 

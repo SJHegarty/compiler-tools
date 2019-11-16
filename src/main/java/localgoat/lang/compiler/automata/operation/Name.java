@@ -8,7 +8,7 @@ import localgoat.lang.compiler.automata.structure.TypeState;
 import localgoat.lang.compiler.automata.utility.Builder;
 import localgoat.util.functional.operation.UnaryOperation;
 
-public class Name<T extends Token> implements UnaryOperation<Automaton<T>>{
+public class Name implements UnaryOperation<Automaton>{
 	private final Type name;
 
 	public Name(Type name){
@@ -16,8 +16,8 @@ public class Name<T extends Token> implements UnaryOperation<Automaton<T>>{
 	}
 
 	@Override
-	public Automaton<T> apply(Automaton<T> automaton){
-		final var builder = new Builder<T>(automaton.tokens());
+	public Automaton apply(Automaton automaton){
+		final var builder = new Builder(automaton.tokens());
 		final TypeState terminating = new TypeState(name, State.TERMINATING);
 
 		builder.copy(automaton, state -> state.drop());

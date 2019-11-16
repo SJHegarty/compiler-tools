@@ -12,14 +12,14 @@ import java.util.stream.Collectors;
 
 public class CodeLine{
 	public final int lineindex;
-	public final List<TokenString<Token<Character>>> tokens;
+	public final List<TokenString> tokens;
 
-	public CodeLine(int index, List<TokenString<Token<Character>>> tokens){
+	public CodeLine(int index, List<TokenString> tokens){
 		this.lineindex = index;
 		this.tokens = Collections.unmodifiableList(tokens);
 	}
 
-	public TokenString<Token<Character>> last(Predicate<TokenString<Token<Character>>> filter){
+	public TokenString last(Predicate<TokenString> filter){
 		for(int i = tokens.size() - 1; i >= 0; i--){
 			var token = tokens.get(i);
 			if(filter.test(token)){
@@ -29,7 +29,7 @@ public class CodeLine{
 		return null;
 	}
 
-	public TokenString<Token<Character>> first(Predicate<TokenString<Token<Character>>> filter){
+	public TokenString first(Predicate<TokenString> filter){
 		for(var token : tokens){
 			if(filter.test(token)){
 				return token;
@@ -38,7 +38,7 @@ public class CodeLine{
 		return null;
 	}
 
-	public List<TokenString<Token<Character>>> all(Predicate<TokenString<Token<Character>>> filter){
+	public List<TokenString> all(Predicate<TokenString> filter){
 		return Collections.unmodifiableList(
 			tokens.stream()
 				.filter(filter)
@@ -102,7 +102,7 @@ public class CodeLine{
 		if(tokens.isEmpty()){
 			return null;
 		}
-		final var tokens = new ArrayList<TokenString<Token<Character>>>();
+		final var tokens = new ArrayList<TokenString>();
 		tokens.addAll(this.tokens);
 		while(tokens.get(tokens.size() - 1).hasClass(t -> t.hasFlag(LineTokeniser.IGNORED))){
 			tokens.remove(tokens.size() - 1);

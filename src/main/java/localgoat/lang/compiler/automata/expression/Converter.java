@@ -18,7 +18,7 @@ import java.util.function.Function;
 public class Converter{
 	private final char[][] classes = new char[256][];
 	private final Expression[] substitutions = new Expression[256];
-	private final Set<Token<Character>> alphabet = new HashSet<>();
+	private final Set<Token> alphabet = new HashSet<>();
 
 	public void addClass(char sub, CharPredicate members){
 		if(('a' <= sub && sub <= 'z')){
@@ -96,7 +96,7 @@ public class Converter{
 		alphabet.addAll(Arrays.asList(Token.from(classes[sub])));
 	}
 
-	private Map<Class<? extends Expression>, Function<Expression, Automaton<Token<Character>>>> handlers;
+	private Map<Class<? extends Expression>, Function<Expression, Automaton>> handlers;
 
 	public static void main(String...args){
 		final String identifier = "@<identifier>(*<1+>l*(h*<1+>l))";
@@ -136,20 +136,20 @@ public class Converter{
 		);
 	}
 
-	public DFA<Token<Character>> buildDFA(String pattern){
+	public DFA buildDFA(String pattern){
 		return buildDFA(Expression.parse(pattern));
 	}
 
-	public DFA<Token<Character>> buildDFA(Expression expression){
+	public DFA buildDFA(Expression expression){
 		final var a = build(expression);
-		return (a instanceof DFA) ? (DFA)a : new Convert<>().apply((NFA)a);
+		return (a instanceof DFA) ? (DFA)a : new Convert().apply((NFA)a);
 	}
 
-	public Automaton<Token<Character>> build(String pattern){
+	public Automaton build(String pattern){
 		return build(Expression.parse(pattern));
 	}
 
-	public Automaton<Token<Character>> build(Expression expression){
+	public Automaton build(Expression expression){
 		final var type = expression.getClass();
 		final var handler = handlers.get(type);
 		if(handler == null){
@@ -158,7 +158,7 @@ public class Converter{
 		return handler.apply(expression);
 	}
 
-	public Set<Token<Character>> alphabet(){
+	public Set<Token> alphabet(){
 		return Collections.unmodifiableSet(alphabet);
 	}
 

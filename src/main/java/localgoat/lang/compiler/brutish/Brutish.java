@@ -12,9 +12,12 @@ import java.util.TreeMap;
 
 public class Brutish{
 
+	public static final String COMMENT = "comment";
+
 	public static final String LINE_COMMENT ="line-comment";
 	public static final String CLASS_NAME = "class-name";
 	public static final String CONSTANT = "constant";
+	public static final String FUNCTION_IDENTIFIER = "function-identifier";
 	public static final String IDENTIFIER = "identifier";
 	public static final String SYMBOL = "symbol";
 	public static final String STRING = "string";
@@ -25,7 +28,6 @@ public class Brutish{
 	public static final String LINE_CONTINUATION = "line-continuation";
 	public static final String MATCHED = "matched";
 	public static final String STATEMENT_TERMINATOR = "statement-terminator";
-
 	public static final String CONTINUING_BRACKET = "}&";
 	public static final String OPENING_SQUARE = "[";
 	public static final String CLOSING_SQUARE = "]";
@@ -36,7 +38,7 @@ public class Brutish{
 
 	private static final Converter CONVERTER = new Converter();
 	private static final Map<String, String> EXPRESSIONS = new TreeMap<>();
-	public static final DFA<Token<Character>> DFA;
+	public static final DFA DFA;
 
 	static{
 		configureClasses();
@@ -58,7 +60,6 @@ public class Brutish{
 			.forEach(s -> builder.append(s));
 
 		builder.append("\n)");
-		System.err.println(builder);
 		DFA = CONVERTER.buildDFA(builder.toString());
 	}
 
@@ -82,7 +83,7 @@ public class Brutish{
 
 	private static void configureSubstitutions(){
 		CONVERTER.addSubstitution('K', "*<1+>l*('-'*<1+>l)");
-		//CONVERTER.addSubstitution('I', "*<1+>l*(u*<1+>l)");
+		CONVERTER.addSubstitution('F', "*<1+>l*(u*<1+>l)");
 		CONVERTER.addSubstitution('I', "K");
 
 	}
@@ -101,7 +102,7 @@ public class Brutish{
 		EXPRESSIONS.put(STATEMENT_TERMINATOR, "';'");
 		EXPRESSIONS.put(CLASS_NAME, "*<1+>(u*l)");
 		EXPRESSIONS.put(CONSTANT, "'@'u*<1+>+(u, d)*('_'*<1+>+(u, d))");
-		EXPRESSIONS.put(IDENTIFIER, "I");
+		EXPRESSIONS.put(IDENTIFIER, "+(I, F)");
 		EXPRESSIONS.put(CONTEXT_IDENTIFIER, "'@'I");
 		EXPRESSIONS.put(LINE_CONTINUATION, "'::'");
 		EXPRESSIONS.put(STRING, "q*+(~q, eq)q");
@@ -110,7 +111,7 @@ public class Brutish{
 		EXPRESSIONS.put(
 			String.format(
 				LINE_COMMENT + " --%s",
-				LineTokeniser.IGNORED
+				COMMENT
 			),
 			"'//'*."
 		);

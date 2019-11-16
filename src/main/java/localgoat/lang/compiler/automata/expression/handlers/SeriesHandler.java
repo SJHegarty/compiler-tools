@@ -11,7 +11,7 @@ import localgoat.util.ESupplier;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class SeriesHandler implements Function<Expression, Automaton<Token<Character>>>{
+public class SeriesHandler implements Function<Expression, Automaton>{
 
 	private final Converter converter;
 
@@ -20,14 +20,14 @@ public class SeriesHandler implements Function<Expression, Automaton<Token<Chara
 	}
 
 	@Override
-	public Automaton<Token<Character>> apply(Expression expression){
+	public Automaton apply(Expression expression){
 		final var series = (ExpressionSeries)expression;
 		final var children = ESupplier.from(series.children())
 			.map(seg -> converter.build(seg))
 			.toStream()
 			.collect(Collectors.toList());
 
-		final var concat = new Concatenate<Token<Character>>();
+		final var concat = new Concatenate();
 		return concat.apply(children);
 	}
 }

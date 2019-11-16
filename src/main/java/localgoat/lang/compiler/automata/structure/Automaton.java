@@ -7,13 +7,13 @@ import localgoat.lang.compiler.automata.structure.Type;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public interface Automaton<T extends Token>{
+public interface Automaton{
 
 	int nodeCount();
-	Node<T> node(int index);
-	Set<T> tokens();
+	Node node(int index);
+	Set<Token> tokens();
 
-	default List<Node<T>> nodes(){
+	default List<Node> nodes(){
 		return new AbstractList<>(){
 
 			@Override
@@ -22,7 +22,7 @@ public interface Automaton<T extends Token>{
 			}
 
 			@Override
-			public Node<T> get(int index){
+			public Node get(int index){
 				return node(index);
 			}
 		};

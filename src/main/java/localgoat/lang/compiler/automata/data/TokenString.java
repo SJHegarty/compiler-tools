@@ -2,19 +2,17 @@ package localgoat.lang.compiler.automata.data;
 
 import localgoat.lang.compiler.automata.structure.Type;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
 
-public class TokenString<T> implements Token{
+public class TokenString implements Token{
 
-	private final List<T> tokens;
+	private final List<Token> tokens;
 	private final Set<Type> classes;
 
-	public TokenString(Set<Type> classes, List<T> tokens){
-		this.tokens = Collections.unmodifiableList(tokens);
-		this.classes = Collections.unmodifiableSet(classes);
+	public TokenString(Set<Type> classes, List<Token> tokens){
+		this.tokens = Collections.unmodifiableList(new ArrayList<>(tokens));
+		this.classes = Collections.unmodifiableSet(new HashSet<>(classes));
 		for(var c: classes){
 			if(c != null && !(c instanceof Type)){
 				throw new IllegalStateException();
@@ -30,6 +28,7 @@ public class TokenString<T> implements Token{
 		);
 	}
 
+	@Override
 	public String value(){
 		final var builder = new StringBuilder();
 		for(var t: tokens){
@@ -48,7 +47,7 @@ public class TokenString<T> implements Token{
 		return classes;
 	}
 
-	public List<T> tokens(){
+	public List<Token> tokens(){
 		return tokens;
 	}
 }

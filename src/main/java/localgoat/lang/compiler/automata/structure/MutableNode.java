@@ -6,39 +6,39 @@ import localgoat.lang.compiler.automata.utility.CachedBoolean;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class MutableNode<T extends Token> implements Node<T>{
+public class MutableNode implements Node{
 
-	private final Automaton<T> automaton;
+	private final Automaton automaton;
 	private final int index;
-	private final Map<T, Set<Transition<T>>> transitions;
+	private final Map<Token, Set<Transition>> transitions;
 	private final Set<TypeState> typeStates;
 
-	MutableNode(Automaton<T> automaton, int index, boolean terminating){
+	MutableNode(Automaton automaton, int index, boolean terminating){
 		this(automaton, index, terminating ? Collections.singleton(TypeState.TERMINATING) : Collections.emptySet());
 	}
 
-	MutableNode(Automaton<T> automaton, int index, TypeState...typestates){
+	MutableNode(Automaton automaton, int index, TypeState...typestates){
 		this(automaton, index, new HashSet<>(Arrays.asList(typestates)));
 	}
 
-	public MutableNode(Automaton<T> automaton, int index, Set<TypeState> typestates){
+	public MutableNode(Automaton automaton, int index, Set<TypeState> typestates){
 		this.automaton = automaton;
 		this.index = index;
 		this.transitions = new HashMap<>();
 		this.typeStates = typestates;
 	}
 
-	void addTransitions(Set<T> tokens, Node<T> destination){
+	void addTransitions(Set<Token> tokens, Node destination){
 		for(var token: tokens){
 			addTransition(token, destination);
 		}
 	}
 
-	public void addTransition(T token, Node<T> destination){
-		addTransition(token, new Transition<>(destination));
+	public void addTransition(Token token, Node destination){
+		addTransition(token, new Transition(destination));
 	}
 
-	void addTransition(T token, Transition<T> transition){
+	void addTransition(Token token, Transition transition){
 		final var destination = transition.node();
 		if(destination.automaton() != automaton){
 			throw new IllegalArgumentException("Destination Node does not belong to the same automaton as this Node.");
@@ -48,7 +48,7 @@ public class MutableNode<T extends Token> implements Node<T>{
 				String.format("Token %s is not in the set of legal transition tokens", token)
 			);
 		}
-		Set<Transition<T>> set = transitions.get(token);
+		Set<Transition> set = transitions.get(token);
 		if(set == null){
 			set = new HashSet<>();
 			transitions.put(token, set);
@@ -73,12 +73,12 @@ public class MutableNode<T extends Token> implements Node<T>{
 	}
 
 	@Override
-	public Set<T> tokens(){
+	public Set<Token> tokens(){
 		return Collections.unmodifiableSet(transitions.keySet());
 	}
 
 	@Override
-	public Set<Node<T>> neighbours(){
+	public Set<Node> neighbours(){
 		return Collections.unmodifiableSet(
 			transitions.values().stream()
 				.flatMap(nodes -> nodes.stream())
@@ -88,14 +88,14 @@ public class MutableNode<T extends Token> implements Node<T>{
 	}
 
 	@Override
-	public Set<Transition<T>> transitions(T token){
+	public Set<Transition> transitions(Token token){
 		return Optional.ofNullable(transitions.get(token))
 			.map(Collections::unmodifiableSet)
 			.orElseGet(Collections::emptySet);
 	}
 
 	@Override
-	public Map<T, Set<Transition<T>>> transitions(){
+	public Map<Token, Set<Transition>> transitions(){
 		return Collections.unmodifiableMap(
 			transitions.entrySet().stream()
 			.collect(
@@ -108,7 +108,7 @@ public class MutableNode<T extends Token> implements Node<T>{
 	}
 
 	@Override
-	public Automaton<T> automaton(){
+	public Automaton automaton(){
 		return automaton;
 	}
 

@@ -11,8 +11,8 @@ public class NodeBuilder<T extends Token>{
 	private final int index;
 	private final Map<T, Set<NodeBuilder<T>>> transitions;
 	private final Set<TypeState> typestates;
-	private Automaton<T> automaton;
-	private MutableNode<T> node;
+	private Automaton automaton;
+	private MutableNode node;
 
 	public NodeBuilder(int index, boolean terminating){
 		this(index, terminating ? new TypeState[]{TypeState.TERMINATING} : new TypeState[0]);
@@ -51,9 +51,9 @@ public class NodeBuilder<T extends Token>{
 		set.add(destination);
 	}
 
-	public MutableNode<T> initialise(Automaton<T> automaton){
+	public MutableNode initialise(Automaton automaton){
 		this.automaton = automaton;
-		this.node = new MutableNode<T>(automaton, index, typestates);
+		this.node = new MutableNode(automaton, index, typestates);
 		return node;
 	}
 

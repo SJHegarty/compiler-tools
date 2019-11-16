@@ -1,12 +1,32 @@
 import localgoat.lang.compiler.ContentTree;
+import localgoat.lang.compiler.LineTokeniser;
 import localgoat.lang.ui.LangPane;
 import localgoat.lang.ui.LangTree;
 import localgoat.util.ui.document.InsertRemoveListener;
 
 import javax.swing.*;
+import java.io.IOException;
+import java.util.stream.Stream;
 
 public class Main{
-	public static void main(String... args){
+	public static void main(String...args) throws IOException{
+
+		try(final var stream = Main.class.getResource("examples/Test.brt").openStream()){
+			final var content = new String(stream.readAllBytes());
+			final var tree = new ContentTree(content);
+			for(var t: tree.tokens()){
+				final String value;
+				if(t.hasClass(type -> type.hasFlag(LineTokeniser.IGNORED))){
+					value = t.value();
+				}
+				else{
+					value = "\u001B[37m[\u001B[0m" + t.value() + "\u001B[37m]\u001B[0m";
+				}
+				System.err.print(value);
+			}
+		};
+	}
+	static void launchFrame(){
 		final var frame = new JFrame();
 		final var pane = new LangPane();
 		final var recpane = new LangPane();
