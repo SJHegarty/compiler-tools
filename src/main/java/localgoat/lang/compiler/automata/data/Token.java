@@ -23,6 +23,11 @@ public interface Token{
 	static Token of(String s){
 		return new Token(){
 			@Override
+			public int length(){
+				return s.length();
+			}
+
+			@Override
 			public String value(){
 				return s;
 			}
@@ -47,5 +52,7 @@ public interface Token{
 			}
 		};
 	}
+
+	int length();
 	String value();
 }

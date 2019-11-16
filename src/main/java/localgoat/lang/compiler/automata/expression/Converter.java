@@ -1,6 +1,7 @@
 package localgoat.lang.compiler.automata.expression;
 
 import localgoat.lang.compiler.automata.data.Token;
+import localgoat.lang.compiler.automata.data.TokenTree;
 import localgoat.lang.compiler.automata.expression.handlers.FunctionHandler;
 import localgoat.lang.compiler.automata.expression.handlers.LiteralHandler;
 import localgoat.lang.compiler.automata.expression.handlers.SeriesHandler;
@@ -17,7 +18,7 @@ import java.util.function.Function;
 
 public class Converter{
 	private final char[][] classes = new char[256][];
-	private final Expression[] substitutions = new Expression[256];
+	private final Token[] substitutions = new Token[256];
 	private final Set<Token> alphabet = new HashSet<>();
 
 	public void addClass(char sub, CharPredicate members){
@@ -37,16 +38,16 @@ public class Converter{
 			if(substitutions[sub] != null){
 				throw new IllegalStateException(String.format("Unavailable expression substitution character: '%s'.", sub));
 			}
-			final var expr = Expression.parse(expression);
-			final Queue<Expression> loopCheck = new ArrayDeque<>();
+			final var expr = ExpressionParser.parse(expression);
+			final Queue<Token> loopCheck = new ArrayDeque<>();
 			loopCheck.add(expr);
 			while(!loopCheck.isEmpty()){
 				var embedded = ESupplier.of(loopCheck.poll())
 					.branchingMap(
 						true,
 						e -> {
-							if(e instanceof ExpressionTree){
-								return ESupplier.from(((ExpressionTree) e).children());
+							if(e instanceof TokenTree){
+								return ESupplier.from(((TokenTree) e).children());
 							}
 							else return ESupplier.empty();
 						}
@@ -55,14 +56,14 @@ public class Converter{
 					.map(e -> (Symbol) e)
 					.retain(
 						s -> {
-							final char c = s.value();
+							final char c = s.charValue();
 							return c == sub || (c < 0x100 && substitutions[c] != null);
 						}
 					)
 					.toArray(Symbol[]::new);
 
 				for(Symbol s: embedded){
-					if(s.value() == sub){
+					if(s.charValue() == sub){
 						throw new IllegalArgumentException(
 							String.format(
 								"Recursively defined substitution in expression \"%s\" for character '%s'",
@@ -71,7 +72,7 @@ public class Converter{
 							)
 						);
 					}
-					else loopCheck.add(substitutions[s.value()]);
+					else loopCheck.add(substitutions[s.charValue()]);
 				}
 			}
 			substitutions[sub] = expr;
@@ -96,7 +97,7 @@ public class Converter{
 		alphabet.addAll(Arrays.asList(Token.from(classes[sub])));
 	}
 
-	private Map<Class<? extends Expression>, Function<Expression, Automaton>> handlers;
+	private Map<Class<? extends Token>, Function<Token, Automaton>> handlers;
 
 	public static void main(String...args){
 		final String identifier = "@<identifier>(*<1+>l*(h*<1+>l))";
@@ -137,19 +138,19 @@ public class Converter{
 	}
 
 	public DFA buildDFA(String pattern){
-		return buildDFA(Expression.parse(pattern));
+		return buildDFA(ExpressionParser.parse(pattern));
 	}
 
-	public DFA buildDFA(Expression expression){
+	public DFA buildDFA(Token expression){
 		final var a = build(expression);
 		return (a instanceof DFA) ? (DFA)a : new Convert().apply((NFA)a);
 	}
 
 	public Automaton build(String pattern){
-		return build(Expression.parse(pattern));
+		return build(ExpressionParser.parse(pattern));
 	}
 
-	public Automaton build(Expression expression){
+	public Automaton build(Token expression){
 		final var type = expression.getClass();
 		final var handler = handlers.get(type);
 		if(handler == null){
@@ -166,7 +167,7 @@ public class Converter{
 		return classes[symbol];
 	}
 
-	public Expression substitutions(char c){
+	public Token substitutions(char c){
 		return substitutions[c];
 	}
 }

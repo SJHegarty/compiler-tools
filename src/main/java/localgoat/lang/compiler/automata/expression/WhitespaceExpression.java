@@ -1,8 +1,8 @@
 package localgoat.lang.compiler.automata.expression;
 
-import java.util.Arrays;
+import localgoat.lang.compiler.automata.data.Token;
 
-public class WhitespaceExpression implements Expression{
+public class WhitespaceExpression implements Token{
 	private final String value;
 
 	public WhitespaceExpression(String source, int index){
@@ -30,5 +30,10 @@ public class WhitespaceExpression implements Expression{
 	@Override
 	public int length(){
 		return value.length();
+	}
+
+	@Override
+	public String value(){
+		return value;
 	}
 }

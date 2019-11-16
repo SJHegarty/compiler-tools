@@ -2,14 +2,14 @@ package localgoat.lang.compiler.automata.expression.handlers;
 
 import localgoat.lang.compiler.automata.data.Token;
 import localgoat.lang.compiler.automata.expression.Converter;
-import localgoat.lang.compiler.automata.expression.Expression;
+import localgoat.lang.compiler.automata.expression.ExpressionParser;
 import localgoat.lang.compiler.automata.expression.Symbol;
 import localgoat.lang.compiler.automata.structure.Automaton;
 import localgoat.lang.compiler.automata.structure.DFA;
 
 import java.util.function.Function;
 
-public class SymbolHandler implements Function<Expression, Automaton>{
+public class SymbolHandler implements Function<Token, Automaton>{
 
 	private final Converter converter;
 
@@ -18,9 +18,9 @@ public class SymbolHandler implements Function<Expression, Automaton>{
 	}
 
 	@Override
-	public Automaton apply(Expression expression){
+	public Automaton apply(Token expression){
 		final var symbol = (Symbol)expression;
-		final char c = symbol.value();
+		final char c = symbol.charValue();
 		if(c == '^'){
 			return DFA.lambda();
 		}

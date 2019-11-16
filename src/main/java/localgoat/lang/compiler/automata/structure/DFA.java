@@ -4,15 +4,11 @@ import localgoat.lang.compiler.automata.data.ReadMode;
 import localgoat.lang.compiler.automata.data.Token;
 import localgoat.lang.compiler.automata.data.TokenString;
 import localgoat.lang.compiler.automata.expression.Converter;
-import localgoat.lang.compiler.automata.expression.Expression;
+import localgoat.lang.compiler.automata.expression.ExpressionParser;
 import localgoat.lang.compiler.automata.utility.Builder;
-import localgoat.util.CollectionUtils;
 import localgoat.util.ESupplier;
-import localgoat.util.ValueCache;
 
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public class DFA extends AbstractAutomaton{
 	public static void main(String...args){
@@ -48,7 +44,7 @@ public class DFA extends AbstractAutomaton{
 
 		builder.append(")");
 
-		final var expr = Expression.parse(builder.toString());
+		final var expr = ExpressionParser.parse(builder.toString());
 		final var dfa = converter.buildDFA(expr);
 
 		System.err.println(dfa.read(ReadMode.GREEDY, Token.from("ClassName")));
@@ -178,7 +174,7 @@ public class DFA extends AbstractAutomaton{
 						index = input.length;
 					}
 					else{
-						index += result.tokens().size();
+						index += result.children().size();
 					}
 					return result;
 				}

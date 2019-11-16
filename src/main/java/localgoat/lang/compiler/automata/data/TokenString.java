@@ -5,7 +5,7 @@ import localgoat.lang.compiler.automata.structure.Type;
 import java.util.*;
 import java.util.function.Predicate;
 
-public class TokenString implements Token{
+public class TokenString implements TokenTree{
 
 	private final List<Token> tokens;
 	private final Set<Type> classes;
@@ -37,6 +37,13 @@ public class TokenString implements Token{
 		return builder.toString();
 	}
 
+	@Override
+	public int length(){
+		return tokens.stream()
+			.mapToInt(s -> s.length())
+			.sum();
+	}
+
 	public boolean hasClass(Predicate<Type> predicate){
 		return null != classes.stream()
 			.filter(predicate)
@@ -47,7 +54,8 @@ public class TokenString implements Token{
 		return classes;
 	}
 
-	public List<Token> tokens(){
+	@Override
+	public List<Token> children(){
 		return tokens;
 	}
 }

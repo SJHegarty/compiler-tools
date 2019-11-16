@@ -4,7 +4,7 @@ import localgoat.lang.compiler.automata.structure.DFA;
 import localgoat.lang.compiler.automata.data.ReadMode;
 import localgoat.lang.compiler.automata.data.Token;
 
-public class LiteralExpression implements Expression{
+public class LiteralExpression implements Token{
 	static final DFA DFA;
 
 	static{

@@ -1,6 +1,8 @@
 package localgoat.lang.compiler.automata.expression;
 
-public class Symbol implements Expression{
+import localgoat.lang.compiler.automata.data.Token;
+
+public class Symbol implements Token{
 
 	private final char c;
 
@@ -18,7 +20,11 @@ public class Symbol implements Expression{
 		return Character.toString(c);
 	}
 
-	public char value(){
+	public String value(){
+		return Character.toString(c);
+	}
+
+	public char charValue(){
 		return c;
 	}
 }

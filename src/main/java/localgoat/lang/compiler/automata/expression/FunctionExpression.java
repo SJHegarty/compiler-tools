@@ -1,5 +1,7 @@
 package localgoat.lang.compiler.automata.expression;
 
+import localgoat.lang.compiler.automata.data.Token;
+import localgoat.lang.compiler.automata.data.TokenTree;
 import localgoat.util.ESupplier;
 
 import java.util.ArrayList;
@@ -7,12 +9,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class FunctionExpression implements ExpressionTree{
+public class FunctionExpression implements TokenTree{
 
 	private final boolean bracketed;
 	private final char identifier;
 	private final String modifiers;
-	private final Expression[] children;
+	private final Token[] children;
 
 	public FunctionExpression(String source, int index){
 		this.identifier = source.charAt(index++);
@@ -35,9 +37,9 @@ public class FunctionExpression implements ExpressionTree{
 
 		if(source.charAt(index) == '('){
 			bracketed = true;
-			final var segments = new ArrayList<Expression>();
+			final var segments = new ArrayList<Token>();
 			loop: while(true){
-				final var seg = Expression.parseSeries(source, ++index);
+				final var seg = ExpressionParser.parseSeries(source, ++index);
 				segments.add(seg);
 				index+=seg.length();
 				final char c = source.charAt(index);
@@ -52,12 +54,12 @@ public class FunctionExpression implements ExpressionTree{
 			if(segments.size() == 0){
 				throw new IllegalArgumentException();
 			}
-			this.children = segments.stream().toArray(Expression[]::new);
+			this.children = segments.stream().toArray(Token[]::new);
 		}
 		else{
 			bracketed = false;
-			this.children = new Expression[]{
-				Expression.parseSegment(source, index)
+			this.children = new Token[]{
+				ExpressionParser.parseSegment(source, index)
 			};
 		}
 	}
@@ -79,7 +81,7 @@ public class FunctionExpression implements ExpressionTree{
 	}
 
 	@Override
-	public String toString(){
+	public String value(){
 		final var builder = new StringBuilder();
 		builder.append(identifier);
 		if(modifiers != null){
@@ -100,6 +102,11 @@ public class FunctionExpression implements ExpressionTree{
 		return builder.toString();
 	}
 
+	@Override
+	public String toString(){
+		return value();
+	}
+
 	public char identifier(){
 		return identifier;
 	}
@@ -109,7 +116,7 @@ public class FunctionExpression implements ExpressionTree{
 	}
 
 	@Override
-	public List<Expression> children(){
+	public List<Token> children(){
 		return Collections.unmodifiableList(Arrays.asList(children));
 	}
 

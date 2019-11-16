@@ -2,7 +2,7 @@ package localgoat.lang.compiler.automata.expression.handlers;
 
 import localgoat.lang.compiler.automata.data.Token;
 import localgoat.lang.compiler.automata.expression.Converter;
-import localgoat.lang.compiler.automata.expression.Expression;
+import localgoat.lang.compiler.automata.expression.ExpressionParser;
 import localgoat.lang.compiler.automata.expression.FunctionExpression;
 import localgoat.lang.compiler.automata.expression.LiteralExpression;
 import localgoat.lang.compiler.automata.expression.Symbol;
@@ -22,7 +22,7 @@ import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class FunctionHandler implements Function<Expression, Automaton>{
+public class FunctionHandler implements Function<Token, Automaton>{
 
 	private static final DFA NAME_PARSER;
 	static{
@@ -80,7 +80,7 @@ public class FunctionHandler implements Function<Expression, Automaton>{
 					handled:
 					{
 						if(c instanceof Symbol){
-							final char symbol = ((Symbol) c).value();
+							final char symbol = ((Symbol) c).charValue();
 							final var chars = converter.chars(symbol);
 							if(chars == null){
 								System.err.println(String.format("No character class defined for symbol '%s' using literal interpretation.", c));
@@ -165,7 +165,7 @@ public class FunctionHandler implements Function<Expression, Automaton>{
 	}
 
 	@Override
-	public Automaton apply(Expression expression){
+	public Automaton apply(Token expression){
 		final var function = (FunctionExpression)expression;
 		final char identifier = function.identifier();
 		final var handler = subhandlers.get(identifier);

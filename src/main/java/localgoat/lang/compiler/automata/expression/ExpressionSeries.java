@@ -1,22 +1,25 @@
 package localgoat.lang.compiler.automata.expression;
 
+import localgoat.lang.compiler.automata.data.Token;
+import localgoat.lang.compiler.automata.data.TokenTree;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
-public class ExpressionSeries implements ExpressionTree{
-	private final Expression[] segments;
+public class ExpressionSeries implements TokenTree{
+	private final Token[] segments;
 
-	public ExpressionSeries(List<Expression> segments){
+	public ExpressionSeries(List<Token> segments){
 		if(segments.size() == 1 && segments.get(0) instanceof WhitespaceExpression){
 			throw new IllegalArgumentException();
 		}
-		this.segments = segments.stream().toArray(Expression[]::new);
+		this.segments = segments.stream().toArray(Token[]::new);
 	}
 
 	public ExpressionSeries(){
-		this.segments = new Expression[0];
+		this.segments = new Token[0];
 	}
 
 	@Override
@@ -27,7 +30,7 @@ public class ExpressionSeries implements ExpressionTree{
 	}
 
 	@Override
-	public String toString(){
+	public String value(){
 		final var builder = new StringBuilder();
 		for(var s: segments){
 			builder.append(s);
@@ -36,7 +39,12 @@ public class ExpressionSeries implements ExpressionTree{
 	}
 
 	@Override
-	public List<Expression> children(){
+	public String toString(){
+		return value();
+	}
+
+	@Override
+	public List<Token> children(){
 		return Collections.unmodifiableList(Arrays.asList(segments));
 	}
 }
