@@ -7,14 +7,14 @@ import java.util.List;
 
 public interface TokenTree extends Token{
 	Token head();
-	List<Token> children();
+	List<? extends Token> children();
 	Token tail();
 
 	default Token child(int index){
 		return children().get(index);
 	}
 
-	default ESupplier<Token> tokens(){
+	default ESupplier<? extends Token> tokens(){
 		return ESupplier.concat(
 			ESupplier.of(head()),
 			ESupplier.from(children()),

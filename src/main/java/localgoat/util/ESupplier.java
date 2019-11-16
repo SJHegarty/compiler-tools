@@ -79,7 +79,7 @@ public interface ESupplier<T> extends Supplier<T>, Iterable<T>{
 		};
 	}
 
-	static <T> ESupplier<T> concat(ESupplier<T>...suppliers){
+	static <T> ESupplier<T> concat(ESupplier<? extends T>...suppliers){
 		if(suppliers.length == 0){
 			return empty();
 		}
@@ -344,9 +344,9 @@ public interface ESupplier<T> extends Supplier<T>, Iterable<T>{
 		};
 	}
 
-	default ESupplier<T> branchingMap(boolean unique, Function<T, ESupplier<T>> mapper){
+	default ESupplier<T> branchingMap(boolean unique, Function<T, ESupplier<? extends T>> mapper){
 		return new ESupplier<>(){
-			ESupplier<T> supplier = ESupplier.this;
+			ESupplier<? extends T> supplier = ESupplier.this;
 			final Queue<T> unmapped = new ArrayDeque<>();
 			final Set<T> viewed = new HashSet<>();
 

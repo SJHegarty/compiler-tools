@@ -2,6 +2,7 @@ package localgoat.lang.compiler;
 
 import localgoat.lang.compiler.automata.data.Token;
 import localgoat.lang.compiler.automata.data.TokenString;
+import localgoat.lang.compiler.automata.data.TokenTree;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -10,7 +11,7 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-public class CodeLine{
+public class CodeLine implements TokenTree{
 	public final int lineindex;
 	public final List<TokenString> tokens;
 
@@ -111,5 +112,20 @@ public class CodeLine{
 			}
 		}
 		return new CodeLine(lineindex, tokens);
+	}
+
+	@Override
+	public Token head(){
+		return null;
+	}
+
+	@Override
+	public List<? extends Token> children(){
+		return Collections.unmodifiableList(children());
+	}
+
+	@Override
+	public Token tail(){
+		return null;
 	}
 }

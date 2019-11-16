@@ -1,5 +1,6 @@
 package localgoat.lang.compiler;
 
+import localgoat.lang.compiler.automata.data.TokenTree;
 import localgoat.lang.compiler.automata.structure.DFA;
 import localgoat.lang.compiler.automata.structure.Type;
 import localgoat.lang.compiler.automata.data.Token;
@@ -12,12 +13,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class ContentTree{
+public class ContentTree implements TokenTree{
 
 	private static final LineTokeniser TOKENISER;
 	public static final Set<Type> CLASSES;
-
-
 
 	static{
 		final var dfa = Brutish.DFA;
@@ -76,8 +75,24 @@ public class ContentTree{
 		return trees;
 	}
 
+	@Override
+	public Token head(){
+		return null;
+	}
+
+	@Override
 	public ESupplier<TokenString> tokens(){
 		return CodeTree.tokenise(trees);
+	}
+
+	@Override
+	public List<CodeTree> children(){
+		return Collections.unmodifiableList(this.trees);
+	}
+
+	@Override
+	public Token tail(){
+		return null;
 	}
 
 	public String reconstruct(){

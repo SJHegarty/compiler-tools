@@ -2,6 +2,7 @@ package localgoat.lang.compiler;
 
 import localgoat.lang.compiler.automata.data.Token;
 import localgoat.lang.compiler.automata.data.TokenString;
+import localgoat.lang.compiler.automata.data.TokenTree;
 import localgoat.lang.compiler.brutish.Brutish;
 import localgoat.util.ESupplier;
 
@@ -12,7 +13,7 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-public class CodeTree{
+public class  CodeTree implements TokenTree{
 
 
 	static ESupplier<TokenString> tokenise(Iterable<CodeTree> trees){
@@ -152,8 +153,18 @@ public class CodeTree{
 			.flatMap(supplier -> supplier);
 	};
 
+	@Override
+	public Token head(){
+		return head;
+	}
+
 	public List<CodeTree> children(){
 		return Collections.unmodifiableList(children);
+	}
+
+	@Override
+	public Token tail(){
+		return tail;
 	}
 
 	public String reconstruct(){
@@ -163,7 +174,6 @@ public class CodeTree{
 		}
 		return builder.toString();
 	}
-
 
 	public CodeTree effective(){
 		final var result = new CodeTree(

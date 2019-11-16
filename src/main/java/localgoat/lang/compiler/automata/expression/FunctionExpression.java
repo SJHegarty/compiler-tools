@@ -83,7 +83,7 @@ public class FunctionExpression implements TokenTree{
 		return ((Symbol)headTokens().get()).charValue();
 	}
 
-	private ESupplier<Token> headTokens(){
+	private ESupplier<? extends Token> headTokens(){
 		if(head instanceof TokenTree){
 			return ESupplier.of((TokenTree)head)
 				.flatMap(tree -> ESupplier.from(tree.children()));
