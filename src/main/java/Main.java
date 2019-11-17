@@ -1,8 +1,7 @@
 import localgoat.lang.compiler.ContentTree;
-import localgoat.lang.compiler.LineTokeniser;
-import localgoat.lang.compiler.automata.ReadMode;
-import localgoat.lang.compiler.automata.structure.AutomatonUtils;
-import localgoat.lang.compiler.brutish.Brutish;
+import localgoat.lang.compiler.IndentParser;
+import localgoat.lang.compiler.omega.Omega;
+import localgoat.lang.compiler.omega.OmegaValidators;
 import localgoat.lang.compiler.token.Symbol;
 import localgoat.lang.ui.LangPane;
 import localgoat.lang.ui.LangTree;
@@ -14,17 +13,23 @@ import java.io.IOException;
 
 public class Main{
 	public static void main(String...args) throws IOException{
-		final var utils = new AutomatonUtils(Brutish.AUTOMATON);
+		final var parser = new IndentParser(
+			Omega.AUTOMATON,
+			OmegaValidators.TAIL_VALIDATORS
+		);
 		try(final var stream = Main.class.getResource("examples/Test.brt").openStream()){
 			final var content = new String(stream.readAllBytes());
-			final var supplier = ESupplier.from(utils.parse(Symbol.from(content)));
-			for(var line: supplier.split(t -> t.hasClass(Brutish.LINE_FEED), false)){
+			final var supplier = ESupplier.from(parser.parse(Symbol.from(content)));
+			for(var token: supplier){
+				System.err.println(token.value());
+			}
+			/*for(var line: supplier.split(t -> t.hasClass(IndentParser.LINE_FEED), false)){
 				System.err.print("\u001B[37m[\u001B[0m");
 				for(var t: line){
 					System.err.print(t.value());
 				}
 				System.err.println("\u001B[37m]\u001B[0m");
-			}
+			}*/
 		};
 	}
 	static void launchFrame(){

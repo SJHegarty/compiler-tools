@@ -1,6 +1,5 @@
 package localgoat.lang.compiler;
 
-import localgoat.lang.compiler.brutish.Brutish;
 import localgoat.lang.compiler.token.Token;
 import localgoat.lang.compiler.token.TokenString;
 import localgoat.lang.compiler.token.TokenTree;
@@ -54,7 +53,7 @@ public class CodeLine implements TokenTree{
 				break handler;
 			}
 			final var token = tokens.get(0);
-			if(!token.hasClass(s -> s.hasFlag(Brutish.IGNORED))){
+			if(!token.hasClass(s -> s.hasFlag(IndentParser.IGNORED))){
 				break handler;
 			}
 			return token.value();
@@ -105,7 +104,7 @@ public class CodeLine implements TokenTree{
 		}
 		final var tokens = new ArrayList<TokenString>();
 		tokens.addAll(this.tokens);
-		while(tokens.get(tokens.size() - 1).hasClass(t -> t.hasFlag(Brutish.IGNORED))){
+		while(tokens.get(tokens.size() - 1).hasClass(t -> t.hasFlag(IndentParser.IGNORED))){
 			tokens.remove(tokens.size() - 1);
 			if(tokens.isEmpty()){
 				return null;

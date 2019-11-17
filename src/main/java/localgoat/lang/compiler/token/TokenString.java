@@ -1,6 +1,7 @@
 package localgoat.lang.compiler.token;
 
 import localgoat.lang.compiler.automata.structure.Type;
+import localgoat.util.ESupplier;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -46,6 +47,15 @@ public class TokenString implements TokenTree{
 
 	public boolean hasClass(String name){
 		return hasClass(t -> Objects.equals(name, t.name()));
+	}
+
+	public boolean hasFlag(String flag){
+		for(var c: classes){
+			if(c.hasFlag(flag)){
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public boolean hasClass(Predicate<Type> predicate){

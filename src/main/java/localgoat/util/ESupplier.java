@@ -1,5 +1,7 @@
 package localgoat.util;
 
+import localgoat.util.functional.ThrowingFunction;
+
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.IntFunction;
@@ -79,6 +81,23 @@ public interface ESupplier<T> extends Supplier<T>, Iterable<T>{
 		};
 	}
 
+	static <T> ESupplier<T> fromReversed(T ... values){
+		return fromReversed(Arrays.asList(values));
+	}
+
+	static <T> ESupplier<T> fromReversed(List<T> source){
+		return new ESupplier<T>(){
+			int index = source.size();
+			@Override
+			public T get(){
+				if(index == 0){
+					return null;
+				}
+				return source.get(--index);
+			}
+		};
+	}
+
 	static <T> ESupplier<T> concat(ESupplier<? extends T>...suppliers){
 		if(suppliers.length == 0){
 			return empty();
@@ -140,6 +159,15 @@ public interface ESupplier<T> extends Supplier<T>, Iterable<T>{
 		return new Peekable<>(this);
 	}
 
+	default T find(Predicate<T> predicate){
+		for(;;){
+			final var value = get();
+			if(value == null || predicate.test(value)){
+				return value;
+			}
+		}
+	}
+
 	default ESupplier<T> until(Predicate<T> predicate, boolean includeTerminal){
 		return new ESupplier<T>(){
 			private boolean terminated;
@@ -184,6 +212,10 @@ public interface ESupplier<T> extends Supplier<T>, Iterable<T>{
 				return value;
 			}
 		};
+	}
+
+	default ESupplier<ESupplier<T>> split(Predicate<T> predicate){
+		return split(predicate, false);
 	}
 
 	default ESupplier<ESupplier<T>> split(Predicate<T> predicate, boolean includeTerminal){
@@ -231,6 +263,10 @@ public interface ESupplier<T> extends Supplier<T>, Iterable<T>{
 				return (next == null) ? null : split.get();
 			}
 		};
+	}
+
+	default <R> ESupplier<R> tryMap(ThrowingFunction<T, R> mapper){
+		return map(mapper.orNull());
 	}
 
 	default <R> ESupplier<R> map(Function<T, R> mapper){

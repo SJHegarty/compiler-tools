@@ -3,7 +3,7 @@ package localgoat.lang.compiler;
 import localgoat.lang.compiler.token.Token;
 import localgoat.lang.compiler.token.TokenString;
 import localgoat.lang.compiler.token.TokenTree;
-import localgoat.lang.compiler.brutish.Brutish;
+import localgoat.lang.compiler.omega.Omega;
 import localgoat.util.ESupplier;
 
 import java.util.ArrayList;
@@ -19,7 +19,7 @@ public class  CodeTree implements TokenTree{
 	static ESupplier<TokenString> tokenise(Iterable<CodeTree> trees){
 		return ESupplier.from(trees)
 			.map(child -> child.tokens())
-			.interleave(() -> ESupplier.of(Brutish.LINE_FEED_TOKEN))
+			.interleave(() -> ESupplier.of(IndentParser.LINE_FEED_TOKEN))
 			.flatMap(supplier -> supplier);
 	}
 
@@ -71,9 +71,9 @@ public class  CodeTree implements TokenTree{
 			while(lines.size() != 0 && filter.test(lines.peek())){
 				children.add(new CodeTree(lines));
 			}
-			final Predicate<TokenString> stringPredicate = t -> !t.hasClass(sc -> sc.hasFlag(Brutish.IGNORED));
+			final Predicate<TokenString> stringPredicate = t -> !t.hasClass(sc -> sc.hasFlag(IndentParser.IGNORED));
 			final TokenString headEnd = head.last(stringPredicate);
-			if(headEnd != null && headEnd.value().equals(Brutish.OPENING_BRACKET)){
+			if(headEnd != null && headEnd.value().equals(Omega.OPENING_BRACKET)){
 				final var line = lines.peek();
 				handled:{
 					unhandled:{
@@ -85,11 +85,11 @@ public class  CodeTree implements TokenTree{
 							break unhandled;
 						}
 						switch(lineEnd.value()){
-							case Brutish.CONTINUING_BRACKET:{
+							case Omega.CONTINUING_BRACKET:{
 								this.type = BlockType.CONTINUED;
 								break;
 							}
-							case Brutish.CLOSING_BRACKET:{
+							case Omega.CLOSING_BRACKET:{
 								this.type = BlockType.CLOSED;
 								break;
 							}
@@ -149,7 +149,7 @@ public class  CodeTree implements TokenTree{
 			sources.add(ESupplier.from(tail.tokens));
 		}
 		return ESupplier.from(sources)
-			.interleave(() -> ESupplier.of(Brutish.LINE_FEED_TOKEN))
+			.interleave(() -> ESupplier.of(IndentParser.LINE_FEED_TOKEN))
 			.flatMap(supplier -> supplier);
 	};
 

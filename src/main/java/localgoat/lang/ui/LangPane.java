@@ -1,8 +1,8 @@
 package localgoat.lang.ui;
 
-import localgoat.lang.compiler.LineTokeniser;
+import localgoat.lang.compiler.IndentParser;
 import localgoat.lang.compiler.ContentTree;
-import localgoat.lang.compiler.brutish.Brutish;
+import localgoat.lang.compiler.omega.Omega;
 import localgoat.util.ESupplier;
 import localgoat.util.ui.document.InsertRemoveListener;
 
@@ -46,18 +46,18 @@ public class LangPane extends JTextPane{
 		AMBIGUOUS = builder.apply(Color.YELLOW);
 
 		final Map<String, Color> colours = new TreeMap<>();
-		colours.put(Brutish.CLASS_NAME, new Color(0xffffffff));
-		colours.put(Brutish.CONSTANT, new Color(0xffffff00));
-		colours.put(Brutish.CONTEXT_IDENTIFIER, new Color(0xffffffff));
-		colours.put(Brutish.KEY_WORD, new Color(0xff40a0ff));
+		colours.put(Omega.CLASS_NAME, new Color(0xffffffff));
+		colours.put(Omega.CONSTANT, new Color(0xffffff00));
+		colours.put(Omega.CONTEXT_IDENTIFIER, new Color(0xffffffff));
+		colours.put(Omega.KEY_WORD, new Color(0xff40a0ff));
 
-		colours.put(Brutish.LINE_COMMENT, new Color(0xffa0a0a0));
+		colours.put(Omega.LINE_COMMENT, new Color(0xffa0a0a0));
 		final double r = new Random().nextDouble() * 2 * Math.PI;
 		System.err.println("Wheel offset: " + r);
 		final ColourMap<String> generator = new ColourMap<>(r);
 
 		ESupplier.from(ContentTree.CLASSES)
-			.exclude(c -> c.hasFlag(Brutish.WHITE_SPACE))
+			.exclude(c -> c.hasFlag(IndentParser.WHITE_SPACE))
 			.map(c -> c.name())
 			.exclude(name -> colours.containsKey(name))
 			.forEach(name -> generator.add(name));
@@ -130,7 +130,7 @@ public class LangPane extends JTextPane{
 						for(var token: content.tokens()){
 							final int length = token.value().length();
 
-							if(!token.hasClass(c -> c.hasFlag(Brutish.WHITE_SPACE))){
+							if(!token.hasClass(c -> c.hasFlag(IndentParser.WHITE_SPACE))){
 								try{
 									var extract = doc.getText(index, length);
 

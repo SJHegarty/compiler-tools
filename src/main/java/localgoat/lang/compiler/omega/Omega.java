@@ -1,34 +1,17 @@
-package localgoat.lang.compiler.brutish;
+package localgoat.lang.compiler.omega;
 
-import localgoat.lang.compiler.LineTokeniser;
 import localgoat.lang.compiler.automata.expression.Converter;
 import localgoat.lang.compiler.automata.structure.Automaton;
-import localgoat.lang.compiler.automata.structure.Type;
-import localgoat.lang.compiler.token.Symbol;
-import localgoat.lang.compiler.token.TokenString;
 import localgoat.util.ESupplier;
 import localgoat.util.functional.CharPredicate;
 
 import java.util.*;
 
-public class Brutish{
+public class Omega{
 
-	public static final String WHITE_SPACE = "white-space";
-	public static final String IGNORED = "ignored";
 
-	public static final TokenString LINE_FEED_TOKEN = new TokenString(
-		Collections.singleton(
-			new Type(
-				"line-feed",
-				new HashSet<>(Arrays.asList(WHITE_SPACE, IGNORED))
-			)
-		),
-		Collections.singletonList(
-			new Symbol('\n')
-		)
-	);
+
 	public static final String COMMENT = "comment";
-	public static final String LINE_FEED = "line-feed";
 	public static final String LINE_COMMENT ="line-comment";
 	public static final String CLASS_NAME = "class-name";
 	public static final String CONSTANT = "constant";
@@ -105,14 +88,7 @@ public class Brutish{
 	private static void configureExpressions(){
 		configureSymbols();
 		configureMatched();
-		EXPRESSIONS.put(
-			String.format(
-				WHITE_SPACE + " --%s --%s",
-				IGNORED,
-				WHITE_SPACE
-			),
-			"*<1+>w"
-		);
+
 		EXPRESSIONS.put(STATEMENT_TERMINATOR, "';'");
 		EXPRESSIONS.put(CLASS_NAME, "*<1+>(u*l)");
 		EXPRESSIONS.put(CONSTANT, "'@'u*<1+>+(u, d)*('_'*<1+>+(u, d))");
@@ -129,10 +105,6 @@ public class Brutish{
 				COMMENT
 			),
 			"'//'*~('\r', '\n')"
-		);
-		EXPRESSIONS.put(
-			LINE_FEED + " --" + IGNORED,
-			"?'\r''\n'"
 		);
 		EXPRESSIONS.put(KEY_WORD, "'$'+(K, '['K*<1+>(pK)']')");
 	}

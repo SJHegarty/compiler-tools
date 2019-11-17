@@ -10,7 +10,7 @@ import java.util.List;
 public class TokenSeries implements TokenTree{
 	private final Token[] segments;
 
-	public TokenSeries(List<Token> segments){
+	public TokenSeries(List<? extends Token> segments){
 		if(segments.size() == 1 && segments.get(0) instanceof WhitespaceExpression){
 			throw new IllegalArgumentException();
 		}
