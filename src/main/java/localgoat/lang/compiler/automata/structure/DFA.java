@@ -46,8 +46,8 @@ public class DFA extends AbstractAutomaton{
 		builder.append(")");
 
 		final var parser = new ExpressionParser();
-		final var expr = parser.parse(builder.toString());
-		final var dfa = converter.buildDFA(expr);
+		final var expr = parser.parse(Symbol.from(builder.toString()));
+		final var dfa = converter.buildDFA(expr.get(0));
 
 		System.err.println(dfa.read(ReadMode.GREEDY, Symbol.from("ClassName")));
 		System.err.println(dfa.read(ReadMode.GREEDY, Symbol.from("HTTP_")));
@@ -100,7 +100,7 @@ public class DFA extends AbstractAutomaton{
 	}
 
 	public TokenString read(final ReadMode mode, Token...tokens){
-		return read(mode, 0, tokens);
+		return read(mode, 0, Arrays.asList(tokens));
 	}
 
 	public static class StateIndex{
@@ -113,16 +113,16 @@ public class DFA extends AbstractAutomaton{
 		}
 	}
 
-	public TokenString read(final ReadMode mode, final int index, final Token...tokens){
-		if(index == tokens.length){
+	public TokenString read(final ReadMode mode, final int index, final List<? extends Token> tokens){
+		if(index == tokens.size()){
 			throw new IllegalArgumentException();
 		}
 
 		var state = node(0);
 		var t = state.isTerminating() ? new StateIndex(index, state) : null;
 		int depth = index;
-		while(depth < tokens.length && state.isTerminable()){
-			final var transition = state.transition(tokens[depth++]);
+		while(depth < tokens.size() && state.isTerminable()){
+			final var transition = state.transition(tokens.get(depth++));
 			if(transition == null){
 				state = null;
 				break;
@@ -138,17 +138,17 @@ public class DFA extends AbstractAutomaton{
 		if(t != null){
 			final var result = new ArrayList<Token>();
 			for(int i = index; i < t.index; i++){
-				result.add(tokens[i]);
+				result.add(tokens.get(i));
 			}
 			return new TokenString(t.state.types(), result);
 		}
 		if(depth == index){
-			return new TokenString(Collections.emptySet(), Collections.singletonList(tokens[index]));
+			return new TokenString(Collections.emptySet(), Collections.singletonList(tokens.get(index)));
 		}
 		else{
 			final var list = new ArrayList<Token>();
 			for(int i = index; i < depth; i++){
-				list.add(tokens[i]);
+				list.add(tokens.get(i));
 			}
 			return new TokenString(Collections.emptySet(), list);
 		}
@@ -163,7 +163,7 @@ public class DFA extends AbstractAutomaton{
 			@Override
 			public TokenString get(){
 				if(index < input.length){
-					final var result = read(ReadMode.GREEDY, index, input);
+					final var result = read(ReadMode.GREEDY, index, Arrays.asList(input));
 					if(result == null){
 						final List<Token> tokens = new ArrayList<>();
 						for(int i = index; i < input.length; i++){

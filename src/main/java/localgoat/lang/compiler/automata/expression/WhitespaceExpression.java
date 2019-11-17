@@ -1,14 +1,17 @@
 package localgoat.lang.compiler.automata.expression;
 
+import localgoat.lang.compiler.token.Symbol;
 import localgoat.lang.compiler.token.Token;
+
+import java.util.List;
 
 public class WhitespaceExpression implements Token{
 	private final String value;
 
-	public WhitespaceExpression(String source, int index){
+	public WhitespaceExpression(List<Symbol> symbols, int index){
 		final var builder = new StringBuilder();
 		while(true){
-			final char c = source.charAt(index + builder.length());
+			final char c = symbols.get(index + builder.length()).charValue();
 			if("\n \t".indexOf(c) != -1){
 				builder.append(c);
 			}

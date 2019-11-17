@@ -6,21 +6,23 @@ import localgoat.lang.compiler.token.Token;
 import localgoat.lang.compiler.token.TokenSeries;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
-public class ExpressionParser implements Parser{
+public class ExpressionParser implements Parser<Symbol, Token>{
 
 	@Override
-	public Token parse(String s){
-		return parseSeries(s, 0);
+	public List<Token> parse(List<Symbol> tokens){
+		return Arrays.asList(parseSeries(tokens, 0));
 	}
 
-	public Token parseSeries(String s, int index){
-		if(index == s.length()){
+	public Token parseSeries(List<Symbol> symbols, int index){
+		if(index == symbols.size()){
 			return new TokenSeries();
 		}
 		final var segments = new ArrayList<Token>();
-		while(index < s.length()){
-			final var seg = parseSegment(s, index);
+		while(index < symbols.size()){
+			final var seg = parseSegment(symbols, index);
 			if(seg == null){
 				break;
 			}
@@ -30,20 +32,20 @@ public class ExpressionParser implements Parser{
 		return (segments.size() == 1) ? segments.get(0) : new TokenSeries(segments);
 	}
 
-	public Token parseSegment(String s, int index){
-		final char c = s.charAt(index);
+	public Token parseSegment(List<Symbol> symbols, int index){
+		final char c = symbols.get(index).charValue();
 		switch(c){
 			case '@': case '+': case '&': case '*': case '!': case '?': case '~':{
-				return new FunctionExpression(this, s, index);
+				return new FunctionExpression(this, symbols, index);
 			}
 			case '.': case '^':{
 				return new Symbol(c);
 			}
 			case '\n': case '\t': case ' ':{
-				return new WhitespaceExpression(s, index);
+				return new WhitespaceExpression(symbols, index);
 			}
 			case '\'':{
-				return new LiteralExpression(s, index);
+				return new LiteralExpression(symbols, index);
 			}
 			default:{
 				if(('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z')){

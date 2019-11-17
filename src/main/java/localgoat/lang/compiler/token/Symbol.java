@@ -2,6 +2,7 @@ package localgoat.lang.compiler.token;
 
 import localgoat.lang.compiler.token.Token;
 
+import java.util.List;
 import java.util.stream.IntStream;
 
 public class Symbol implements Token{
@@ -12,16 +13,23 @@ public class Symbol implements Token{
 		this.c = c;
 	}
 
-	public static Token[] from(char...chars){
+	public static Symbol[] from(char...chars){
 		return IntStream.range(0, chars.length)
 			.mapToObj(i -> new Symbol(chars[i]))
-			.toArray(Token[]::new);
+			.toArray(Symbol[]::new);
 	}
 
-	public static Token[] from(String s){
+	public static Symbol[] from(String s){
 		return IntStream.range(0, s.length())
 			.mapToObj(i -> new Symbol(s.charAt(i)))
-			.toArray(Token[]::new);
+			.toArray(Symbol[]::new);
+	}
+
+	public static String toString(List<Symbol> symbols, int index){
+		final var builder = new StringBuilder();
+		IntStream.range(index, symbols.size())
+			.forEach(i -> builder.append(symbols.get(i)));
+		return builder.toString();
 	}
 
 	@Override

@@ -14,15 +14,15 @@ public class FunctionExpression implements TokenTree{
 	private final Token[] children;
 	private final Token tail;
 
-	public FunctionExpression(ExpressionParser parser, String source, int index){
+	public FunctionExpression(ExpressionParser parser, List<Symbol> symbols, int index){
 		this.parser = parser;
 		final List<Token> head = new ArrayList<>();
-		head.add(new Symbol(source.charAt(index++)));
+		head.add(symbols.get(index++));
 
-		if(source.charAt(index) == '<'){
+		if(symbols.get(index).charValue() == '<'){
 			final var builder = new StringBuilder();
 			while(true){
-				final char c = source.charAt(++index);
+				final char c = symbols.get(++index).charValue();
 				if(c == '>'){
 					head.add(new Modifiers(builder.toString()));
 					index++;
@@ -32,14 +32,14 @@ public class FunctionExpression implements TokenTree{
 			}
 		}
 
-		if(source.charAt(index) == '('){
+		if(symbols.get(index).charValue() == '('){
 			head.add(new Symbol('('));
 			final var segments = new ArrayList<Token>();
 			loop: while(true){
-				final var seg = parser.parseSeries(source, ++index);
+				final var seg = parser.parseSeries(symbols, ++index);
 				segments.add(seg);
 				index+=seg.length();
-				final char c = source.charAt(index);
+				final char c = symbols.get(index).charValue();
 				switch(c){
 					case ')':{
 						this.tail = new Symbol(')');
@@ -47,7 +47,7 @@ public class FunctionExpression implements TokenTree{
 					}
 					case ',': continue loop;
 					default: throw new IllegalArgumentException(
-						String.format("Unexpected token: '%s' in %s", c, source.substring(index))
+						String.format("Unexpected token: '%s' in %s", c, Symbol.toString(symbols, index))
 					);
 				}
 			}
@@ -58,7 +58,7 @@ public class FunctionExpression implements TokenTree{
 		}
 		else{
 			this.children = new Token[]{
-				parser.parseSegment(source, index)
+				parser.parseSegment(symbols, index)
 			};
 			this.tail = null;
 		}

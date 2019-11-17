@@ -41,7 +41,7 @@ public class Converter{
 			if(substitutions[sub] != null){
 				throw new IllegalStateException(String.format("Unavailable expression substitution character: '%s'.", sub));
 			}
-			final var expr = parser.parse(expression);
+			final var expr = parser.parse(Symbol.from(expression)).get(0);
 			final Queue<Token> loopCheck = new ArrayDeque<>();
 			loopCheck.add(expr);
 			while(!loopCheck.isEmpty()){
@@ -141,26 +141,24 @@ public class Converter{
 	}
 
 	public DFA buildDFA(String pattern){
-		final var expression = parser.parse(pattern);
+		return buildDFA(parse(pattern));
+	}
+
+	public Token parse(String pattern){
+		final var expression = parser.parse(Symbol.from(pattern)).get(0);
 		final var rebuilt = expression.value();
 		if(!rebuilt.equals(pattern)){
 			throw new IllegalStateException(rebuilt + " != " + pattern);
 		}
-		return buildDFA(parser.parse(pattern));
+		return expression;
 	}
-
 	public DFA buildDFA(Token expression){
 		final var a = build(expression);
 		return (a instanceof DFA) ? (DFA)a : new Convert().apply((NFA)a);
 	}
 
 	public Automaton build(String pattern){
-		final var expression = parser.parse(pattern);
-		final var rebuilt = expression.value();
-		if(!rebuilt.equals(pattern)){
-			throw new IllegalStateException(rebuilt + " != " + pattern);
-		}
-		return build(parser.parse(pattern));
+		return build(parse(pattern));
 	}
 
 	public Automaton build(Token expression){
