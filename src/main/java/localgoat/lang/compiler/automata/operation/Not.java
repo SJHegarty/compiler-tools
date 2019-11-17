@@ -3,7 +3,6 @@ package localgoat.lang.compiler.automata.operation;
 import localgoat.lang.compiler.automata.structure.Automaton;
 import localgoat.lang.compiler.automata.structure.TypeState;
 import localgoat.lang.compiler.automata.utility.Builder;
-import localgoat.lang.compiler.automata.structure.DFA;
 import localgoat.lang.compiler.token.Token;
 import localgoat.util.functional.operation.UnaryOperation;
 
@@ -23,7 +22,7 @@ public class Not implements UnaryOperation<Automaton>{
 	}
 
 	@Override
-	public DFA apply(Automaton source){
+	public Automaton apply(Automaton source){
 		final var complete = new Complete(baseAlphabet).apply(source);
 		final var builder = new Builder(complete.tokens());
 		builder.copy(complete, s -> s.negate());
@@ -40,6 +39,6 @@ public class Not implements UnaryOperation<Automaton>{
 				node -> node.addState(TypeState.TERMINATING)
 			);
 
-		return builder.buildDFA();
+		return new Automaton(builder);
 	}
 }

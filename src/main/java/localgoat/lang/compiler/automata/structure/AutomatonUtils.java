@@ -1,17 +1,18 @@
 package localgoat.lang.compiler.automata.structure;
 
-import localgoat.lang.compiler.automata.data.ReadMode;
+import localgoat.lang.compiler.Parser;
+import localgoat.lang.compiler.automata.ReadMode;
+import localgoat.lang.compiler.automata.expression.Converter;
+import localgoat.lang.compiler.automata.expression.ExpressionParser;
+import localgoat.lang.compiler.automata.operation.Convert;
 import localgoat.lang.compiler.token.Symbol;
 import localgoat.lang.compiler.token.Token;
 import localgoat.lang.compiler.token.TokenString;
-import localgoat.lang.compiler.automata.expression.Converter;
-import localgoat.lang.compiler.automata.expression.ExpressionParser;
-import localgoat.lang.compiler.automata.utility.Builder;
 import localgoat.util.ESupplier;
 
 import java.util.*;
 
-public class DFA extends AbstractAutomaton{
+public class AutomatonUtils{
 	public static void main(String...args){
 
 		final var converter = new Converter();
@@ -47,48 +48,26 @@ public class DFA extends AbstractAutomaton{
 
 		final var parser = new ExpressionParser();
 		final var expr = parser.parse(Symbol.from(builder.toString()));
-		final var dfa = converter.buildDFA(expr.get(0));
+		final var utils = new AutomatonUtils(converter.build(expr.get(0)));
 
-		System.err.println(dfa.read(ReadMode.GREEDY, Symbol.from("ClassName")));
-		System.err.println(dfa.read(ReadMode.GREEDY, Symbol.from("HTTP_")));
-		System.err.println(dfa.read(ReadMode.GREEDY, Symbol.from("ENUM_CONSTANTsome-other-shit")));
-		System.err.println(dfa.read(ReadMode.GREEDY, Symbol.from("instance-identifier")));
+		System.err.println(utils.read(ReadMode.GREEDY, Symbol.from("ClassName")));
+		System.err.println(utils.read(ReadMode.GREEDY, Symbol.from("HTTP_")));
+		System.err.println(utils.read(ReadMode.GREEDY, Symbol.from("ENUM_CONSTANTsome-other-shit")));
+		System.err.println(utils.read(ReadMode.GREEDY, Symbol.from("instance-identifier")));
 
 	}
 
-	public static DFA lambda(){
-		final var builder = new Builder(Collections.emptySet());
-		builder.addNode(true);
-		return builder.buildDFA();
+	private final Automaton a;
+	public AutomatonUtils(Automaton a){
+		this.a = new Convert().apply(a);
 	}
 
-	public static DFA of(Token...tokens){
-		final var tokenSet = new HashSet<>(Arrays.asList(tokens));
-		final var builder = new Builder(tokenSet);
-		final var n0 = builder.addNode();
-		final var n1 = builder.addNode(true);
-		n0.addTransitions(tokenSet, n1);
-		return builder.buildDFA();
-	}
-
-	public DFA(Builder builder){
-		super(builder);
-		if(!isDeterministic()){
-			throw new IllegalStateException();
-		}
-	}
-
-	public boolean isComplete(Set<Token> alphabet){
-		if(!tokens.containsAll(alphabet)){
-			return false;
-		}
-		return null == ESupplier.from(nodes)
-			.exclude(node -> node.tokens().equals(tokens))
-			.get();
+	public TokenString read(final ReadMode mode, Token...tokens){
+		return read(mode, 0, Arrays.asList(tokens));
 	}
 
 	public boolean accepts(Token...tokens){
-		var state = node(0);
+		var state = a.node(0);
 		for(Token token: tokens){
 			final var transition = state.transition(token);
 			if(transition == null){
@@ -97,10 +76,6 @@ public class DFA extends AbstractAutomaton{
 			state = transition.node();
 		}
 		return state.isTerminating();
-	}
-
-	public TokenString read(final ReadMode mode, Token...tokens){
-		return read(mode, 0, Arrays.asList(tokens));
 	}
 
 	public static class StateIndex{
@@ -118,7 +93,7 @@ public class DFA extends AbstractAutomaton{
 			throw new IllegalArgumentException();
 		}
 
-		var state = node(0);
+		var state = a.node(0);
 		var t = state.isTerminating() ? new StateIndex(index, state) : null;
 		int depth = index;
 		while(depth < tokens.size() && state.isTerminable()){
@@ -172,7 +147,7 @@ public class DFA extends AbstractAutomaton{
 							return new TokenString(Collections.emptySet(), tokens);
 						}
 					}
-					final int size = tokens.size();
+					final int size = a.tokens.size();
 					if(size == 0){
 						index = input.length;
 					}

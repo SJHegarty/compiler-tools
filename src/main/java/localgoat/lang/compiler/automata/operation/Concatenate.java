@@ -1,7 +1,6 @@
 package localgoat.lang.compiler.automata.operation;
 
 import localgoat.lang.compiler.automata.structure.Automaton;
-import localgoat.lang.compiler.automata.structure.NFA;
 import localgoat.lang.compiler.automata.structure.TypeState;
 import localgoat.lang.compiler.automata.utility.Builder;
 import localgoat.util.CollectionUtils;
@@ -11,7 +10,7 @@ import java.util.stream.IntStream;
 
 public class Concatenate implements AssociativeOperation<Automaton>{
 	@Override
-	public NFA apply(Automaton a0, Automaton a1){
+	public Automaton apply(Automaton a0, Automaton a1){
 		final var builder = new Builder(
 			CollectionUtils.union(
 				a0.tokens(),
@@ -39,6 +38,6 @@ public class Concatenate implements AssociativeOperation<Automaton>{
 				nbuilder -> nbuilder.addState(TypeState.TERMINATING)
 			);
 		
-		return builder.buildNFA();
+		return new Automaton(builder);
 	}
 }

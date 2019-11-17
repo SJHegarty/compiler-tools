@@ -1,9 +1,7 @@
 package localgoat.lang.compiler.automata.operation;
 
-import localgoat.lang.compiler.token.Token;
 import localgoat.lang.compiler.automata.structure.Automaton;
-import localgoat.lang.compiler.automata.structure.DFA;
-import localgoat.lang.compiler.automata.structure.NFA;
+import localgoat.lang.compiler.token.Token;
 import localgoat.lang.compiler.automata.utility.Builder;
 import localgoat.util.CollectionUtils;
 
@@ -18,14 +16,8 @@ public class Complete implements UnaryOperator<Automaton>{
 	}
 
 	@Override
-	public DFA apply(Automaton a){
-		final DFA dfa;
-		if(a instanceof DFA){
-			dfa = (DFA)a;
-		}
-		else{
-			dfa = new Convert().apply((NFA)a);
-		}
+	public Automaton apply(Automaton a){
+		final Automaton dfa = new Convert().apply(a);
 		final var tokens = CollectionUtils.union(alphabet, dfa.tokens());
 
 		if(dfa.isComplete(tokens)){
@@ -43,6 +35,6 @@ public class Complete implements UnaryOperator<Automaton>{
 			);
 		}
 
-		return builder.buildDFA();
+		return new Automaton(builder);
 	}
 }

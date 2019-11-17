@@ -9,15 +9,19 @@ import localgoat.util.ValueCache;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class Convert implements Function<NFA, DFA>{
+public class Convert implements UnaryOperator<Automaton>{
 	@Override
-	public DFA apply(NFA nfa){
-		final var builder = new Builder(nfa.tokens());
-		final Map<Node, Set<Node>> lambdaTransitable = IntStream.range(0, nfa.nodeCount())
-			.mapToObj(nfa::node)
+	public Automaton apply(Automaton a){
+		if(a.isDeterministic()){
+			return a;
+		}
+		final var builder = new Builder(a.tokens());
+		final Map<Node, Set<Node>> lambdaTransitable = IntStream.range(0, a.nodeCount())
+			.mapToObj(a::node)
 			.collect(
 				Collectors.toMap(
 					node -> node,
@@ -55,7 +59,7 @@ public class Convert implements Function<NFA, DFA>{
 		final Queue<NodeBuilder> nodesQueue = new ArrayDeque<>();
 		nodesQueue.add(
 			nodeBuilder.get(
-				lambdaTransitable.get(nfa.node(0))
+				lambdaTransitable.get(a.node(0))
 			)
 		);
 		class Transition{
@@ -103,7 +107,6 @@ public class Convert implements Function<NFA, DFA>{
 				}
 			);
 		}
-		return builder.buildDFA();
-		//this.nodes = nodesMap.values().stream().toArray(MutableNode[]::new);
+		return new Automaton(builder);
 	}
 }

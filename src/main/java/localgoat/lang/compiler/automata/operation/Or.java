@@ -25,6 +25,6 @@ public class Or implements PolyOperation<Automaton>{
 			node0.addTransition(null, builder.nodeBuilder(index));
 		}
 
-		return builder.buildNFA();
+		return new Automaton(builder);
 	}
 }

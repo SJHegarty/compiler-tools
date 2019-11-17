@@ -1,14 +1,14 @@
 package localgoat.lang.compiler.automata.expression;
 
-import localgoat.lang.compiler.automata.structure.DFA;
-import localgoat.lang.compiler.automata.data.ReadMode;
+import localgoat.lang.compiler.automata.ReadMode;
+import localgoat.lang.compiler.automata.structure.AutomatonUtils;
 import localgoat.lang.compiler.token.Symbol;
 import localgoat.lang.compiler.token.Token;
 
 import java.util.List;
 
 public class LiteralExpression implements Token{
-	static final DFA DFA;
+	static final AutomatonUtils UTILS;
 
 	static{
 		final var converter = new Converter();
@@ -17,14 +17,14 @@ public class LiteralExpression implements Token{
 		converter.addClass('q', c -> c == '\'');
 		converter.addClass('e', c -> c == '\\');
 
-		DFA = converter.buildDFA("q*+(~q, eq)q");
+		UTILS = new AutomatonUtils(converter.build("q*+(~q, eq)q"));
 	}
 
 	private final String wrapped;
 
 	public LiteralExpression(List<Symbol> symbols, int index){
 		//final var tokens = Symbol.from(s);
-		final var result = DFA.read(ReadMode.GREEDY, index, symbols);
+		final var result = UTILS.read(ReadMode.GREEDY, index, symbols);
 		if(result == null){
 			throw new IllegalArgumentException(Symbol.toString(symbols, index));
 		}

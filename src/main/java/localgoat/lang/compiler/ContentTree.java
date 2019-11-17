@@ -1,8 +1,8 @@
 package localgoat.lang.compiler;
 
+import localgoat.lang.compiler.automata.structure.Automaton;
 import localgoat.lang.compiler.token.Symbol;
 import localgoat.lang.compiler.token.TokenTree;
-import localgoat.lang.compiler.automata.structure.DFA;
 import localgoat.lang.compiler.automata.structure.Type;
 import localgoat.lang.compiler.token.Token;
 import localgoat.lang.compiler.token.TokenString;
@@ -25,15 +25,10 @@ public class ContentTree implements TokenTree{
 		TOKENISER = new LineTokeniser(dfa);
 	}
 
-	private static DFA buildTestDFA(){
+	private static Automaton buildTestDFA(){
 		final var converter = new Converter();
-		{
-			final var dfa = converter.buildDFA("!(ab)");
-			final boolean accepts = dfa.accepts(Symbol.from("abb"));
-			System.err.println(accepts);
-		}
 		converter.addSubstitution('A', "@<child>(*<1+>+(a, b))");
-		final var rv = converter.buildDFA("@<test-case>('['A*(' 'A)']')");
+		final var rv = converter.build("@<test-case>('['A*(' 'A)']')");
 		return rv;
 	}
 

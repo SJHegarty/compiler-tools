@@ -1,10 +1,9 @@
 package localgoat.lang.compiler.automata.expression.handlers;
 
+import localgoat.lang.compiler.automata.structure.Automaton;
 import localgoat.lang.compiler.token.Token;
 import localgoat.lang.compiler.automata.expression.Converter;
 import localgoat.lang.compiler.token.Symbol;
-import localgoat.lang.compiler.automata.structure.Automaton;
-import localgoat.lang.compiler.automata.structure.DFA;
 
 import java.util.function.Function;
 
@@ -21,23 +20,23 @@ public class SymbolHandler implements Function<Token, Automaton>{
 		final var symbol = (Symbol)expression;
 		final char c = symbol.charValue();
 		if(c == '^'){
-			return DFA.lambda();
+			return Automaton.lambda();
 		}
 		if((c & 0xffffff00) == 0){
 			if('A' <= c && c <= 'Z'){
 				final var expr = converter.substitutions(c);
 				if(expr != null){
-					return converter.buildDFA(expr);
+					return converter.build(expr);
 				}
 			}
 			else{
 				final char[] chars = converter.chars(c);
 				if(chars != null){
-					return DFA.of(Symbol.from(chars));
+					return Automaton.of(Symbol.from(chars));
 				}
 			}
 			System.err.println(String.format("No character class defined for symbol '%s' using literal interpretation.", c));
-			return DFA.of(new Symbol(c));
+			return Automaton.of(new Symbol(c));
 		}
 		throw new IllegalStateException();
 	}

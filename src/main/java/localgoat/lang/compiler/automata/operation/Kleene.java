@@ -1,7 +1,6 @@
 package localgoat.lang.compiler.automata.operation;
 
 import localgoat.lang.compiler.automata.structure.Automaton;
-import localgoat.lang.compiler.automata.structure.NFA;
 import localgoat.lang.compiler.automata.structure.TypeState;
 import localgoat.lang.compiler.automata.utility.Builder;
 import localgoat.util.functional.operation.UnaryOperation;
@@ -20,7 +19,7 @@ public class Kleene implements UnaryOperation<Automaton>{
 	}
 
 	@Override
-	public NFA apply(Automaton a){
+	public Automaton apply(Automaton a){
 		final var builder = new Builder(a.tokens());
 		builder.copy(a, s -> s.drop());
 
@@ -49,7 +48,7 @@ public class Kleene implements UnaryOperation<Automaton>{
 				throw new IllegalStateException();
 			}
 		}
-		return builder.buildNFA();
+		return new Automaton(builder);
 	}
 
 }

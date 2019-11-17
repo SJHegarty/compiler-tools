@@ -1,10 +1,10 @@
 package localgoat.lang.compiler.automata.expression.handlers;
 
+import localgoat.lang.compiler.automata.structure.Automaton;
 import localgoat.lang.compiler.token.Token;
 import localgoat.lang.compiler.automata.expression.Converter;
 import localgoat.lang.compiler.token.TokenSeries;
 import localgoat.lang.compiler.automata.operation.Concatenate;
-import localgoat.lang.compiler.automata.structure.Automaton;
 import localgoat.util.ESupplier;
 
 import java.util.function.Function;

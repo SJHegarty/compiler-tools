@@ -2,7 +2,7 @@ package localgoat.lang.compiler.brutish;
 
 import localgoat.lang.compiler.LineTokeniser;
 import localgoat.lang.compiler.automata.expression.Converter;
-import localgoat.lang.compiler.automata.structure.DFA;
+import localgoat.lang.compiler.automata.structure.Automaton;
 import localgoat.util.ESupplier;
 import localgoat.util.functional.CharPredicate;
 
@@ -37,7 +37,7 @@ public class Brutish{
 
 	private static final Converter CONVERTER = new Converter();
 	private static final Map<String, String> EXPRESSIONS = new TreeMap<>();
-	public static final DFA DFA;
+	public static final Automaton DFA;
 
 	static{
 		configureClasses();
@@ -59,7 +59,7 @@ public class Brutish{
 			.forEach(s -> builder.append(s));
 
 		builder.append("\n)");
-		DFA = CONVERTER.buildDFA(builder.toString());
+		DFA = CONVERTER.build(builder.toString());
 	}
 
 	private static void configureClasses(){

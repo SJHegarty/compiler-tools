@@ -1,7 +1,7 @@
 package localgoat.lang.compiler.automata.utility;
 
-import localgoat.lang.compiler.token.Token;
 import localgoat.lang.compiler.automata.structure.Automaton;
+import localgoat.lang.compiler.token.Token;
 import localgoat.lang.compiler.automata.structure.MutableNode;
 import localgoat.lang.compiler.automata.structure.TypeState;
 

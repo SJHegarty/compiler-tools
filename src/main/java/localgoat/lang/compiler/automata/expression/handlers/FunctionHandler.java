@@ -1,15 +1,15 @@
 package localgoat.lang.compiler.automata.expression.handlers;
 
+import localgoat.lang.compiler.automata.structure.Automaton;
+import localgoat.lang.compiler.automata.structure.AutomatonUtils;
 import localgoat.lang.compiler.token.IgnoredToken;
 import localgoat.lang.compiler.token.Symbol;
 import localgoat.lang.compiler.token.Token;
 import localgoat.lang.compiler.automata.expression.*;
 import localgoat.lang.compiler.automata.operation.Kleene;
-import localgoat.lang.compiler.automata.operation.Name;
+import localgoat.lang.compiler.automata.operation.Naming;
 import localgoat.lang.compiler.automata.operation.Not;
 import localgoat.lang.compiler.automata.operation.Or;
-import localgoat.lang.compiler.automata.structure.Automaton;
-import localgoat.lang.compiler.automata.structure.DFA;
 import localgoat.lang.compiler.automata.structure.Type;
 
 import java.util.Arrays;
@@ -22,14 +22,14 @@ import java.util.stream.Collectors;
 
 public class FunctionHandler implements Function<Token, Automaton>{
 
-	private static final DFA NAME_PARSER;
+	private static final AutomatonUtils NAME_PARSER;
 	static{
 		final var converter = new Converter();
 		converter.addClass('a', c -> 'a' <= c && c <= 'z');
 		converter.addSubstitution('S', "*<1+>a*('-'*<1+>a)");
 		converter.addSubstitution('N', "S");
 		converter.addSubstitution('P', "'--'S");
-		NAME_PARSER = converter.buildDFA("+(N,P,' ')");
+		NAME_PARSER = new AutomatonUtils(converter.build("+(N,P,' ')"));
 	}
 
 	private static Type classFor(String name){
@@ -64,7 +64,7 @@ public class FunctionHandler implements Function<Token, Automaton>{
 					throw new IllegalStateException("! function takes a single parameter.");
 				}
 				final var not = new Not(converter.alphabet());
-				return not.apply(converter.buildDFA(children.get(0)));
+				return not.apply(converter.build(children.get(0)));
 			}
 		);
 
@@ -103,7 +103,7 @@ public class FunctionHandler implements Function<Token, Automaton>{
 						}
 					}
 				}
-				return DFA.of(accepted.stream().toArray(Token[]::new));
+				return Automaton.of(accepted.stream().toArray(Token[]::new));
 			}
 		);
 
@@ -130,7 +130,7 @@ public class FunctionHandler implements Function<Token, Automaton>{
 				if(children.size() != 1){
 					throw new IllegalStateException("@ function only supports a single argument.");
 				}
-				final var naming = new Name(classFor(name));
+				final var naming = new Naming(classFor(name));
 				return naming.apply(converter.build(children.get(0)));
 			}
 		);

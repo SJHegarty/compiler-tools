@@ -67,25 +67,6 @@ public class Builder{
 		return nodes.get(index);
 	}
 
-	public NFA buildNFA(){
-		return new NFA(this);
-	}
-
-	public DFA buildDFA(){
-		return new DFA(this);
-	}
-
-	//TODO: implement build based upon determinism check, rather than passed in type.
-	public Automaton build(Class<? extends Automaton> type){
-		if(type == DFA.class){
-			return buildDFA();
-		}
-		if(type == NFA.class){
-			return buildNFA();
-		}
-		throw new UnsupportedOperationException();
-	}
-
 	public int nodeCount(){
 		return nodes.size();
 	}

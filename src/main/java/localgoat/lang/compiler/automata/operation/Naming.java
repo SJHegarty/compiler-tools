@@ -7,10 +7,10 @@ import localgoat.lang.compiler.automata.structure.TypeState;
 import localgoat.lang.compiler.automata.utility.Builder;
 import localgoat.util.functional.operation.UnaryOperation;
 
-public class Name implements UnaryOperation<Automaton>{
+public class Naming implements UnaryOperation<Automaton>{
 	private final Type name;
 
-	public Name(Type name){
+	public Naming(Type name){
 		this.name = name;
 	}
 
@@ -29,6 +29,6 @@ public class Name implements UnaryOperation<Automaton>{
 
 		builder.nodeBuilder(0).addState(new TypeState(name, State.INITIALISING));
 		final var type = automaton.getClass();
-		return builder.build(automaton.getClass());
+		return new Automaton(builder);
 	}
 }

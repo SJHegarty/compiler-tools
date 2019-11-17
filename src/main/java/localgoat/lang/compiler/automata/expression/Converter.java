@@ -1,5 +1,6 @@
 package localgoat.lang.compiler.automata.expression;
 
+import localgoat.lang.compiler.automata.structure.Automaton;
 import localgoat.lang.compiler.token.Symbol;
 import localgoat.lang.compiler.token.Token;
 import localgoat.lang.compiler.token.TokenSeries;
@@ -9,9 +10,6 @@ import localgoat.lang.compiler.automata.expression.handlers.LiteralHandler;
 import localgoat.lang.compiler.automata.expression.handlers.SeriesHandler;
 import localgoat.lang.compiler.automata.expression.handlers.SymbolHandler;
 import localgoat.lang.compiler.automata.operation.*;
-import localgoat.lang.compiler.automata.structure.Automaton;
-import localgoat.lang.compiler.automata.structure.DFA;
-import localgoat.lang.compiler.automata.structure.NFA;
 import localgoat.util.ESupplier;
 import localgoat.util.functional.CharPredicate;
 
@@ -140,10 +138,6 @@ public class Converter{
 		);
 	}
 
-	public DFA buildDFA(String pattern){
-		return buildDFA(parse(pattern));
-	}
-
 	public Token parse(String pattern){
 		final var expression = parser.parse(Symbol.from(pattern)).get(0);
 		final var rebuilt = expression.value();
@@ -151,10 +145,6 @@ public class Converter{
 			throw new IllegalStateException(rebuilt + " != " + pattern);
 		}
 		return expression;
-	}
-	public DFA buildDFA(Token expression){
-		final var a = build(expression);
-		return (a instanceof DFA) ? (DFA)a : new Convert().apply((NFA)a);
 	}
 
 	public Automaton build(String pattern){
