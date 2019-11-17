@@ -1,13 +1,10 @@
-package localgoat.lang.compiler.automata.data;
+package localgoat.lang.compiler.token;
 
-import localgoat.lang.compiler.automata.data.Token;
-import localgoat.lang.compiler.automata.data.TokenTree;
 import localgoat.lang.compiler.automata.expression.WhitespaceExpression;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Stream;
 
 public class TokenSeries implements TokenTree{
 	private final Token[] segments;

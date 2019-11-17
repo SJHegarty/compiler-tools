@@ -1,6 +1,5 @@
-package localgoat.lang.compiler.automata.data;
+package localgoat.lang.compiler.token;
 
-import localgoat.lang.compiler.automata.data.Token;
 import localgoat.util.ESupplier;
 
 import java.util.List;

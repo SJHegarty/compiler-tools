@@ -1,6 +1,6 @@
 package localgoat.lang.compiler.automata.structure;
 
-import localgoat.lang.compiler.automata.data.Token;
+import localgoat.lang.compiler.token.Token;
 import localgoat.lang.compiler.automata.utility.CachedBoolean;
 
 import java.util.*;

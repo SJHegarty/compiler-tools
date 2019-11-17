@@ -1,6 +1,5 @@
 package localgoat.lang.compiler.automata.operation;
 
-import localgoat.lang.compiler.automata.data.Token;
 import localgoat.lang.compiler.automata.structure.Automaton;
 import localgoat.lang.compiler.automata.structure.NFA;
 import localgoat.lang.compiler.automata.structure.TypeState;

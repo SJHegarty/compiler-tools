@@ -1,10 +1,11 @@
 package localgoat.lang.compiler;
 
-import localgoat.lang.compiler.automata.data.TokenTree;
+import localgoat.lang.compiler.token.Symbol;
+import localgoat.lang.compiler.token.TokenTree;
 import localgoat.lang.compiler.automata.structure.DFA;
 import localgoat.lang.compiler.automata.structure.Type;
-import localgoat.lang.compiler.automata.data.Token;
-import localgoat.lang.compiler.automata.data.TokenString;
+import localgoat.lang.compiler.token.Token;
+import localgoat.lang.compiler.token.TokenString;
 import localgoat.lang.compiler.automata.expression.Converter;
 import localgoat.lang.compiler.brutish.Brutish;
 import localgoat.util.ESupplier;
@@ -28,7 +29,7 @@ public class ContentTree implements TokenTree{
 		final var converter = new Converter();
 		{
 			final var dfa = converter.buildDFA("!(ab)");
-			final boolean accepts = dfa.accepts(Token.from("abb"));
+			final boolean accepts = dfa.accepts(Symbol.from("abb"));
 			System.err.println(accepts);
 		}
 		converter.addSubstitution('A', "@<child>(*<1+>+(a, b))");

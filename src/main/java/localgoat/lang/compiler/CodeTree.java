@@ -1,8 +1,8 @@
 package localgoat.lang.compiler;
 
-import localgoat.lang.compiler.automata.data.Token;
-import localgoat.lang.compiler.automata.data.TokenString;
-import localgoat.lang.compiler.automata.data.TokenTree;
+import localgoat.lang.compiler.token.Token;
+import localgoat.lang.compiler.token.TokenString;
+import localgoat.lang.compiler.token.TokenTree;
 import localgoat.lang.compiler.brutish.Brutish;
 import localgoat.util.ESupplier;
 

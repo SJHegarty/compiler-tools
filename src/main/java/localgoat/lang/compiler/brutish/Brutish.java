@@ -1,7 +1,6 @@
 package localgoat.lang.compiler.brutish;
 
 import localgoat.lang.compiler.LineTokeniser;
-import localgoat.lang.compiler.automata.data.Token;
 import localgoat.lang.compiler.automata.expression.Converter;
 import localgoat.lang.compiler.automata.structure.DFA;
 import localgoat.util.ESupplier;

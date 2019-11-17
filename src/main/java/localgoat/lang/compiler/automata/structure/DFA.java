@@ -1,8 +1,9 @@
 package localgoat.lang.compiler.automata.structure;
 
 import localgoat.lang.compiler.automata.data.ReadMode;
-import localgoat.lang.compiler.automata.data.Token;
-import localgoat.lang.compiler.automata.data.TokenString;
+import localgoat.lang.compiler.token.Symbol;
+import localgoat.lang.compiler.token.Token;
+import localgoat.lang.compiler.token.TokenString;
 import localgoat.lang.compiler.automata.expression.Converter;
 import localgoat.lang.compiler.automata.expression.ExpressionParser;
 import localgoat.lang.compiler.automata.utility.Builder;
@@ -48,10 +49,10 @@ public class DFA extends AbstractAutomaton{
 		final var expr = parser.parse(builder.toString());
 		final var dfa = converter.buildDFA(expr);
 
-		System.err.println(dfa.read(ReadMode.GREEDY, Token.from("ClassName")));
-		System.err.println(dfa.read(ReadMode.GREEDY, Token.from("HTTP_")));
-		System.err.println(dfa.read(ReadMode.GREEDY, Token.from("ENUM_CONSTANTsome-other-shit")));
-		System.err.println(dfa.read(ReadMode.GREEDY, Token.from("instance-identifier")));
+		System.err.println(dfa.read(ReadMode.GREEDY, Symbol.from("ClassName")));
+		System.err.println(dfa.read(ReadMode.GREEDY, Symbol.from("HTTP_")));
+		System.err.println(dfa.read(ReadMode.GREEDY, Symbol.from("ENUM_CONSTANTsome-other-shit")));
+		System.err.println(dfa.read(ReadMode.GREEDY, Symbol.from("instance-identifier")));
 
 	}
 

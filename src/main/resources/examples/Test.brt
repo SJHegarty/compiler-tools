@@ -12,3 +12,6 @@ ${
 $for(Int i = get-index(get-value(key)); i < 20; i++){
 	do-the-things();
 }
+//Cannot be transpiled to java. Would not support variable foo;
+<[String] -> [Auto]> autoTwiddler = s -> Object.new() :: ^^toString() :: ~s;
+Auto autoTwiddled = autoTwiddler("Foo is $foo");

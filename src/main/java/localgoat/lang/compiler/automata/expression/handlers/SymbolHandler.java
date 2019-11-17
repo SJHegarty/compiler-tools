@@ -1,9 +1,8 @@
 package localgoat.lang.compiler.automata.expression.handlers;
 
-import localgoat.lang.compiler.automata.data.Token;
+import localgoat.lang.compiler.token.Token;
 import localgoat.lang.compiler.automata.expression.Converter;
-import localgoat.lang.compiler.automata.expression.ExpressionParser;
-import localgoat.lang.compiler.automata.expression.Symbol;
+import localgoat.lang.compiler.token.Symbol;
 import localgoat.lang.compiler.automata.structure.Automaton;
 import localgoat.lang.compiler.automata.structure.DFA;
 
@@ -34,11 +33,11 @@ public class SymbolHandler implements Function<Token, Automaton>{
 			else{
 				final char[] chars = converter.chars(c);
 				if(chars != null){
-					return DFA.of(Token.from(chars));
+					return DFA.of(Symbol.from(chars));
 				}
 			}
 			System.err.println(String.format("No character class defined for symbol '%s' using literal interpretation.", c));
-			return DFA.of(Token.of(c));
+			return DFA.of(new Symbol(c));
 		}
 		throw new IllegalStateException();
 	}

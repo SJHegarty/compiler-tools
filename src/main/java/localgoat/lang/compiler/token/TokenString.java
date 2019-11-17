@@ -1,4 +1,4 @@
-package localgoat.lang.compiler.automata.data;
+package localgoat.lang.compiler.token;
 
 import localgoat.lang.compiler.automata.structure.Type;
 

@@ -1,8 +1,9 @@
 package localgoat.lang.compiler.automata.expression;
 
-import localgoat.lang.compiler.automata.data.Token;
-import localgoat.lang.compiler.automata.data.TokenSeries;
-import localgoat.lang.compiler.automata.data.TokenTree;
+import localgoat.lang.compiler.token.Symbol;
+import localgoat.lang.compiler.token.Token;
+import localgoat.lang.compiler.token.TokenSeries;
+import localgoat.lang.compiler.token.TokenTree;
 import localgoat.lang.compiler.automata.expression.handlers.FunctionHandler;
 import localgoat.lang.compiler.automata.expression.handlers.LiteralHandler;
 import localgoat.lang.compiler.automata.expression.handlers.SeriesHandler;
@@ -96,7 +97,7 @@ public class Converter{
 		}
 		this.classes[sub] = new char[size];
 		System.arraycopy(buffer, 0, classes[sub], 0, size);
-		alphabet.addAll(Arrays.asList(Token.from(classes[sub])));
+		alphabet.addAll(Arrays.asList(Symbol.from(classes[sub])));
 	}
 
 	private Map<Class<? extends Token>, Function<Token, Automaton>> handlers;

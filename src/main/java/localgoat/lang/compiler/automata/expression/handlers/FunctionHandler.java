@@ -1,6 +1,8 @@
 package localgoat.lang.compiler.automata.expression.handlers;
 
-import localgoat.lang.compiler.automata.data.Token;
+import localgoat.lang.compiler.token.IgnoredToken;
+import localgoat.lang.compiler.token.Symbol;
+import localgoat.lang.compiler.token.Token;
 import localgoat.lang.compiler.automata.expression.*;
 import localgoat.lang.compiler.automata.operation.Kleene;
 import localgoat.lang.compiler.automata.operation.Name;
@@ -31,7 +33,7 @@ public class FunctionHandler implements Function<Token, Automaton>{
 	}
 
 	private static Type classFor(String name){
-		final var tokens = NAME_PARSER.tokenise(Token.from(name))
+		final var tokens = NAME_PARSER.tokenise(Symbol.from(name))
 			.map(token -> token.value())
 			.retain(s -> s.indexOf(' ') == -1)
 			.toArray(String[]::new);
@@ -80,19 +82,19 @@ public class FunctionHandler implements Function<Token, Automaton>{
 							final var chars = converter.chars(symbol);
 							if(chars == null){
 								System.err.println(String.format("No character class defined for symbol '%s' using literal interpretation.", c));
-								accepted.remove(Token.of(symbol));
+								accepted.remove(new Symbol(symbol));
 							}
 							else{
 								accepted.removeAll(
 									Arrays.asList(
-										Token.from(chars)
+										Symbol.from(chars)
 									)
 								);
 							}
 						}
 						else if(c instanceof LiteralExpression && c.length() == 3){
 							final char symbol = ((LiteralExpression)c).value().charAt(1);
-							accepted.remove(Token.of(symbol));
+							accepted.remove(new Symbol(symbol));
 						}
 						else{
 							throw new UnsupportedOperationException(
@@ -109,7 +111,7 @@ public class FunctionHandler implements Function<Token, Automaton>{
 			'+',
 			function -> {
 				final var children = function.children().stream()
-					.filter(t -> !(t instanceof FormattingExpression))
+					.filter(t -> !(t instanceof IgnoredToken))
 					.map(expr -> converter.build(expr))
 					.collect(Collectors.toList());
 				final var or = new Or();

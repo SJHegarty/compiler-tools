@@ -1,8 +1,9 @@
 package localgoat.lang.compiler.automata.expression;
 
 import localgoat.lang.compiler.Parser;
-import localgoat.lang.compiler.automata.data.Token;
-import localgoat.lang.compiler.automata.data.TokenSeries;
+import localgoat.lang.compiler.token.Symbol;
+import localgoat.lang.compiler.token.Token;
+import localgoat.lang.compiler.token.TokenSeries;
 
 import java.util.ArrayList;
 

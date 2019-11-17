@@ -1,17 +1,14 @@
 package localgoat.lang.compiler.automata.operation;
 
-import localgoat.lang.compiler.automata.data.Token;
+import localgoat.lang.compiler.token.Token;
 import localgoat.lang.compiler.automata.structure.Automaton;
 import localgoat.lang.compiler.automata.structure.DFA;
-import localgoat.lang.compiler.automata.structure.MutableNode;
 import localgoat.lang.compiler.automata.structure.NFA;
 import localgoat.lang.compiler.automata.utility.Builder;
 import localgoat.util.CollectionUtils;
-import localgoat.util.ESupplier;
 
 import java.util.Set;
 import java.util.function.UnaryOperator;
-import java.util.stream.IntStream;
 
 public class Complete implements UnaryOperator<Automaton>{
 	private final Set<Token> alphabet;

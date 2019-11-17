@@ -1,8 +1,6 @@
 package localgoat.lang.compiler.automata.structure;
 
-import localgoat.lang.compiler.automata.data.Token;
-import localgoat.lang.compiler.automata.structure.Node;
-import localgoat.lang.compiler.automata.structure.Type;
+import localgoat.lang.compiler.token.Token;
 
 import java.util.*;
 import java.util.stream.Collectors;

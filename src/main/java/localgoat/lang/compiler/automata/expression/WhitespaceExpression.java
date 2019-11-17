@@ -1,6 +1,6 @@
 package localgoat.lang.compiler.automata.expression;
 
-import localgoat.lang.compiler.automata.data.Token;
+import localgoat.lang.compiler.token.Token;
 
 public class WhitespaceExpression implements Token{
 	private final String value;

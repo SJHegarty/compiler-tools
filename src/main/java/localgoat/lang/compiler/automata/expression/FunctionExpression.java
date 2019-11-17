@@ -1,13 +1,9 @@
 package localgoat.lang.compiler.automata.expression;
 
-import localgoat.lang.compiler.automata.data.Token;
-import localgoat.lang.compiler.automata.data.TokenSeries;
-import localgoat.lang.compiler.automata.data.TokenTree;
+import localgoat.lang.compiler.token.*;
 import localgoat.util.ESupplier;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -106,7 +102,7 @@ public class FunctionExpression implements TokenTree{
 	@Override
 	public List<Token> children(){
 		return ESupplier.from(children)
-			.interleave(new FormattingExpression(","))
+			.interleave(new IgnoredToken(","))
 			.toStream()
 			.collect(Collectors.toList());
 	}

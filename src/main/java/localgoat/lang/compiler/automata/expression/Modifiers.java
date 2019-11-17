@@ -1,7 +1,9 @@
 package localgoat.lang.compiler.automata.expression;
 
-import localgoat.lang.compiler.automata.data.Token;
-import localgoat.lang.compiler.automata.data.TokenTree;
+import localgoat.lang.compiler.token.StringToken;
+import localgoat.lang.compiler.token.Symbol;
+import localgoat.lang.compiler.token.Token;
+import localgoat.lang.compiler.token.TokenTree;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -26,7 +28,7 @@ public class Modifiers implements TokenTree{
 	public List<Token> children(){
 		return Collections.unmodifiableList(
 			Arrays.asList(
-				Token.of(value)
+				new StringToken(value)
 			)
 		);
 	}

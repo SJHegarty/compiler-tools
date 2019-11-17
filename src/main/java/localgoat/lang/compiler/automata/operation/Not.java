@@ -4,13 +4,10 @@ import localgoat.lang.compiler.automata.structure.Automaton;
 import localgoat.lang.compiler.automata.structure.TypeState;
 import localgoat.lang.compiler.automata.utility.Builder;
 import localgoat.lang.compiler.automata.structure.DFA;
-import localgoat.lang.compiler.automata.structure.MutableNode;
-import localgoat.lang.compiler.automata.data.Token;
-import localgoat.util.CollectionUtils;
+import localgoat.lang.compiler.token.Token;
 import localgoat.util.functional.operation.UnaryOperation;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.IntStream;
 
