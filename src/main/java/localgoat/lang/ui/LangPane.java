@@ -57,7 +57,7 @@ public class LangPane extends JTextPane{
 		final ColourMap<String> generator = new ColourMap<>(r);
 
 		ESupplier.from(ContentTree.CLASSES)
-			.exclude(c -> c.hasFlag(LineTokeniser.WHITE_SPACE))
+			.exclude(c -> c.hasFlag(Brutish.WHITE_SPACE))
 			.map(c -> c.name())
 			.exclude(name -> colours.containsKey(name))
 			.forEach(name -> generator.add(name));
@@ -130,7 +130,7 @@ public class LangPane extends JTextPane{
 						for(var token: content.tokens()){
 							final int length = token.value().length();
 
-							if(!token.hasClass(c -> c.hasFlag(LineTokeniser.WHITE_SPACE))){
+							if(!token.hasClass(c -> c.hasFlag(Brutish.WHITE_SPACE))){
 								try{
 									var extract = doc.getText(index, length);
 

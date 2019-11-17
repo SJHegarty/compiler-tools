@@ -1,22 +1,24 @@
 import localgoat.lang.compiler.ContentTree;
 import localgoat.lang.compiler.LineTokeniser;
+import localgoat.lang.compiler.automata.ReadMode;
+import localgoat.lang.compiler.automata.structure.AutomatonUtils;
+import localgoat.lang.compiler.brutish.Brutish;
+import localgoat.lang.compiler.token.Symbol;
 import localgoat.lang.ui.LangPane;
 import localgoat.lang.ui.LangTree;
 import localgoat.util.ui.document.InsertRemoveListener;
 
 import javax.swing.*;
 import java.io.IOException;
-import java.util.stream.Stream;
 
 public class Main{
 	public static void main(String...args) throws IOException{
-
+		final var utils = new AutomatonUtils(Brutish.AUTOMATON);
 		try(final var stream = Main.class.getResource("examples/Test.brt").openStream()){
 			final var content = new String(stream.readAllBytes());
-			final var tree = new ContentTree(content);
-			for(var t: tree.tokens()){
+			for(var t: utils.parse(Symbol.from(content))){
 				final String value;
-				if(t.hasClass(type -> type.hasFlag(LineTokeniser.IGNORED))){
+				if(t.hasClass(type -> type.hasFlag(Brutish.IGNORED))){
 					value = t.value();
 				}
 				else{

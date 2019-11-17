@@ -19,7 +19,7 @@ public class  CodeTree implements TokenTree{
 	static ESupplier<TokenString> tokenise(Iterable<CodeTree> trees){
 		return ESupplier.from(trees)
 			.map(child -> child.tokens())
-			.interleave(() -> ESupplier.of(LineTokeniser.LINE_FEED))
+			.interleave(() -> ESupplier.of(Brutish.LINE_FEED_TOKEN))
 			.flatMap(supplier -> supplier);
 	}
 
@@ -71,7 +71,7 @@ public class  CodeTree implements TokenTree{
 			while(lines.size() != 0 && filter.test(lines.peek())){
 				children.add(new CodeTree(lines));
 			}
-			final Predicate<TokenString> stringPredicate = t -> !t.hasClass(sc -> sc.hasFlag(LineTokeniser.IGNORED));
+			final Predicate<TokenString> stringPredicate = t -> !t.hasClass(sc -> sc.hasFlag(Brutish.IGNORED));
 			final TokenString headEnd = head.last(stringPredicate);
 			if(headEnd != null && headEnd.value().equals(Brutish.OPENING_BRACKET)){
 				final var line = lines.peek();
@@ -149,7 +149,7 @@ public class  CodeTree implements TokenTree{
 			sources.add(ESupplier.from(tail.tokens));
 		}
 		return ESupplier.from(sources)
-			.interleave(() -> ESupplier.of(LineTokeniser.LINE_FEED))
+			.interleave(() -> ESupplier.of(Brutish.LINE_FEED_TOKEN))
 			.flatMap(supplier -> supplier);
 	};
 
@@ -165,6 +165,11 @@ public class  CodeTree implements TokenTree{
 	@Override
 	public Token tail(){
 		return tail;
+	}
+
+	@Override
+	public Token trim(){
+		throw new UnsupportedOperationException();
 	}
 
 	public String reconstruct(){

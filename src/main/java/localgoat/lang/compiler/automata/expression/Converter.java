@@ -157,7 +157,7 @@ public class Converter{
 		if(handler == null){
 			throw new UnsupportedOperationException("No handler provided for expression class " + type.getName());
 		}
-		return handler.apply(expression);
+		return handler.apply((expression instanceof TokenTree) ? (((TokenTree)expression).trim()) : expression);
 	}
 
 	public Set<Token> alphabet(){

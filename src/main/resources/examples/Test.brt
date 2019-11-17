@@ -1,10 +1,11 @@
+//....
 $for(Int i = 0; i < 20; i++){
 	$> ~"Loop $(i)";
 }
 $enum Foo{
     @SOME_VALUE,
     @SOME_OTHER_VALUE;
-}
+}//???
 //Here's a comment.
 ${
     also a comment.

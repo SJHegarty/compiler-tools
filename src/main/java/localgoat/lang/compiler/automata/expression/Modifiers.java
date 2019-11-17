@@ -37,4 +37,9 @@ public class Modifiers implements TokenTree{
 	public Token tail(){
 		return CLOSING;
 	}
+
+	@Override
+	public Token trim(){
+		return this;
+	}
 }

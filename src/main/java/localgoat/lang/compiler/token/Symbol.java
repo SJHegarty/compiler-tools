@@ -25,6 +25,10 @@ public class Symbol implements Token{
 			.toArray(Symbol[]::new);
 	}
 
+	public static String toString(List<Symbol> symbols){
+		return toString(symbols, 0);
+	}
+
 	public static String toString(List<Symbol> symbols, int index){
 		final var builder = new StringBuilder();
 		IntStream.range(index, symbols.size())

@@ -5,6 +5,7 @@ import localgoat.util.ESupplier;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 public class FunctionExpression implements TokenTree{
@@ -70,6 +71,13 @@ public class FunctionExpression implements TokenTree{
 		}
 	}
 
+	private FunctionExpression(ExpressionParser parser, Token head, Token[] children, Token tail){
+		this.parser = parser;
+		this.head = head;
+		this.children = children;
+		this.tail = tail;
+	}
+
 	@Override
 	public String toString(){
 		return value();
@@ -112,4 +120,24 @@ public class FunctionExpression implements TokenTree{
 		return tail;
 	}
 
+	@Override
+	public Token trim(){
+		final UnaryOperator<Token> trimmer = token -> {
+			if(token == null || token instanceof WhitespaceExpression){
+				return null;
+			}
+			if(token instanceof TokenTree){
+				return ((TokenTree)token).trim();
+			}
+			return token;
+		};
+		return new FunctionExpression(
+			parser,
+			trimmer.apply(head),
+			ESupplier.from(children)
+				.map(c -> trimmer.apply(c))
+				.toArray(Token[]::new),
+			tail
+		);
+	}
 }

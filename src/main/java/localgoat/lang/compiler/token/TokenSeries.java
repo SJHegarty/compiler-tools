@@ -2,6 +2,7 @@ package localgoat.lang.compiler.token;
 
 import localgoat.lang.compiler.automata.expression.WhitespaceExpression;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -38,5 +39,24 @@ public class TokenSeries implements TokenTree{
 	@Override
 	public Token tail(){
 		return null;
+	}
+
+	@Override
+	public Token trim(){
+		final var tokens = new ArrayList<Token>();
+		for(var t: segments){
+			if(!(t instanceof WhitespaceExpression)){
+				if(t instanceof TokenTree){
+					tokens.add(((TokenTree)t).trim());
+				}
+				else{
+					tokens.add(t);
+				}
+			}
+		}
+		if(tokens.size() == 1){
+			return tokens.get(0);
+		}
+		return new TokenSeries(tokens);
 	}
 }

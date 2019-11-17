@@ -11,8 +11,9 @@ import localgoat.lang.compiler.token.TokenString;
 import localgoat.util.ESupplier;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
-public class AutomatonUtils{
+public class AutomatonUtils implements Parser<Symbol, TokenString>{
 	public static void main(String...args){
 
 		final var converter = new Converter();
@@ -78,6 +79,11 @@ public class AutomatonUtils{
 		return state.isTerminating();
 	}
 
+	@Override
+	public List<TokenString> parse(List<Symbol> values){
+		return tokenise(values).toStream().collect(Collectors.toList());
+	}
+
 	public static class StateIndex{
 		final int index;
 		final Node state;
@@ -129,7 +135,11 @@ public class AutomatonUtils{
 		}
 	}
 
-	public ESupplier<TokenString> tokenise(Token...input){
+	public ESupplier<TokenString> tokenise(Symbol...symbols){
+		return tokenise(Arrays.asList(symbols));
+	}
+
+	public ESupplier<TokenString> tokenise(List<Symbol> input){
 		if(accepts()){
 			throw new UnsupportedOperationException("Cannot tokenise if the empty String is accepted.");
 		}
@@ -137,19 +147,19 @@ public class AutomatonUtils{
 			int index = 0;
 			@Override
 			public TokenString get(){
-				if(index < input.length){
-					final var result = read(ReadMode.GREEDY, index, Arrays.asList(input));
+				if(index < input.size()){
+					final var result = read(ReadMode.GREEDY, index, input);
 					if(result == null){
 						final List<Token> tokens = new ArrayList<>();
-						for(int i = index; i < input.length; i++){
-							tokens.add(input[i]);
-							index = input.length;
+						for(int i = index; i < input.size(); i++){
+							tokens.add(input.get(i));
+							index = input.size();
 							return new TokenString(Collections.emptySet(), tokens);
 						}
 					}
 					final int size = a.tokens.size();
 					if(size == 0){
-						index = input.length;
+						index = input.size();
 					}
 					else{
 						index += result.children().size();

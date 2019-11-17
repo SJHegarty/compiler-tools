@@ -11,6 +11,7 @@ import localgoat.lang.compiler.automata.operation.Naming;
 import localgoat.lang.compiler.automata.operation.Not;
 import localgoat.lang.compiler.automata.operation.Or;
 import localgoat.lang.compiler.automata.structure.Type;
+import localgoat.util.ESupplier;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -57,6 +58,19 @@ public class FunctionHandler implements Function<Token, Automaton>{
 		this.converter = converter;
 
 		subhandlers.put(
+			'?',
+			function -> {
+				return new Or().apply(
+					ESupplier.concat(
+						ESupplier.of(Automaton.lambda()),
+						ESupplier.from(function.children())
+							.map(token -> converter.build(token))
+					)
+				);
+			}
+		);
+
+		subhandlers.put(
 			'!',
 			function -> {
 				final var children = function.children();
@@ -72,9 +86,9 @@ public class FunctionHandler implements Function<Token, Automaton>{
 			'~',
 			function -> {
 				final var alphabet = converter.alphabet();
-				final var children = function.children();
+				final var children = function.children().stream().filter(c -> !(c instanceof IgnoredToken)).collect(Collectors.toList());
 				final var accepted = new HashSet<Token>(alphabet);
-				for(var c: function.children()){
+				for(var c: children){
 					handled:
 					{
 						if(c instanceof Symbol){

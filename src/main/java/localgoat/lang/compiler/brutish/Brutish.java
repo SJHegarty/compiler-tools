@@ -3,16 +3,32 @@ package localgoat.lang.compiler.brutish;
 import localgoat.lang.compiler.LineTokeniser;
 import localgoat.lang.compiler.automata.expression.Converter;
 import localgoat.lang.compiler.automata.structure.Automaton;
+import localgoat.lang.compiler.automata.structure.Type;
+import localgoat.lang.compiler.token.Symbol;
+import localgoat.lang.compiler.token.TokenString;
 import localgoat.util.ESupplier;
 import localgoat.util.functional.CharPredicate;
 
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 public class Brutish{
 
-	public static final String COMMENT = "comment";
+	public static final String WHITE_SPACE = "white-space";
+	public static final String IGNORED = "ignored";
 
+	public static final TokenString LINE_FEED_TOKEN = new TokenString(
+		Collections.singleton(
+			new Type(
+				"line-feed",
+				new HashSet<>(Arrays.asList(WHITE_SPACE, IGNORED))
+			)
+		),
+		Collections.singletonList(
+			new Symbol('\n')
+		)
+	);
+	public static final String COMMENT = "comment";
+	public static final String LINE_FEED = "line-feed";
 	public static final String LINE_COMMENT ="line-comment";
 	public static final String CLASS_NAME = "class-name";
 	public static final String CONSTANT = "constant";
@@ -37,7 +53,7 @@ public class Brutish{
 
 	private static final Converter CONVERTER = new Converter();
 	private static final Map<String, String> EXPRESSIONS = new TreeMap<>();
-	public static final Automaton DFA;
+	public static final Automaton AUTOMATON;
 
 	static{
 		configureClasses();
@@ -59,7 +75,7 @@ public class Brutish{
 			.forEach(s -> builder.append(s));
 
 		builder.append("\n)");
-		DFA = CONVERTER.build(builder.toString());
+		AUTOMATON = CONVERTER.build(builder.toString());
 	}
 
 	private static void configureClasses(){
@@ -84,7 +100,6 @@ public class Brutish{
 		CONVERTER.addSubstitution('K', "*<1+>l*('-'*<1+>l)");
 		CONVERTER.addSubstitution('F', "*<1+>l*(u*<1+>l)");
 		CONVERTER.addSubstitution('I', "K");
-
 	}
 
 	private static void configureExpressions(){
@@ -92,9 +107,9 @@ public class Brutish{
 		configureMatched();
 		EXPRESSIONS.put(
 			String.format(
-				LineTokeniser.WHITE_SPACE + " --%s --%s",
-				LineTokeniser.IGNORED,
-				LineTokeniser.WHITE_SPACE
+				WHITE_SPACE + " --%s --%s",
+				IGNORED,
+				WHITE_SPACE
 			),
 			"*<1+>w"
 		);
@@ -109,12 +124,16 @@ public class Brutish{
 		EXPRESSIONS.put(HEXADECIMAL, "'0x'*<1+>x");
 		EXPRESSIONS.put(
 			String.format(
-				LINE_COMMENT + " --%s",
+				"%s --%s",
+				LINE_COMMENT,
 				COMMENT
 			),
-			"'//'*."
+			"'//'*~('\r', '\n')"
 		);
-
+		EXPRESSIONS.put(
+			LINE_FEED + " --" + IGNORED,
+			"?'\r''\n'"
+		);
 		EXPRESSIONS.put(KEY_WORD, "'$'+(K, '['K*<1+>(pK)']')");
 	}
 

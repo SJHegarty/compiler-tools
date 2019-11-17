@@ -11,20 +11,7 @@ import java.util.*;
 public class LineTokeniser{
 
 
-	public static final String WHITE_SPACE = "white-space";
-	public static final String IGNORED = "ignored";
 
-	public static final TokenString LINE_FEED = new TokenString(
-		Collections.singleton(
-			new Type(
-				"line-feed",
-				new HashSet<>(Arrays.asList(WHITE_SPACE, IGNORED))
-			)
-		),
-		Collections.singletonList(
-			new Symbol('\n')
-		)
-	);
 
 	public static final int TAB_WIDTH = 4;
 

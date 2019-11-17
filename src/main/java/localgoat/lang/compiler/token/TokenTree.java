@@ -9,6 +9,10 @@ public interface TokenTree extends Token{
 	List<? extends Token> children();
 	Token tail();
 
+	default Token trim(){
+		throw new UnsupportedOperationException(this.getClass().getName());
+	}
+
 	default Token child(int index){
 		return children().get(index);
 	}

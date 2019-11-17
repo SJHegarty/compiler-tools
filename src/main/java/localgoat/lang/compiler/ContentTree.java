@@ -1,7 +1,6 @@
 package localgoat.lang.compiler;
 
 import localgoat.lang.compiler.automata.structure.Automaton;
-import localgoat.lang.compiler.token.Symbol;
 import localgoat.lang.compiler.token.TokenTree;
 import localgoat.lang.compiler.automata.structure.Type;
 import localgoat.lang.compiler.token.Token;
@@ -20,7 +19,7 @@ public class ContentTree implements TokenTree{
 	public static final Set<Type> CLASSES;
 
 	static{
-		final var dfa = Brutish.DFA;
+		final var dfa = Brutish.AUTOMATON;
 		CLASSES = Collections.unmodifiableSet(dfa.types());
 		TOKENISER = new LineTokeniser(dfa);
 	}
