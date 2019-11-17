@@ -6,6 +6,7 @@ import localgoat.lang.compiler.brutish.Brutish;
 import localgoat.lang.compiler.token.Symbol;
 import localgoat.lang.ui.LangPane;
 import localgoat.lang.ui.LangTree;
+import localgoat.util.ESupplier;
 import localgoat.util.ui.document.InsertRemoveListener;
 
 import javax.swing.*;
@@ -16,15 +17,13 @@ public class Main{
 		final var utils = new AutomatonUtils(Brutish.AUTOMATON);
 		try(final var stream = Main.class.getResource("examples/Test.brt").openStream()){
 			final var content = new String(stream.readAllBytes());
-			for(var t: utils.parse(Symbol.from(content))){
-				final String value;
-				if(t.hasClass(type -> type.hasFlag(Brutish.IGNORED))){
-					value = t.value();
+			final var supplier = ESupplier.from(utils.parse(Symbol.from(content)));
+			for(var line: supplier.split(t -> t.hasClass(Brutish.LINE_FEED), false)){
+				System.err.print("\u001B[37m[\u001B[0m");
+				for(var t: line){
+					System.err.print(t.value());
 				}
-				else{
-					value = "\u001B[37m[\u001B[0m" + t.value() + "\u001B[37m]\u001B[0m";
-				}
-				System.err.print(value);
+				System.err.println("\u001B[37m]\u001B[0m");
 			}
 		};
 	}

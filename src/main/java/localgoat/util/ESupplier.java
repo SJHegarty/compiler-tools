@@ -149,7 +149,7 @@ public interface ESupplier<T> extends Supplier<T>, Iterable<T>{
 					return null;
 				}
 				T result = ESupplier.this.get();
-				if(predicate.test(result)){
+				if(result == null || predicate.test(result)){
 					terminated = true;
 					if(!includeTerminal){
 						return null;
@@ -183,6 +183,20 @@ public interface ESupplier<T> extends Supplier<T>, Iterable<T>{
 				retrieved = false;
 				return value;
 			}
+		};
+	}
+
+	default ESupplier<ESupplier<T>> split(Predicate<T> predicate, boolean includeTerminal){
+		return () -> {
+			T next = ESupplier.this.get();
+			if(next == null){
+				return null;
+			}
+			return ESupplier.concat(
+				ESupplier.of(next),
+				ESupplier.this
+			)
+				.until(predicate, includeTerminal);
 		};
 	}
 

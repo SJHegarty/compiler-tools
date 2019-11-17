@@ -44,6 +44,10 @@ public class TokenString implements TokenTree{
 			.sum();
 	}
 
+	public boolean hasClass(String name){
+		return hasClass(t -> Objects.equals(name, t.name()));
+	}
+
 	public boolean hasClass(Predicate<Type> predicate){
 		return null != classes.stream()
 			.filter(predicate)
