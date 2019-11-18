@@ -1,0 +1,48 @@
+Bool b = @true | $get{
+	Bool value;
+	//calculate
+	...
+	$.return(value);
+};
+
+String s = $get{
+	Auto builder = StringBuilder.new();
+	$for(Auto thing: theThings) :: builder += thing;
+	$.return(builder::String);
+}
+
+String s = $switch-get(extractChar()){
+	$cases ['a'...'z'] -> "lower";
+	$cases ('A' <= @value <= 'Z') -> "upper";
+	$default -> $get{
+		..
+		..
+		..
+		$.return(value);
+	}
+}
+
+$as block{
+	$if(some-cond){
+		...
+		$.continue(block);
+	}
+}
+
+$as block :: $if(some-cond){
+	...
+	$.continue(block);
+}
+
+$while(some-cond) $as loop{
+	$switch(some-value){
+		...
+		$default: $.break(loop);
+	}
+}
+
+[] -> [] r = $do{
+	...
+}
+
+r();

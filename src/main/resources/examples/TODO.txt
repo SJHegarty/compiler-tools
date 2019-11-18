@@ -1,0 +1,7 @@
+Add Type to transition, to track the progress of nested groups
+Add alphabet localisation parameter to ! operation - e.g.: !<--local>(ab)
+
+Find all usages of tokens() and children() methods.
+    - clarify the meanings,
+        tokens() should return all tokens including presentation tokens.
+        children() should return all parts with meaning (from a perspective of subsequent processing), this should disclude even vital structural content.
