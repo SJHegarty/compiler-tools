@@ -41,7 +41,7 @@ public interface Node{
 
 	default boolean isTerminable(){
 		return null != ESupplier.of(this)
-			.branchingMap(true, node -> ESupplier.from(node.neighbours()))
+			.branchBreadthFirst(true, node -> ESupplier.from(node.neighbours()))
 			.retain(node -> node.isTerminating())
 			.get();
 	}

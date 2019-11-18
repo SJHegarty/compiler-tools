@@ -9,7 +9,6 @@ import localgoat.lang.compiler.automata.expression.handlers.FunctionHandler;
 import localgoat.lang.compiler.automata.expression.handlers.LiteralHandler;
 import localgoat.lang.compiler.automata.expression.handlers.SeriesHandler;
 import localgoat.lang.compiler.automata.expression.handlers.SymbolHandler;
-import localgoat.lang.compiler.automata.operation.*;
 import localgoat.util.ESupplier;
 import localgoat.util.functional.CharPredicate;
 
@@ -44,7 +43,7 @@ public class Converter{
 			loopCheck.add(expr);
 			while(!loopCheck.isEmpty()){
 				var embedded = ESupplier.of(loopCheck.poll())
-					.branchingMap(
+					.branchBreadthFirst(
 						true,
 						e -> {
 							if(e instanceof TokenTree){

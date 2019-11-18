@@ -1,6 +1,8 @@
 package localgoat.lang.ui;
 
-import localgoat.lang.compiler.CodeTree;
+import localgoat.lang.compiler.token.TokenSeries;
+import localgoat.lang.compiler.token.TokenString;
+import localgoat.lang.compiler.token.TokenTree;
 import localgoat.util.ui.ListTreeWrapper;
 
 import javax.swing.*;
@@ -13,21 +15,21 @@ import java.util.stream.Collectors;
 
 public class LangTree extends JTree{
 
-	private static class CodeTreeWrapper implements TreeNode{
-		private final CodeTree wrapped;
+	private static class TokenTreeWrapper implements TreeNode{
+		private final TokenTree wrapped;
 
-		CodeTreeWrapper(CodeTree wrapped){
+		TokenTreeWrapper(TokenTree wrapped){
 			this.wrapped = wrapped;
 		}
 
 		@Override
 		public TreeNode getChildAt(int childIndex){
-			return new CodeTreeWrapper(wrapped.children().get(childIndex));
+			return new TokenTreeWrapper((TokenTree) wrapped.children().get(childIndex));
 		}
 
 		@Override
 		public int getChildCount(){
-			return wrapped.children().size();
+			return isLeaf() ? 0 : wrapped.children().size();
 		}
 
 		@Override
@@ -38,7 +40,7 @@ public class LangTree extends JTree{
 
 		@Override
 		public int getIndex(TreeNode node){
-			return wrapped.children().indexOf(((CodeTreeWrapper)node).wrapped);
+			return wrapped.children().indexOf(((TokenTreeWrapper)node).wrapped);
 		}
 
 		@Override
@@ -48,21 +50,24 @@ public class LangTree extends JTree{
 
 		@Override
 		public boolean isLeaf(){
-			return wrapped.children().isEmpty();
+			return wrapped instanceof TokenString;
 		}
 
 		@Override
 		public Enumeration<? extends TreeNode> children(){
+			if(isLeaf()){
+				throw new UnsupportedOperationException();
+			}
 			return Collections.enumeration(
 				wrapped.children().stream()
-					.map(child -> new CodeTreeWrapper(child))
+					.map(child -> new TokenTreeWrapper((TokenTree) child))
 					.collect(Collectors.toList())
 			);
 		}
 
 		@Override
 		public String toString(){
-			return String.valueOf(wrapped.head);
+			return (isLeaf() || wrapped instanceof TokenSeries) ? wrapped.value() : String.valueOf(wrapped.head());
 		}
 
 		@Override
@@ -72,22 +77,22 @@ public class LangTree extends JTree{
 
 		@Override
 		public boolean equals(Object o){
-			return (o == this) || ((o instanceof CodeTreeWrapper) && ((CodeTreeWrapper)o).wrapped.equals(wrapped));
+			return (o == this) || ((o instanceof TokenTreeWrapper) && ((TokenTreeWrapper)o).wrapped.equals(wrapped));
 		}
 	}
 
-	public void setCodeTrees(List<CodeTree> trees){
+	public void setCodeTrees(List<TokenTree> trees){
 		setModel(
 			new DefaultTreeModel(
 				new ListTreeWrapper<>(
 					trees,
-					tree -> new CodeTreeWrapper(tree)
+					tree -> new TokenTreeWrapper(tree)
 				)
 			)
 		);
 	}
 
-	public void setCodeTree(CodeTree tree){
-		setModel(new DefaultTreeModel(new CodeTreeWrapper(tree)));
+	public void setCodeTree(TokenTree tree){
+		setModel(new DefaultTreeModel(new TokenTreeWrapper(tree)));
 	}
 }

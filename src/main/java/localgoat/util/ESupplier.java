@@ -1,12 +1,14 @@
 package localgoat.util;
 
 import localgoat.util.functional.ThrowingFunction;
+import localgoat.util.functional.ThrowingUnaryOperator;
 
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @FunctionalInterface
@@ -123,6 +125,14 @@ public interface ESupplier<T> extends Supplier<T>, Iterable<T>{
 				return null;
 			}
 		};
+	}
+
+	default String concatenate(){
+		final var builder = new StringBuilder();
+		for(T t: this){
+			builder.append(t);
+		}
+		return builder.toString();
 	}
 
 	class Peekable<T> implements ESupplier<T>{
@@ -265,7 +275,12 @@ public interface ESupplier<T> extends Supplier<T>, Iterable<T>{
 		};
 	}
 
-	default <R> ESupplier<R> tryMap(ThrowingFunction<T, R> mapper){
+
+	default ESupplier<T> mapOrValue(ThrowingUnaryOperator<T> mapper){
+		return map(mapper.orValue());
+	}
+
+	default <R> ESupplier<R> mapOrNull(ThrowingFunction<T, R> mapper){
 		return map(mapper.orNull());
 	}
 
@@ -339,7 +354,7 @@ public interface ESupplier<T> extends Supplier<T>, Iterable<T>{
 
 	public static void main(String...args){
 		var supplier = ESupplier.of("a")
-			.branchingMap(false, s -> ESupplier.of(s + "a", s + "b", s + "c"))
+			.branchBreadthFirst(false, s -> ESupplier.of(s + "a", s + "b", s + "c"))
 			.limit(100)
 			.exclude(s -> s.contains("abc"))
 			.counting();
@@ -394,7 +409,39 @@ public interface ESupplier<T> extends Supplier<T>, Iterable<T>{
 		};
 	}
 
-	default ESupplier<T> branchingMap(boolean unique, Function<T, ESupplier<? extends T>> mapper){
+	default ESupplier<T> reversed(){
+		return fromReversed(toStream().collect(Collectors.toList()));
+	}
+
+	default ESupplier<T> branchDepthFirst(boolean unique, Function<T, ESupplier<? extends T>> mapper){
+		final Deque<T> unmapped = new ArrayDeque<>();
+		final Set<T> viewed = new HashSet<>();
+
+		return () -> {
+			if(unmapped.isEmpty()){
+				for(;;){
+					final T t = ESupplier.this.get();
+					if(t == null){
+						return null;
+					}
+					if(!unique || viewed.add(t)){
+						unmapped.push(t);
+						break;
+					}
+				}
+			}
+			final T t = unmapped.pollFirst();
+			final var supplier = mapper.apply(t);
+			if(supplier != null){
+				for(T child: supplier.reversed()){
+					unmapped.push(child);
+				}
+			}
+			return t;
+		};
+	}
+
+	default ESupplier<T> branchBreadthFirst(boolean unique, Function<T, ESupplier<? extends T>> mapper){
 		return new ESupplier<>(){
 			ESupplier<? extends T> supplier = ESupplier.this;
 			final Queue<T> unmapped = new ArrayDeque<>();

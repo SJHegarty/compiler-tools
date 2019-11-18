@@ -1,8 +1,12 @@
 package localgoat.lang.ui;
 
 import localgoat.lang.compiler.IndentParser;
-import localgoat.lang.compiler.ContentTree;
 import localgoat.lang.compiler.omega.Omega;
+import localgoat.lang.compiler.omega.OmegaValidators;
+import localgoat.lang.compiler.token.Symbol;
+import localgoat.lang.compiler.token.Token;
+import localgoat.lang.compiler.token.TokenString;
+import localgoat.lang.compiler.token.TokenTree;
 import localgoat.util.ESupplier;
 import localgoat.util.ui.document.InsertRemoveListener;
 
@@ -16,12 +20,9 @@ import javax.swing.text.TabSet;
 import javax.swing.text.TabStop;
 import java.awt.Color;
 import java.awt.Font;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Random;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -56,7 +57,7 @@ public class LangPane extends JTextPane{
 		System.err.println("Wheel offset: " + r);
 		final ColourMap<String> generator = new ColourMap<>(r);
 
-		ESupplier.from(ContentTree.CLASSES)
+		ESupplier.from(Omega.AUTOMATON.types())
 			.exclude(c -> c.hasFlag(IndentParser.WHITE_SPACE))
 			.map(c -> c.name())
 			.exclude(name -> colours.containsKey(name))
@@ -93,9 +94,14 @@ public class LangPane extends JTextPane{
 		);
 
 	}
-	private ContentTree content;
+
+	private List<TokenTree> content;
 
 	public LangPane(){
+		final var parser = new IndentParser(
+			Omega.AUTOMATON,
+			OmegaValidators.TAIL_VALIDATORS
+		);
 
 		this.setBackground(new Color(0xff202020));
 		this.setCaretColor(new Color(0xffc0c0c0));
@@ -123,11 +129,22 @@ public class LangPane extends JTextPane{
 
 		doc.addDocumentListener(
 			(InsertRemoveListener) event -> {
-				LangPane.this.content = new ContentTree(getText());
+				LangPane.this.content = parser.parse(Symbol.from(getText()));
 				SwingUtilities.invokeLater(
 					() -> {
+
+						final var supplier = ESupplier.from(content)
+							.map(tree -> (Token)tree)
+							.interleave(IndentParser.LINE_FEED_TOKEN)
+							.branchDepthFirst(
+								false,
+								t -> (t instanceof TokenString) ? null : ((TokenTree)t).tokens()
+							)
+							.mapOrNull(t -> (TokenString)t);
+
 						int index = 0;
-						for(var token: content.tokens()){
+						final UnaryOperator<String> op = s -> s.replaceAll("\r", "\\\\r").replaceAll("\n", "\\\\n").replaceAll("\t", "\\\\t");
+						for(var token: supplier){
 							final int length = token.value().length();
 
 							if(!token.hasClass(c -> c.hasFlag(IndentParser.WHITE_SPACE))){

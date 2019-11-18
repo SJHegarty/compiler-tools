@@ -18,7 +18,7 @@ public class OmegaValidators{
 	public static final Function<TokenSeries, Consumer<TokenSeries>> TAIL_VALIDATORS = head -> {
 		final Function<ESupplier<Token>, TokenString> seeker = supplier -> {
 			return supplier
-				.tryMap(t -> (TokenString)t)
+				.mapOrNull(t -> (TokenString)t)
 				.find(t -> !t.hasFlag(IndentParser.IGNORED));
 		};
 

@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 
 public class IndentParser implements Parser<Symbol, TokenTree>{
 
+	public static final int TAB_WIDTH = 4;
 	public static final String WHITE_SPACE = "white-space";
 	public static final String IGNORED = "ignored";
 	public static final String LINE_FEED = "line-feed";
@@ -106,7 +107,7 @@ public class IndentParser implements Parser<Symbol, TokenTree>{
 				for(char c : values[0].value().toCharArray()){
 					switch(c){
 						case '\t':{
-							sum += LineTokeniser.TAB_WIDTH - (sum % LineTokeniser.TAB_WIDTH);
+							sum += TAB_WIDTH - (sum % TAB_WIDTH);
 							break;
 						}
 						case ' ':{

@@ -1,8 +1,10 @@
-import localgoat.lang.compiler.ContentTree;
 import localgoat.lang.compiler.IndentParser;
 import localgoat.lang.compiler.omega.Omega;
 import localgoat.lang.compiler.omega.OmegaValidators;
 import localgoat.lang.compiler.token.Symbol;
+import localgoat.lang.compiler.token.Token;
+import localgoat.lang.compiler.token.TokenString;
+import localgoat.lang.compiler.token.TokenTree;
 import localgoat.lang.ui.LangPane;
 import localgoat.lang.ui.LangTree;
 import localgoat.util.ESupplier;
@@ -13,26 +15,36 @@ import java.io.IOException;
 
 public class Main{
 	public static void main(String...args) throws IOException{
+		launchFrame();
+	}
+
+	static void printTest() throws IOException{
 		final var parser = new IndentParser(
 			Omega.AUTOMATON,
 			OmegaValidators.TAIL_VALIDATORS
 		);
 		try(final var stream = Main.class.getResource("examples/Test.brt").openStream()){
 			final var content = new String(stream.readAllBytes());
-			final var supplier = ESupplier.from(parser.parse(Symbol.from(content)));
+			final var supplier = ESupplier.from(parser.parse(Symbol.from(content)))
+				.map(tree -> (Token)tree)
+				.interleave(IndentParser.LINE_FEED_TOKEN)
+				.branchDepthFirst(
+					false,
+					t -> (t instanceof TokenString) ? null : ((TokenTree)t).tokens()
+				)
+				.mapOrNull(t -> (TokenString)t);
+
 			for(var token: supplier){
-				System.err.println(token.value());
+				System.err.print(token.value());
 			}
-			/*for(var line: supplier.split(t -> t.hasClass(IndentParser.LINE_FEED), false)){
-				System.err.print("\u001B[37m[\u001B[0m");
-				for(var t: line){
-					System.err.print(t.value());
-				}
-				System.err.println("\u001B[37m]\u001B[0m");
-			}*/
 		};
 	}
 	static void launchFrame(){
+		final var parser = new IndentParser(
+			Omega.AUTOMATON,
+			OmegaValidators.TAIL_VALIDATORS
+		);
+
 		final var frame = new JFrame();
 		final var pane = new LangPane();
 		final var recpane = new LangPane();
@@ -52,15 +64,18 @@ public class Main{
 		pane.getDocument().addDocumentListener(
 			(InsertRemoveListener)(e) -> {
 				var text = pane.getText().replaceAll("\r\n", "\n");
-				var contentTree = new ContentTree(text);
-				recpane.setText(contentTree.reconstruct());
-				actualised.setText(contentTree.effective().reconstruct());
-				var code = contentTree.getCode();
-				if(code.size() == 1){
-					tree.setCodeTree(code.get(0));
+				var parsed = parser.parse(Symbol.from(text));
+				var reconstructed = ESupplier.from(parsed)
+					.map(t -> t.value())
+					.interleave("\n")
+					.concatenate();
+				recpane.setText(reconstructed);
+				//actualised.setText(contentTree.effective().reconstruct());
+				if(parsed.size() == 1){
+					tree.setCodeTree(parsed.get(0));
 				}
 				else{
-					tree.setCodeTrees(code);
+					tree.setCodeTrees(parsed);
 				}
 
 				//recpane.setText(reconstruction);

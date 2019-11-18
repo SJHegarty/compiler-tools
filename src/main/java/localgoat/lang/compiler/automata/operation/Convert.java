@@ -8,7 +8,6 @@ import localgoat.util.ESupplier;
 import localgoat.util.ValueCache;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -26,7 +25,7 @@ public class Convert implements UnaryOperator<Automaton>{
 				Collectors.toMap(
 					node -> node,
 					node -> ESupplier.of(node)
-						.branchingMap(
+						.branchBreadthFirst(
 							true,
 							n -> ESupplier.from(n.transitions(null))
 								.map(t -> t.node())
