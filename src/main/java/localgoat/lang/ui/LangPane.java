@@ -1,7 +1,7 @@
 package localgoat.lang.ui;
 
 import localgoat.lang.compiler.IndentParser;
-import localgoat.lang.compiler.omega.Omega;
+import localgoat.lang.compiler.omega.OmegaTokens;
 import localgoat.lang.compiler.omega.OmegaValidators;
 import localgoat.lang.compiler.token.Symbol;
 import localgoat.lang.compiler.token.Token;
@@ -47,17 +47,17 @@ public class LangPane extends JTextPane{
 		AMBIGUOUS = builder.apply(Color.YELLOW);
 
 		final Map<String, Color> colours = new TreeMap<>();
-		colours.put(Omega.CLASS_NAME, new Color(0xffffffff));
-		colours.put(Omega.CONSTANT, new Color(0xffffff00));
-		colours.put(Omega.CONTEXT_IDENTIFIER, new Color(0xffffffff));
-		colours.put(Omega.KEY_WORD, new Color(0xff40a0ff));
+		colours.put(OmegaTokens.CLASS_NAME, new Color(0xffffffff));
+		colours.put(OmegaTokens.CONSTANT, new Color(0xffffff00));
+		colours.put(OmegaTokens.CONTEXT_IDENTIFIER, new Color(0xffffffff));
+		colours.put(OmegaTokens.KEY_WORD, new Color(0xff40a0ff));
 
-		colours.put(Omega.LINE_COMMENT, new Color(0xffa0a0a0));
+		colours.put(OmegaTokens.LINE_COMMENT, new Color(0xffa0a0a0));
 		final double r = new Random().nextDouble() * 2 * Math.PI;
 		System.err.println("Wheel offset: " + r);
 		final ColourMap<String> generator = new ColourMap<>(r);
 
-		ESupplier.from(Omega.AUTOMATON.types())
+		ESupplier.from(OmegaTokens.AUTOMATON.types())
 			.exclude(c -> c.hasFlag(IndentParser.WHITE_SPACE))
 			.map(c -> c.name())
 			.exclude(name -> colours.containsKey(name))
@@ -99,7 +99,7 @@ public class LangPane extends JTextPane{
 
 	public LangPane(){
 		final var parser = new IndentParser(
-			Omega.AUTOMATON,
+			OmegaTokens.AUTOMATON,
 			OmegaValidators.TAIL_VALIDATORS
 		);
 

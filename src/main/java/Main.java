@@ -1,5 +1,5 @@
 import localgoat.lang.compiler.IndentParser;
-import localgoat.lang.compiler.omega.Omega;
+import localgoat.lang.compiler.omega.OmegaTokens;
 import localgoat.lang.compiler.omega.OmegaValidators;
 import localgoat.lang.compiler.token.Symbol;
 import localgoat.lang.compiler.token.Token;
@@ -12,15 +12,24 @@ import localgoat.util.ui.document.InsertRemoveListener;
 
 import javax.swing.*;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 
 public class Main{
 	public static void main(String...args) throws IOException{
 		launchFrame();
 	}
 
+	static String readTest(){
+		try(final var stream = Main.class.getResource("examples/Test.brt").openStream()){
+			return new String(stream.readAllBytes());
+		}
+		catch(IOException e){
+			throw new UncheckedIOException(e);
+		}
+	}
 	static void printTest() throws IOException{
 		final var parser = new IndentParser(
-			Omega.AUTOMATON,
+			OmegaTokens.AUTOMATON,
 			OmegaValidators.TAIL_VALIDATORS
 		);
 		try(final var stream = Main.class.getResource("examples/Test.brt").openStream()){
@@ -41,7 +50,7 @@ public class Main{
 	}
 	static void launchFrame(){
 		final var parser = new IndentParser(
-			Omega.AUTOMATON,
+			OmegaTokens.AUTOMATON,
 			OmegaValidators.TAIL_VALIDATORS
 		);
 
@@ -87,6 +96,7 @@ public class Main{
 
 		frame.setSize(800, 600);
 		frame.setVisible(true);
+		SwingUtilities.invokeLater(() -> pane.setText(readTest()));
 	}
 
 }

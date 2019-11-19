@@ -1,19 +1,30 @@
-//....
-$for(Int i = 0; i < 20; i++){
-	$> ~"Loop $(i)";
-}
-$enum Foo{
-    @SOME_VALUE,
-    @SOME_OTHER_VALUE;
-}//???
-//Here's a comment.
-${
-    also a comment.
-}
-$for(Int i = get-index(get-value(key)); i < 20; i++){
-	do-the-things();
-}&
+$do{
+	//....
+	$for(Int i = 0; i < 20; i++){
+		$> ~"Loop $(i)";
+	}
+	$enum Foo{
+		@SOME_VALUE,
+		@SOME_OTHER_VALUE;
+	}//???
+	//Here's a comment.
+	${
+		also a comment.
+	}
+	$for(Int i = get-index(get-value(key)); i < 20; i++){
+		do-the-things();
+	}&
 
-//Cannot possibly be transpiled to java. Would not support variable foo;
-<[String] -> [Auto]> autoTwiddler = s -> Object.new() :: ^^toString() :: ~s;
-Auto autoTwiddled = autoTwiddler("Foo is $foo");
+	//Cannot possibly be transpiled to java. Would not support variable foo;
+	<[String] -> [Auto]> autoTwiddler = s -> Object.new() :: ^^toString() :: ~s;
+	Auto autoTwiddled = autoTwiddler("Foo is $foo");
+}
+$interface Token{
+	String @INGORED = "ignored";
+	<String -> Boolean> hasFlag;
+	<Boolean> isIgnored :: $.return(hasFlag(IGNORED));
+}
+
+$stateless Bar{
+	//no instance possible, all methods are static
+}

@@ -7,10 +7,9 @@ import localgoat.util.functional.CharPredicate;
 
 import java.util.*;
 
-public class Omega{
+public class OmegaTokens{
 
-
-
+	public static final String CONTROL_FLOW = "control-flow";
 	public static final String COMMENT = "comment";
 	public static final String LINE_COMMENT ="line-comment";
 	public static final String CLASS_NAME = "class-name";
@@ -107,6 +106,7 @@ public class Omega{
 			"'//'*~('\r', '\n')"
 		);
 		EXPRESSIONS.put(KEY_WORD, "'$'+(K, '['K*<1+>(pK)']')");
+		EXPRESSIONS.put(CONTROL_FLOW, "'$.'I");
 	}
 
 	private static void configureMatched(){

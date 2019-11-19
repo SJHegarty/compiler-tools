@@ -4,10 +4,7 @@ import localgoat.util.functional.ThrowingFunction;
 import localgoat.util.functional.ThrowingUnaryOperator;
 
 import java.util.*;
-import java.util.function.Function;
-import java.util.function.IntFunction;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
+import java.util.function.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -323,7 +320,7 @@ public interface ESupplier<T> extends Supplier<T>, Iterable<T>{
 		};
 	}
 
-	default ESupplier<T> retain(Predicate<T> predicate){
+	default ESupplier<T> retain(Predicate<? super T> predicate){
 		return () -> {
 			for(;;){
 				final T result = ESupplier.this.get();
@@ -334,7 +331,7 @@ public interface ESupplier<T> extends Supplier<T>, Iterable<T>{
 		};
 	}
 
-	default ESupplier<T> exclude(Predicate<T> predicate){
+	default ESupplier<T> exclude(Predicate<? super T> predicate){
 		return retain(predicate.negate());
 	}
 
@@ -416,7 +413,7 @@ public interface ESupplier<T> extends Supplier<T>, Iterable<T>{
 	default ESupplier<T> branchDepthFirst(boolean unique, Function<T, ESupplier<? extends T>> mapper){
 		final Deque<T> unmapped = new ArrayDeque<>();
 		final Set<T> viewed = new HashSet<>();
-
+		final Predicate<T> predicate = t -> !unique || viewed.add(t);
 		return () -> {
 			if(unmapped.isEmpty()){
 				for(;;){
@@ -424,7 +421,7 @@ public interface ESupplier<T> extends Supplier<T>, Iterable<T>{
 					if(t == null){
 						return null;
 					}
-					if(!unique || viewed.add(t)){
+					if(predicate.test(t)){
 						unmapped.push(t);
 						break;
 					}
@@ -433,7 +430,7 @@ public interface ESupplier<T> extends Supplier<T>, Iterable<T>{
 			final T t = unmapped.pollFirst();
 			final var supplier = mapper.apply(t);
 			if(supplier != null){
-				for(T child: supplier.reversed()){
+				for(T child: supplier.retain(predicate).reversed()){
 					unmapped.push(child);
 				}
 			}
