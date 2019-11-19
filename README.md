@@ -34,9 +34,11 @@ The name operator:
 If we define 
 
 x = ['0' ... '9', 'a' ... 'f']
+
 d = ['0' ... '9']
 
 H = @<hexadecimal>('0x'*<1+>x)
+ 
 D = @<decimal>(*<1+>d)
 
 then the language +(H, D) can extract tokens labeled as either hexadecimal or decimal.
