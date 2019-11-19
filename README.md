@@ -45,7 +45,9 @@ then the language +(H, D) can extract tokens labeled as either hexadecimal or de
 
 Currently it still supports building Automata with ambiguous token forms
 e.g.:
+
 C = @<class-name>*<1+>(u*l)
+ 
 S = @<const>(*<1+>u*('_'*<1+>u))
 
 Both languages match *<1+>u.
