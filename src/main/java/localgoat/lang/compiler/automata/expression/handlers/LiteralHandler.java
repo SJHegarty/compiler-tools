@@ -13,7 +13,7 @@ public class LiteralHandler implements Function<Token, Automaton>{
 	@Override
 	public Automaton apply(Token expression){
 		final var literal = (LiteralExpression)expression;
-		final var tokens = Symbol.from(literal.wrapped());
+		final var tokens = Symbol.from(literal.child(0).value());
 		final var machines = Stream.of(tokens)
 			.map(t -> Automaton.of(t))
 			.toArray(Automaton[]::new);

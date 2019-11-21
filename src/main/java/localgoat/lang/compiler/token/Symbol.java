@@ -11,9 +11,15 @@ import java.util.stream.IntStream;
 public class Symbol implements Token{
 
 	private final char c;
+	private final TokenLayer layer;
 
 	public Symbol(char c){
+		this(c, TokenLayer.SEMANTIC);
+	}
+
+	public Symbol(char c, TokenLayer layer){
 		this.c = c;
+		this.layer = layer;
 	}
 
 	public static Symbol[] from(char...chars){
@@ -40,6 +46,11 @@ public class Symbol implements Token{
 	}
 
 	@Override
+	public Symbol filter(FilteringContext context){
+		return (Symbol)Token.super.filter(context);
+	}
+
+	@Override
 	public int length(){
 		return 1;
 	}
@@ -60,7 +71,7 @@ public class Symbol implements Token{
 
 	@Override
 	public TokenLayer layer(){
-		return TokenLayer.SEMANTIC;
+		return layer;
 	}
 
 	public char charValue(){

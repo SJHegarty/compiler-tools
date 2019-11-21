@@ -2,10 +2,12 @@ package localgoat.lang.compiler.automata.expression;
 
 import localgoat.lang.compiler.automata.structure.Type;
 import localgoat.lang.compiler.token.*;
+import localgoat.util.ESupplier;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 public class Modifiers implements TokenTree{
 	private static final Type TYPE = new Type(
@@ -14,37 +16,57 @@ public class Modifiers implements TokenTree{
 		Collections.emptySet()
 	);
 
-	private static final Symbol OPENING = new Symbol('<');
-	private static final Symbol CLOSING = new Symbol('>');
+	private static final Symbol OPENING = new Symbol('<', TokenLayer.SYNTACTIC);
+	private static final Symbol CLOSING = new Symbol('>', TokenLayer.SYNTACTIC);
 
-	private final String value;
+	private final Symbol opening;
+	private final StringToken value;
+	private final Symbol closing;
 
 	public Modifiers(String value){
+		this(
+			OPENING,
+			new StringToken(value, Collections.singleton(TYPE)),
+			CLOSING
+		);
+	}
+
+	private Modifiers(Symbol opening, StringToken value, Symbol closing){
+		this.opening = opening;
 		this.value = value;
+		this.closing = closing;
 	}
 
 	@Override
-	public Token head(){
-		return OPENING;
+	public Symbol head(){
+		return opening;
 	}
 
 	@Override
 	public List<Token> children(){
 		return Collections.unmodifiableList(
-			Arrays.asList(
-				new StringToken(value, Collections.singleton(TYPE))
-			)
+			Arrays.asList(value)
 		);
 	}
 
 	@Override
-	public Token tail(){
-		return CLOSING;
+	public Symbol tail(){
+		return closing;
 	}
 
 	@Override
-	public Token filter(TokenLayer layer){
-		return this;
+	public Token filter(FilteringContext context){
+		final boolean semantic = context.layer() == TokenLayer.SEMANTIC;
+		return new Modifiers(
+			semantic ? null : OPENING,
+			value,
+			semantic ? null : CLOSING
+		);
+	}
+
+	@Override
+	public TokenLayer filteringLayer(){
+		return (opening == null) ? TokenLayer.SEMANTIC : TokenLayer.SYNTACTIC;
 	}
 
 	@Override

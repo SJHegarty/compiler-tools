@@ -4,6 +4,7 @@ import localgoat.lang.compiler.automata.structure.Type;
 import localgoat.util.ESupplier;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -13,10 +14,16 @@ public interface Token{
 	Set<Type> types();
 
 	default Token filter(TokenLayer layer){
-		if(layer.ordinal() < layer().ordinal()){
-			return null;
+		return filter(new FilteringContext(layer));
+	}
+
+	default Token filter(FilteringContext context){
+		//TODO: look into null layer() values.
+		var layer = layer();
+		if(layer == null || context.filter().test(layer)){
+			return this;
 		}
-		return this;
+		return null;
 	}
 
 	default Type type(){
@@ -35,7 +42,9 @@ public interface Token{
 	}
 
 	default TokenLayer layer(){
-		return type().layer();
+		return Optional.ofNullable(type())
+			.map(t -> t.layer())
+			.orElse(null);
 	}
 
 	default boolean hasFlag(String flag){

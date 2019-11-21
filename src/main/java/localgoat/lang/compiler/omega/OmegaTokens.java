@@ -3,6 +3,8 @@ package localgoat.lang.compiler.omega;
 import localgoat.lang.compiler.IndentParser;
 import localgoat.lang.compiler.automata.expression.Converter;
 import localgoat.lang.compiler.automata.structure.Automaton;
+import localgoat.lang.compiler.token.StringToken;
+import localgoat.lang.compiler.token.TokenLayer;
 import localgoat.util.ESupplier;
 import localgoat.util.functional.CharPredicate;
 
@@ -35,7 +37,17 @@ public class OmegaTokens{
 	public static final String CLOSING_PARENTHESIS = ")";
 
 	private static final Converter CONVERTER = new Converter();
-	private static final Map<String, String> EXPRESSIONS = new TreeMap<>();
+
+	private static class ExpressionLayer{
+		final String expression;
+		final TokenLayer layer;
+
+		ExpressionLayer(String expression, TokenLayer layer){
+			this.expression = expression;
+			this.layer = layer;
+		}
+	}
+	private static final Map<String, Object> EXPRESSIONS = new TreeMap<>();
 	public static final Automaton AUTOMATON;
 
 	static{
@@ -48,11 +60,27 @@ public class OmegaTokens{
 
 		ESupplier.from(EXPRESSIONS.entrySet())
 			.map(
-				e -> String.format(
-					"@<%s>(%s)",
-					e.getKey(),
-					e.getValue()
-				)
+				e -> {
+					final var key = e.getKey();
+					final var value = e.getValue();
+					final String svalue;
+					final TokenLayer layer;
+
+					if(value instanceof String){
+						svalue = (String)value;
+						layer = TokenLayer.SEMANTIC;
+					}
+					else if(value instanceof ExpressionLayer){
+						var el = (ExpressionLayer)value;
+						svalue = el.expression;
+						layer = el.layer;
+					}
+					else{
+						throw new IllegalStateException();
+					}
+					CONVERTER.setLayer(key.split("\\s+")[0], layer);
+					return String.format("@<%s>(%s)", key, svalue);
+				}
 			)
 			.interleave(",\n\t")
 			.forEach(s -> builder.append(s));
@@ -105,7 +133,10 @@ public class OmegaTokens{
 				COMMENT,
 				IndentParser.IGNORED
 			),
-			"'//'*~('\r', '\n')"
+			new ExpressionLayer(
+				"'//'*~('\r', '\n')",
+				TokenLayer.SCHOLASTIC
+			)
 		);
 		EXPRESSIONS.put(KEY_WORD, "'$'+(K, '['K*<1+>(pK)']')");
 		EXPRESSIONS.put(CONTROL_FLOW, "'$.'I");

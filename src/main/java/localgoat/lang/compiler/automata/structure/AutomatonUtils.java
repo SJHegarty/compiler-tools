@@ -8,12 +8,13 @@ import localgoat.lang.compiler.automata.operation.Convert;
 import localgoat.lang.compiler.token.StringToken;
 import localgoat.lang.compiler.token.Symbol;
 import localgoat.lang.compiler.token.Token;
+import localgoat.lang.compiler.token.TokenSeries;
 import localgoat.util.ESupplier;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class AutomatonUtils implements Parser<Symbol, StringToken>{
+public class AutomatonUtils implements Parser<Symbol, TokenSeries>{
 	public static void main(String...args){
 
 		final var converter = new Converter();
@@ -49,7 +50,7 @@ public class AutomatonUtils implements Parser<Symbol, StringToken>{
 
 		final var parser = new ExpressionParser();
 		final var expr = parser.parse(Symbol.from(builder.toString()));
-		final var utils = new AutomatonUtils(converter.build(expr.get(0)));
+		final var utils = new AutomatonUtils(converter.build(expr));
 
 		System.err.println(utils.read(ReadMode.GREEDY, Symbol.from("ClassName")));
 		System.err.println(utils.read(ReadMode.GREEDY, Symbol.from("HTTP_")));
@@ -80,8 +81,8 @@ public class AutomatonUtils implements Parser<Symbol, StringToken>{
 	}
 
 	@Override
-	public List<StringToken> parse(List<Symbol> values){
-		return tokenise(values).toStream().collect(Collectors.toList());
+	public TokenSeries parse(List<Symbol> values){
+		return new TokenSeries(tokenise(values).toStream().collect(Collectors.toList()));
 	}
 
 	public static class StateIndex{

@@ -14,11 +14,7 @@ import localgoat.lang.compiler.automata.structure.Type;
 import localgoat.lang.compiler.token.TokenLayer;
 import localgoat.util.ESupplier;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -34,7 +30,7 @@ public class FunctionHandler implements Function<Token, Automaton>{
 		NAME_PARSER = new AutomatonUtils(converter.build("+(N,P,' ')"));
 	}
 
-	private static Type classFor(String name){
+	private Type classFor(String name){
 		final var tokens = NAME_PARSER.tokenise(Symbol.from(name))
 			.map(token -> token.value())
 			.retain(s -> s.indexOf(' ') == -1)
@@ -44,12 +40,13 @@ public class FunctionHandler implements Function<Token, Automaton>{
 			throw new IllegalArgumentException(name);
 		}
 		final Set<String> flags = new HashSet<>();
+
 		for(int i = 1; i < tokens.length; i++){
 			if(tokens[i].startsWith("--")){
 				flags.add(tokens[i].substring(2));
 			}
 		}
-		return new Type(tokens[0], TokenLayer.SEMANTIC, flags);
+		return new Type(tokens[0], converter.layerFor(tokens[0]), flags);
 	}
 
 	private final Converter converter;
@@ -106,8 +103,8 @@ public class FunctionHandler implements Function<Token, Automaton>{
 								);
 							}
 						}
-						else if(c instanceof LiteralExpression && c.length() == 3){
-							final char symbol = ((LiteralExpression)c).value().charAt(1);
+						else if(c instanceof LiteralExpression && c.value().length() == 1){
+							final char symbol = c.value().charAt(0);
 							accepted.remove(new Symbol(symbol));
 						}
 						else{

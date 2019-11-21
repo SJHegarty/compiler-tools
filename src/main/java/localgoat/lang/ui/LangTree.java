@@ -134,17 +134,6 @@ public class LangTree extends JTree{
 		}
 	}
 
-	public void setCodeTrees(List<TokenTree> trees){
-		setModel(
-			new DefaultTreeModel(
-				new ListTreeWrapper<>(
-					trees,
-					tree -> new TokenTreeWrapper(tree)
-				)
-			)
-		);
-	}
-
 	public void setCodeTree(TokenTree tree){
 		setModel(new DefaultTreeModel(new TokenTreeWrapper(tree)));
 	}

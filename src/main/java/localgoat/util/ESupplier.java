@@ -12,6 +12,9 @@ import java.util.stream.Stream;
 public interface ESupplier<T> extends Supplier<T>, Iterable<T>{
 
 	static <T> ESupplier<T> convert(Supplier<T> supplier){
+		if(supplier instanceof ESupplier){
+			return (ESupplier)supplier;
+		}
 		return () -> supplier.get();
 	}
 
@@ -130,6 +133,14 @@ public interface ESupplier<T> extends Supplier<T>, Iterable<T>{
 			builder.append(t);
 		}
 		return builder.toString();
+	}
+
+	default int count(){
+		int sum = 0;
+		for(T t: this){
+			sum++;
+		}
+		return sum;
 	}
 
 	class Peekable<T> implements ESupplier<T>{
@@ -272,6 +283,9 @@ public interface ESupplier<T> extends Supplier<T>, Iterable<T>{
 		};
 	}
 
+	default ESupplier<T> perhaps(boolean execute, UnaryOperator<ESupplier<T>> mapper){
+		return execute ? mapper.apply(this) : this;
+	}
 
 	default ESupplier<T> mapOrValue(ThrowingUnaryOperator<T> mapper){
 		return map(mapper.orValue());

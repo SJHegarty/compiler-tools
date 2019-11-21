@@ -15,11 +15,11 @@ public interface TokenTree extends Token{
 	Token tail();
 
 	@Override
-	Token filter(TokenLayer layer);
+	Token filter(FilteringContext context);
 
-	default TokenLayer filteringLayer(){
+	TokenLayer filteringLayer();/*{
 		return TokenLayer.AESTHETIC;
-	}
+	}*/
 
 	default Token child(int index){
 		return children().get(index);

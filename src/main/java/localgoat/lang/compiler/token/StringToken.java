@@ -49,14 +49,6 @@ public class StringToken implements Token{
 	}
 
 	@Override
-	public Token filter(TokenLayer layer){
-		if(layer.ordinal() < layer().ordinal()){
-			return null;
-		}
-		return this;
-	}
-
-	@Override
 	public int hashCode(){
 		return toString().hashCode() ^ getClass().hashCode();
 	}

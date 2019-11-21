@@ -3,10 +3,7 @@ package localgoat.lang.ui;
 import localgoat.lang.compiler.IndentParser;
 import localgoat.lang.compiler.omega.OmegaTokens;
 import localgoat.lang.compiler.omega.OmegaValidators;
-import localgoat.lang.compiler.token.StringToken;
-import localgoat.lang.compiler.token.Symbol;
-import localgoat.lang.compiler.token.Token;
-import localgoat.lang.compiler.token.TokenTree;
+import localgoat.lang.compiler.token.*;
 import localgoat.util.ESupplier;
 import localgoat.util.ui.document.InsertRemoveListener;
 
@@ -95,7 +92,7 @@ public class LangPane extends JTextPane{
 
 	}
 
-	private List<TokenTree> content;
+	private TokenSeries content;
 
 	public LangPane(){
 		final var parser = new IndentParser(

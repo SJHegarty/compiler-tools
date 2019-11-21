@@ -17,6 +17,15 @@ public class Converter{
 	private final Token[] substitutions = new Token[256];
 	private final Set<Token> alphabet = new HashSet<>();
 	private final ExpressionParser parser = new ExpressionParser();
+	private final Map<String, TokenLayer> layers = new HashMap<>();
+
+	public void setLayer(String name, TokenLayer layer){
+		layers.put(name, layer);
+	}
+
+	public TokenLayer layerFor(String name){
+		return layers.get(name);
+	}
 
 	public void addClass(char sub, CharPredicate members){
 		if(('a' <= sub && sub <= 'z')){
@@ -35,7 +44,7 @@ public class Converter{
 			if(substitutions[sub] != null){
 				throw new IllegalStateException(String.format("Unavailable expression substitution character: '%s'.", sub));
 			}
-			final var expr = parser.parse(Symbol.from(expression)).get(0);
+			final var expr = parser.parse(Symbol.from(expression));
 			final Queue<Token> loopCheck = new ArrayDeque<>();
 			loopCheck.add(expr);
 			while(!loopCheck.isEmpty()){
@@ -103,7 +112,6 @@ public class Converter{
 		final var converter = new Converter();
 		final var series = converter.build(pattern);
 		System.err.print(series);
-
 	}
 
 	public Converter(){
@@ -135,7 +143,7 @@ public class Converter{
 	}
 
 	public Token parse(String pattern){
-		final var expression = parser.parse(Symbol.from(pattern)).get(0);
+		final var expression = parser.parse(Symbol.from(pattern));
 		final var rebuilt = expression.value();
 		if(!rebuilt.equals(pattern)){
 			throw new IllegalStateException(rebuilt + " != " + pattern);

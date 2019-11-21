@@ -13,6 +13,11 @@ public class Type{
 	private final TokenLayer layer;
 
 	public Type(String type, TokenLayer layer, Set<String> flags){
+		if(type.equals("line-comment")){
+			if(layer ==null){
+				throw new IllegalArgumentException();
+			}
+		}
 		this.type = type;
 		this.layer = layer;
 		this.flags = new HashSet<>(flags);

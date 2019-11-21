@@ -12,8 +12,8 @@ import java.util.List;
 public class ExpressionParser implements Parser<Symbol, Token>{
 
 	@Override
-	public List<Token> parse(List<Symbol> tokens){
-		return Arrays.asList(parseSeries(tokens, 0));
+	public Token parse(List<Symbol> tokens){
+		return parseSeries(tokens, 0);
 	}
 
 	public Token parseSeries(List<Symbol> symbols, int index){

@@ -6,9 +6,9 @@ import java.util.Arrays;
 import java.util.List;
 
 public interface Parser<S extends Token, D extends Token>{
-	default List<D> parse(S...values){
+	default D parse(S...values){
 		return parse(Arrays.asList(values));
 	}
 
-	public List<D> parse(List<S> values);
+	public D parse(List<S> values);
 }

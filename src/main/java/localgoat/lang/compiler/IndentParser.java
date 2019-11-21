@@ -15,7 +15,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-public class IndentParser implements Parser<Symbol, TokenTree>{
+public class IndentParser implements Parser<Symbol, TokenSeries>{
 
 	public static final int TAB_WIDTH = 4;
 	public static final String WHITE_SPACE = "white-space";
@@ -33,7 +33,7 @@ public class IndentParser implements Parser<Symbol, TokenTree>{
 		Collections.singleton(
 			new Type(
 				"line-feed",
-				TokenLayer.SEMANTIC,
+				TokenLayer.SYNTACTIC,
 				new HashSet<>(Arrays.asList(WHITE_SPACE, IGNORED))
 			)
 		)
@@ -76,6 +76,8 @@ public class IndentParser implements Parser<Symbol, TokenTree>{
 		builder.append("\n)");
 
 		final var pattern = builder.toString();
+		CONVERTER.setLayer(LINE_FEED, TokenLayer.SYNTACTIC);
+		CONVERTER.setLayer(WHITE_SPACE, TokenLayer.SYNTACTIC);
 		AUTOMATON = CONVERTER.build(pattern);
 	}
 
@@ -187,24 +189,44 @@ public class IndentParser implements Parser<Symbol, TokenTree>{
 		}
 
 		@Override
-		public Token filter(TokenLayer layer){
+		public Token filter(FilteringContext context){
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public TokenLayer filteringLayer(){
 			throw new UnsupportedOperationException();
 		}
 
 		class FilteredTree implements TokenTree{
-			private final CachingSupplier<Token> head;
+			private final Token head;
 			private final CachingSupplier<List<Token>> children;
-			private final CachingSupplier<Token> tail;
+			private final Token tail;
+			private final TokenLayer filteringLayer;
 
-			FilteredTree(TokenTree tree, TokenLayer layer){
-				this.head = new CachingSupplier<>(() -> tree.head().filter(layer));
-				this.children = new CachingSupplier<>(() -> ESupplier.from(tree.children()).map(c -> c.filter(layer)).toStream().collect(Collectors.toList()));
-				this.tail = new CachingSupplier<>(() -> tree.tail().filter(layer));
+			FilteredTree(TokenTree tree, FilteringContext context){
+				this.head = Optional.ofNullable(tree.head())
+					.map(h -> h.filter(context))
+					.orElse(null);
+
+				this.tail = Optional.ofNullable(tree.tail())
+					.map(t -> t.filter(context))
+					.orElse(null);
+
+				var childContext = context.child();
+				this.children = new CachingSupplier<>(
+					() -> ESupplier.from(tree.children())
+						.map(c -> c.filter(childContext))
+						.toStream()
+						.collect(Collectors.toList())
+				);
+
+				this.filteringLayer = context.layer();
 			}
 
 			@Override
 			public Token head(){
-				return head.get();
+				return head;
 			}
 
 			@Override
@@ -214,12 +236,17 @@ public class IndentParser implements Parser<Symbol, TokenTree>{
 
 			@Override
 			public Token tail(){
-				return tail.get();
+				return tail;
 			}
 
 			@Override
-			public Token filter(TokenLayer layer){
-				return new FilteredTree(this, layer);
+			public Token filter(FilteringContext context){
+				return new FilteredTree(this, context);
+			}
+
+			@Override
+			public TokenLayer filteringLayer(){
+				return filteringLayer;
 			}
 		}
 
@@ -249,8 +276,13 @@ public class IndentParser implements Parser<Symbol, TokenTree>{
 				}
 
 				@Override
-				public Token filter(TokenLayer layer){
-					return new FilteredTree(this, layer);
+				public Token filter(FilteringContext context){
+					return new FilteredTree(this, context);
+				}
+
+				@Override
+				public TokenLayer filteringLayer(){
+					return DepthTree.this.filteringLayer();
 				}
 
 			};
@@ -258,8 +290,9 @@ public class IndentParser implements Parser<Symbol, TokenTree>{
 	}
 
 	@Override
-	public List<TokenTree> parse(List<Symbol> values){
-		final var lines = ESupplier.from(utils.parse(values))
+	public TokenSeries parse(List<Symbol> values){
+		final var lines = ESupplier.from(utils.parse(values).children())
+			.map(t -> (StringToken)t)
 			.split(t -> t.hasClass(LINE_FEED), true)
 			.map(tokens -> new Line(tokens.toArray(StringToken[]::new)))
 			.toStream()
@@ -269,7 +302,7 @@ public class IndentParser implements Parser<Symbol, TokenTree>{
 		while(!lines.isEmpty()){
 			trees.add(new DepthTree(lines).trim());
 		}
-		return Collections.unmodifiableList(trees);
+		return new TokenSeries(trees);
 	}
 
 

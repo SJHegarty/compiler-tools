@@ -1,10 +1,7 @@
 import localgoat.lang.compiler.IndentParser;
 import localgoat.lang.compiler.omega.OmegaTokens;
 import localgoat.lang.compiler.omega.OmegaValidators;
-import localgoat.lang.compiler.token.StringToken;
-import localgoat.lang.compiler.token.Symbol;
-import localgoat.lang.compiler.token.Token;
-import localgoat.lang.compiler.token.TokenTree;
+import localgoat.lang.compiler.token.*;
 import localgoat.lang.ui.LangPane;
 import localgoat.lang.ui.LangTree;
 import localgoat.util.ESupplier;
@@ -74,17 +71,16 @@ public class Main{
 			(InsertRemoveListener)(e) -> {
 				var text = pane.getText().replaceAll("\r\n", "\n");
 				var parsed = parser.parse(Symbol.from(text));
-				var reconstructed = ESupplier.from(parsed)
-					.map(t -> t.value())
-					.concatenate();
+				var reconstructed = parsed.value();
+				var filtered = parsed
+					.filter(TokenLayer.SEMANTIC)
+					.filter(TokenLayer.SYNTACTIC)
+					.value();
+
 				recpane.setText(reconstructed);
-				//actualised.setText(contentTree.effective().reconstruct());
-				if(parsed.size() == 1){
-					tree.setCodeTree(parsed.get(0));
-				}
-				else{
-					tree.setCodeTrees(parsed);
-				}
+				actualised.setText(filtered);
+				tree.setCodeTree(parsed);
+
 
 				//recpane.setText(reconstruction);
 			}

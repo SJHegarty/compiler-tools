@@ -4,19 +4,22 @@ import localgoat.lang.compiler.token.*;
 import localgoat.util.ESupplier;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import java.util.function.UnaryOperator;
-import java.util.stream.Collectors;
+import java.util.logging.Filter;
 
 public class FunctionExpression implements TokenTree{
-
+	private static final Token DELIMITOR = new IgnoredToken(",");
 	private final ExpressionParser parser;
 	private final Token head;
 	private final Token[] children;
 	private final Token tail;
+	private final TokenLayer filteringLayer;
 
 	public FunctionExpression(ExpressionParser parser, List<Symbol> symbols, int index){
 		this.parser = parser;
+		this.filteringLayer = TokenLayer.AESTHETIC;
 		final List<Token> head = new ArrayList<>();
 		head.add(symbols.get(index++));
 
@@ -46,7 +49,10 @@ public class FunctionExpression implements TokenTree{
 						this.tail = new Symbol(')');
 						break loop;
 					}
-					case ',': continue loop;
+					case ',':{
+						segments.add(DELIMITOR);
+						continue loop;
+					}
 					default: throw new IllegalArgumentException(
 						String.format("Unexpected token: '%s' in %s", c, Symbol.toString(symbols, index))
 					);
@@ -71,11 +77,12 @@ public class FunctionExpression implements TokenTree{
 		}
 	}
 
-	private FunctionExpression(ExpressionParser parser, Token head, Token[] children, Token tail){
+	private FunctionExpression(ExpressionParser parser, Token head, Token[] children, Token tail, TokenLayer filteringLayer){
 		this.parser = parser;
 		this.head = head;
 		this.children = children;
 		this.tail = tail;
+		this.filteringLayer = filteringLayer;
 	}
 
 	@Override
@@ -84,13 +91,29 @@ public class FunctionExpression implements TokenTree{
 	}
 
 	@Override
-	public FunctionExpression filter(TokenLayer layer){
+	public FunctionExpression filter(FilteringContext context){
 		return new FunctionExpression(
 			parser,
-			ESupplier.of(head).map(h -> h.filter(layer)).get(),
-			ESupplier.from(children).map(t -> t.filter(layer)).toArray(Token[]::new),
-			ESupplier.of(tail).map(t -> t.filter(layer)).get()
+			ESupplier.of(head)
+				.map(h -> h.filter(context))
+				.get(),
+			ESupplier.from(children)
+				.map(t -> t.filter(context))
+				.perhaps(
+					filteringLayer == TokenLayer.SEMANTIC && context.layer() != TokenLayer.SEMANTIC,
+					s -> s.interleave(DELIMITOR)
+				)
+				.toArray(Token[]::new),
+			ESupplier.of(tail)
+				.map(t -> t.filter(context))
+				.get(),
+			context.layer()
 		);
+	}
+
+	@Override
+	public TokenLayer filteringLayer(){
+		return filteringLayer;
 	}
 
 	public char identifier(){
@@ -119,10 +142,7 @@ public class FunctionExpression implements TokenTree{
 
 	@Override
 	public List<Token> children(){
-		return ESupplier.from(children)
-			.interleave(new IgnoredToken(","))
-			.toStream()
-			.collect(Collectors.toList());
+		return Collections.unmodifiableList(Arrays.asList(children));
 	}
 
 	@Override

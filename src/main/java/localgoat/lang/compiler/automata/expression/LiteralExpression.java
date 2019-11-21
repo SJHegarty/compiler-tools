@@ -3,15 +3,14 @@ package localgoat.lang.compiler.automata.expression;
 import localgoat.lang.compiler.automata.ReadMode;
 import localgoat.lang.compiler.automata.structure.AutomatonUtils;
 import localgoat.lang.compiler.automata.structure.Type;
-import localgoat.lang.compiler.token.Symbol;
-import localgoat.lang.compiler.token.Token;
-import localgoat.lang.compiler.token.TokenLayer;
+import localgoat.lang.compiler.token.*;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
-public class LiteralExpression implements Token{
+public class LiteralExpression implements TokenTree{
+
+	private static final Symbol MARK = new Symbol('\'', TokenLayer.SYNTACTIC);
+
 	static final AutomatonUtils UTILS;
 	static final Type LITERAL = new Type(
 		"literal",
@@ -29,7 +28,15 @@ public class LiteralExpression implements Token{
 		UTILS = new AutomatonUtils(converter.build("q*+(~q, eq)q"));
 	}
 
-	private final String wrapped;
+	private final Token value;
+	private final Symbol head;
+	private final Symbol tail;
+
+	private LiteralExpression(Symbol head, Token value, Symbol tail){
+		this.head = head;
+		this.value = value;
+		this.tail = tail;
+	}
 
 	public LiteralExpression(List<Symbol> symbols, int index){
 		//final var tokens = Symbol.from(s);
@@ -37,18 +44,55 @@ public class LiteralExpression implements Token{
 		if(result == null){
 			throw new IllegalArgumentException(Symbol.toString(symbols, index));
 		}
-		final var extracted = result.value();
-		this.wrapped = extracted.substring(1, extracted.length() - 1);
+		final var quoted = result.value();
+		final var extracted = quoted.substring(1, quoted.length() - 1);
+
+		this.value = new Token(){
+			@Override
+			public int length(){
+				return extracted.length();
+			}
+
+			@Override
+			public String value(){
+				return extracted;
+			}
+
+			@Override
+			public Set<Type> types(){
+				return Collections.singleton(LITERAL);
+			}
+		};
+		this.head = MARK;
+		this.tail = MARK;
 	}
 
 	@Override
-	public int length(){
-		return 2 + wrapped.length();
+	public Token head(){
+		return head;
 	}
 
 	@Override
-	public String value(){
-		return "'" + wrapped + "'";
+	public List<? extends Token> children(){
+		return Collections.unmodifiableList(
+			Arrays.asList(this.value)
+		);
+	}
+
+	@Override
+	public Token tail(){
+		return tail;
+	}
+
+	@Override
+	public Token filter(FilteringContext layer){
+		final Symbol mark = (layer.layer() == TokenLayer.SEMANTIC) ? null : MARK;
+		return new LiteralExpression(mark, value, mark);
+	}
+
+	@Override
+	public TokenLayer filteringLayer(){
+		return (head == null) ? TokenLayer.SEMANTIC : TokenLayer.SYNTACTIC;
 	}
 
 	@Override
@@ -66,7 +110,4 @@ public class LiteralExpression implements Token{
 		return value();
 	}
 
-	public String wrapped(){
-		return wrapped;
-	}
 }
