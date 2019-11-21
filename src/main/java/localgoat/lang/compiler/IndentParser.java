@@ -6,6 +6,7 @@ import localgoat.lang.compiler.automata.structure.Automaton;
 import localgoat.lang.compiler.automata.structure.AutomatonUtils;
 import localgoat.lang.compiler.automata.structure.Type;
 import localgoat.lang.compiler.token.*;
+import localgoat.util.CachingSupplier;
 import localgoat.util.ESupplier;
 
 import java.util.*;
@@ -166,6 +167,7 @@ public class IndentParser implements Parser<Symbol, TokenTree>{
 			this.children = Collections.unmodifiableList(children);
 
 		}
+
 		@Override
 		public TokenTree head(){
 			return head;
@@ -181,9 +183,43 @@ public class IndentParser implements Parser<Symbol, TokenTree>{
 			return tail;
 		}
 
-
-
 		@Override
+		public Token filter(TokenLayer layer){
+			throw new UnsupportedOperationException();
+		}
+
+		class FilteredTree implements TokenTree{
+			private final CachingSupplier<Token> head;
+			private final CachingSupplier<List<Token>> children;
+			private final CachingSupplier<Token> tail;
+
+			FilteredTree(TokenTree tree, TokenLayer layer){
+				this.head = new CachingSupplier<>(() -> tree.head().filter(layer));
+				this.children = new CachingSupplier<>(() -> ESupplier.from(tree.children()).map(c -> c.filter(layer)).toStream().collect(Collectors.toList()));
+				this.tail = new CachingSupplier<>(() -> tree.tail().filter(layer));
+			}
+
+			@Override
+			public Token head(){
+				return head.get();
+			}
+
+			@Override
+			public List<? extends Token> children(){
+				return children.get();
+			}
+
+			@Override
+			public Token tail(){
+				return tail.get();
+			}
+
+			@Override
+			public Token filter(TokenLayer layer){
+				return new FilteredTree(this, layer);
+			}
+		}
+
 		public TokenTree trim(){
 			if(tail == null && children.isEmpty()){
 				return head;
@@ -207,6 +243,11 @@ public class IndentParser implements Parser<Symbol, TokenTree>{
 				@Override
 				public Token tail(){
 					return tail;
+				}
+
+				@Override
+				public Token filter(TokenLayer layer){
+					return new FilteredTree(this, layer);
 				}
 
 				public ESupplier<? extends Token> tokens(){

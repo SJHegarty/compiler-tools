@@ -9,7 +9,7 @@ import java.util.Set;
 public class IgnoredToken implements Token{
 	private static final Type IGNORED = new Type(
 		"ignored",
-		TokenLayer.AESTHETIC,
+		TokenLayer.SYNTACTIC,
 		Collections.singleton("ignored")
 	);
 

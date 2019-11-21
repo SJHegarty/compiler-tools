@@ -43,7 +43,7 @@ public class Modifiers implements TokenTree{
 	}
 
 	@Override
-	public Token trim(){
+	public Token filter(TokenLayer layer){
 		return this;
 	}
 

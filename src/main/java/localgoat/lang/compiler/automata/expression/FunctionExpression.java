@@ -83,6 +83,16 @@ public class FunctionExpression implements TokenTree{
 		return value();
 	}
 
+	@Override
+	public FunctionExpression filter(TokenLayer layer){
+		return new FunctionExpression(
+			parser,
+			ESupplier.of(head).map(h -> h.filter(layer)).get(),
+			ESupplier.from(children).map(t -> t.filter(layer)).toArray(Token[]::new),
+			ESupplier.of(tail).map(t -> t.filter(layer)).get()
+		);
+	}
+
 	public char identifier(){
 		return ((Symbol)headTokens().get()).charValue();
 	}
@@ -120,24 +130,4 @@ public class FunctionExpression implements TokenTree{
 		return tail;
 	}
 
-	@Override
-	public Token trim(){
-		final UnaryOperator<Token> trimmer = token -> {
-			if(token == null || token instanceof WhitespaceExpression){
-				return null;
-			}
-			if(token instanceof TokenTree){
-				return ((TokenTree)token).trim();
-			}
-			return token;
-		};
-		return new FunctionExpression(
-			parser,
-			trimmer.apply(head),
-			ESupplier.from(children)
-				.map(c -> trimmer.apply(c))
-				.toArray(Token[]::new),
-			tail
-		);
-	}
 }

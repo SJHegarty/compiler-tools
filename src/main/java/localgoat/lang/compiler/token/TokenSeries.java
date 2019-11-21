@@ -22,6 +22,10 @@ public class TokenSeries implements TokenTree{
 		this.segments = new Token[0];
 	}
 
+	private TokenSeries(Token[] segments){
+		this.segments = segments;
+	}
+
 	@Override
 	public String toString(){
 		return value();
@@ -43,22 +47,16 @@ public class TokenSeries implements TokenTree{
 	}
 
 	@Override
-	public Token trim(){
-		final var tokens = new ArrayList<Token>();
-		for(var t: segments){
-			if(!(t instanceof WhitespaceExpression)){
-				if(t instanceof TokenTree){
-					tokens.add(((TokenTree)t).trim());
-				}
-				else{
-					tokens.add(t);
-				}
-			}
+	public Token filter(TokenLayer layer){
+		var tokens = ESupplier.from(segments)
+			.map(s -> s.filter(layer))
+			.toArray(Token[]::new);
+
+		switch(tokens.length){
+			case 0: return null;
+			case 1: return tokens[0];
+			default: return new TokenSeries(tokens);
 		}
-		if(tokens.size() == 1){
-			return tokens.get(0);
-		}
-		return new TokenSeries(tokens);
 	}
 
 }

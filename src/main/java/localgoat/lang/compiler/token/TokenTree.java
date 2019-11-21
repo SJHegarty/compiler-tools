@@ -14,12 +14,11 @@ public interface TokenTree extends Token{
 	List<? extends Token> children();
 	Token tail();
 
+	@Override
+	Token filter(TokenLayer layer);
+
 	default TokenLayer filteringLayer(){
 		return TokenLayer.AESTHETIC;
-	}
-
-	default Token trim(){
-		throw new UnsupportedOperationException(this.getClass().getName());
 	}
 
 	default Token child(int index){
@@ -40,72 +39,6 @@ public interface TokenTree extends Token{
 			.collect(Collectors.toSet());
 	}
 
-	default TokenTree filter(TokenLayer layer){
-		{
-			int lordinal = layer.ordinal();
-			int fordinal = filteringLayer().ordinal();
-			if(lordinal > fordinal){
-				throw new IllegalArgumentException("Cannot un-filter a Token.");
-			}
-			if(lordinal == fordinal){
-				return this;
-			}
-		}
-		if(Token.super.filter(layer) == null){
-			return null;
-		}
-
-		final var head = new CachingSupplier<>(
-			() -> Optional.ofNullable(head())
-				.map(h -> h.filter(layer))
-				.orElse(null)
-		);
-
-		final var children = new CachingSupplier<>(
-			() -> ESupplier.from(children())
-				.map(c -> c.filter(layer))
-				.toStream()
-				.collect(Collectors.toList())
-		);
-
-		final var tail = new CachingSupplier<>(
-			() -> Optional.ofNullable(TokenTree.this.tail())
-				.map(h -> h.filter(layer))
-				.orElse(null)
-		);
-
-		return new TokenTree(){
-			@Override
-			public Token head(){
-				return head.get();
-			}
-
-			@Override
-			public List<? extends Token> children(){
-				return children.get();
-			}
-
-			@Override
-			public Token tail(){
-				return tail.get();
-			}
-
-			@Override
-			public Set<Type> types(){
-				return TokenTree.this.types();
-			}
-
-			@Override
-			public TokenLayer layer(){
-				return TokenTree.this.layer();
-			}
-
-			@Override
-			public TokenLayer filteringLayer(){
-				return layer;
-			}
-		};
-	}
 	@Override
 	default int length(){
 		int rv = 0;

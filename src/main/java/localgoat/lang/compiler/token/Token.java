@@ -12,6 +12,13 @@ public interface Token{
 	String value();
 	Set<Type> types();
 
+	default Token filter(TokenLayer layer){
+		if(layer.ordinal() < layer().ordinal()){
+			return null;
+		}
+		return this;
+	}
+
 	default Type type(){
 		final var classes = types();
 		switch(classes.size()){
@@ -29,13 +36,6 @@ public interface Token{
 
 	default TokenLayer layer(){
 		return type().layer();
-	}
-
-	default Token filter(TokenLayer layer){
-		if(layer.ordinal() < layer().ordinal()){
-			return null;
-		}
-		return this;
 	}
 
 	default boolean hasFlag(String flag){

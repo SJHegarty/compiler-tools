@@ -1,10 +1,7 @@
 package localgoat.lang.compiler.automata.expression;
 
 import localgoat.lang.compiler.automata.structure.Automaton;
-import localgoat.lang.compiler.token.Symbol;
-import localgoat.lang.compiler.token.Token;
-import localgoat.lang.compiler.token.TokenSeries;
-import localgoat.lang.compiler.token.TokenTree;
+import localgoat.lang.compiler.token.*;
 import localgoat.lang.compiler.automata.expression.handlers.FunctionHandler;
 import localgoat.lang.compiler.automata.expression.handlers.LiteralHandler;
 import localgoat.lang.compiler.automata.expression.handlers.SeriesHandler;
@@ -156,7 +153,7 @@ public class Converter{
 		if(handler == null){
 			throw new UnsupportedOperationException("No handler provided for expression class " + type.getName());
 		}
-		return handler.apply((expression instanceof TokenTree) ? (((TokenTree)expression).trim()) : expression);
+		return handler.apply(expression.filter(TokenLayer.SEMANTIC));
 	}
 
 	public Set<Token> alphabet(){
