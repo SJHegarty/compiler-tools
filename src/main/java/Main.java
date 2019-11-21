@@ -34,9 +34,9 @@ public class Main{
 		);
 		try(final var stream = Main.class.getResource("examples/Test.brt").openStream()){
 			final var content = new String(stream.readAllBytes());
-			final var supplier = ESupplier.from(parser.parse(Symbol.from(content)))
+			var trees = parser.parse(Symbol.from(content));
+			final var supplier = ESupplier.from(trees)
 				.map(tree -> (Token)tree)
-				.interleave(IndentParser.LINE_FEED_TOKEN)
 				.branchDepthFirst(
 					false,
 					t -> (t instanceof StringToken) ? null : ((TokenTree)t).tokens()
@@ -76,7 +76,6 @@ public class Main{
 				var parsed = parser.parse(Symbol.from(text));
 				var reconstructed = ESupplier.from(parsed)
 					.map(t -> t.value())
-					.interleave("\n")
 					.concatenate();
 				recpane.setText(reconstructed);
 				//actualised.setText(contentTree.effective().reconstruct());

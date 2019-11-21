@@ -1,5 +1,6 @@
 package localgoat.lang.compiler.omega;
 
+import localgoat.lang.compiler.IndentParser;
 import localgoat.lang.compiler.automata.expression.Converter;
 import localgoat.lang.compiler.automata.structure.Automaton;
 import localgoat.util.ESupplier;
@@ -99,9 +100,10 @@ public class OmegaTokens{
 		EXPRESSIONS.put(HEXADECIMAL, "'0x'*<1+>x");
 		EXPRESSIONS.put(
 			String.format(
-				"%s --%s",
+				"%s --%s --%s",
 				LINE_COMMENT,
-				COMMENT
+				COMMENT,
+				IndentParser.IGNORED
 			),
 			"'//'*~('\r', '\n')"
 		);

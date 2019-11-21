@@ -135,12 +135,12 @@ public class LangPane extends JTextPane{
 
 						final var supplier = ESupplier.from(content)
 							.map(tree -> (Token)tree)
-							.interleave(IndentParser.LINE_FEED_TOKEN)
 							.branchDepthFirst(
 								false,
 								t -> (t instanceof TokenTree) ? ((TokenTree)t).tokens() : null
 							)
-							.mapOrNull(t -> (StringToken)t);
+							.mapOrNull(t -> (StringToken)t)
+							.map(t -> t.hasClass(IndentParser.LINE_FEED) ? IndentParser.LINE_FEED_TOKEN : t);
 
 						int index = 0;
 						final UnaryOperator<String> op = s -> s.replaceAll("\r", "\\\\r").replaceAll("\n", "\\\\n").replaceAll("\t", "\\\\t");

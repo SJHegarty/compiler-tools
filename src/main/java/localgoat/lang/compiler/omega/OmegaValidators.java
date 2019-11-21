@@ -41,14 +41,14 @@ public class OmegaValidators{
 					if(token == null || !expected.contains(token.value())){
 						final String headColoured = "\u001B[36m" + head + "\u001B[0m";
 						final String tailColoured = "\u001B[36m" + tail + "\u001B[0m";
-						throw new ValidationException(
+						/*throw new ValidationException(
 							String.format(
 								"Head and tail do not match, value from %s expected.\n\t\tHead: %s\n\t\tTail: %s",
 								expected,
 								headColoured,
 								tailColoured
 							)
-						);
+						);*/
 					}
 				}
 			}

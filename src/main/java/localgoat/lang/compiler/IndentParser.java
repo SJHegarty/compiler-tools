@@ -121,6 +121,9 @@ public class IndentParser implements Parser<Symbol, TokenTree>{
 				depth = sum;
 			}
 		}
+		public String toString(){
+			return value.toString();
+		}
 	}
 
 	private class DepthTree implements TokenTree{
@@ -250,20 +253,14 @@ public class IndentParser implements Parser<Symbol, TokenTree>{
 					return new FilteredTree(this, layer);
 				}
 
-				public ESupplier<? extends Token> tokens(){
-					return TokenTree.super.tokens()
-						.map(t -> (Token)t)
-						.interleave(LINE_FEED_TOKEN);
-				}
 			};
 		}
 	}
 
 	@Override
 	public List<TokenTree> parse(List<Symbol> values){
-
 		final var lines = ESupplier.from(utils.parse(values))
-			.split(t -> t.hasClass(LINE_FEED))
+			.split(t -> t.hasClass(LINE_FEED), true)
 			.map(tokens -> new Line(tokens.toArray(StringToken[]::new)))
 			.toStream()
 			.collect(Collectors.toCollection(ArrayDeque::new));
