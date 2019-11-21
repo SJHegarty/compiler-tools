@@ -2,13 +2,22 @@ package localgoat.lang.compiler.automata.expression;
 
 import localgoat.lang.compiler.automata.ReadMode;
 import localgoat.lang.compiler.automata.structure.AutomatonUtils;
+import localgoat.lang.compiler.automata.structure.Type;
 import localgoat.lang.compiler.token.Symbol;
 import localgoat.lang.compiler.token.Token;
+import localgoat.lang.compiler.token.TokenLayer;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 public class LiteralExpression implements Token{
 	static final AutomatonUtils UTILS;
+	static final Type LITERAL = new Type(
+		"literal",
+		TokenLayer.SEMANTIC,
+		Collections.emptySet()
+	);
 
 	static{
 		final var converter = new Converter();
@@ -40,6 +49,16 @@ public class LiteralExpression implements Token{
 	@Override
 	public String value(){
 		return "'" + wrapped + "'";
+	}
+
+	@Override
+	public Set<Type> types(){
+		return Collections.singleton(LITERAL);
+	}
+
+	@Override
+	public TokenLayer layer(){
+		return TokenLayer.SEMANTIC;
 	}
 
 	@Override

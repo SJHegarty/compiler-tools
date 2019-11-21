@@ -1,9 +1,9 @@
 import localgoat.lang.compiler.IndentParser;
 import localgoat.lang.compiler.omega.OmegaTokens;
 import localgoat.lang.compiler.omega.OmegaValidators;
+import localgoat.lang.compiler.token.StringToken;
 import localgoat.lang.compiler.token.Symbol;
 import localgoat.lang.compiler.token.Token;
-import localgoat.lang.compiler.token.TokenString;
 import localgoat.lang.compiler.token.TokenTree;
 import localgoat.lang.ui.LangPane;
 import localgoat.lang.ui.LangTree;
@@ -39,9 +39,9 @@ public class Main{
 				.interleave(IndentParser.LINE_FEED_TOKEN)
 				.branchDepthFirst(
 					false,
-					t -> (t instanceof TokenString) ? null : ((TokenTree)t).tokens()
+					t -> (t instanceof StringToken) ? null : ((TokenTree)t).tokens()
 				)
-				.mapOrNull(t -> (TokenString)t);
+				.mapOrNull(t -> (StringToken)t);
 
 			for(var token: supplier){
 				System.err.print(token.value());

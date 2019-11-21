@@ -11,6 +11,7 @@ import localgoat.lang.compiler.automata.operation.Naming;
 import localgoat.lang.compiler.automata.operation.Not;
 import localgoat.lang.compiler.automata.operation.Or;
 import localgoat.lang.compiler.automata.structure.Type;
+import localgoat.lang.compiler.token.TokenLayer;
 import localgoat.util.ESupplier;
 
 import java.util.Arrays;
@@ -44,12 +45,11 @@ public class FunctionHandler implements Function<Token, Automaton>{
 		}
 		final Set<String> flags = new HashSet<>();
 		for(int i = 1; i < tokens.length; i++){
-			if(!tokens[i].startsWith("--")){
-				throw new IllegalArgumentException(name);
+			if(tokens[i].startsWith("--")){
+				flags.add(tokens[i].substring(2));
 			}
-			flags.add(tokens[i].substring(2));
 		}
-		return new Type(tokens[0], flags);
+		return new Type(tokens[0], TokenLayer.SEMANTIC, flags);
 	}
 
 	private final Converter converter;

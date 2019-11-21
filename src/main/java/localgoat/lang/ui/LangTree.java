@@ -1,7 +1,8 @@
 package localgoat.lang.ui;
 
+import localgoat.lang.compiler.token.StringToken;
+import localgoat.lang.compiler.token.Token;
 import localgoat.lang.compiler.token.TokenSeries;
-import localgoat.lang.compiler.token.TokenString;
 import localgoat.lang.compiler.token.TokenTree;
 import localgoat.util.ui.ListTreeWrapper;
 
@@ -15,32 +16,84 @@ import java.util.stream.Collectors;
 
 public class LangTree extends JTree{
 
-	private static class TokenTreeWrapper implements TreeNode{
-		private final TokenTree wrapped;
+	private static abstract class TokenWrapper<T extends Token> implements TreeNode{
+		protected final T wrapped;
 
-		TokenTreeWrapper(TokenTree wrapped){
+		public TokenWrapper(T wrapped){
 			this.wrapped = wrapped;
-		}
-
-		@Override
-		public TreeNode getChildAt(int childIndex){
-			return new TokenTreeWrapper((TokenTree) wrapped.children().get(childIndex));
-		}
-
-		@Override
-		public int getChildCount(){
-			return isLeaf() ? 0 : wrapped.children().size();
 		}
 
 		@Override
 		public TreeNode getParent(){
 			throw new UnsupportedOperationException();
-			//return new CodeTreeWrapper(wrapped.parent());
+		}
+
+		@Override
+		public String toString(){
+			return wrapped.value();
+		}
+	}
+
+	private static class TokenLeafWrapper extends TokenWrapper<Token>{
+
+		public TokenLeafWrapper(Token wrapped){
+			super(wrapped);
+		}
+
+		@Override
+		public TreeNode getChildAt(int childIndex){
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public int getChildCount(){
+			throw new UnsupportedOperationException();
 		}
 
 		@Override
 		public int getIndex(TreeNode node){
-			return wrapped.children().indexOf(((TokenTreeWrapper)node).wrapped);
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public boolean getAllowsChildren(){
+			return false;
+		}
+
+		@Override
+		public boolean isLeaf(){
+			return true;
+		}
+
+		@Override
+		public Enumeration<? extends TreeNode> children(){
+			throw new UnsupportedOperationException();
+		}
+	}
+
+	private static class TokenTreeWrapper extends TokenWrapper<TokenTree>{
+
+		TokenTreeWrapper(TokenTree wrapped){
+			super(wrapped);
+		}
+
+		@Override
+		public TreeNode getChildAt(int childIndex){
+			final var child = wrapped.children().get(childIndex);
+			if((child instanceof TokenTree) && !(child instanceof TokenSeries)){
+				return new TokenTreeWrapper((TokenTree)child);
+			}
+			return new TokenLeafWrapper(child);
+		}
+
+		@Override
+		public int getChildCount(){
+			return wrapped.children().size();
+		}
+
+		@Override
+		public int getIndex(TreeNode node){
+			return wrapped.children().indexOf(((TokenWrapper)node).wrapped);
 		}
 
 		@Override
@@ -50,7 +103,7 @@ public class LangTree extends JTree{
 
 		@Override
 		public boolean isLeaf(){
-			return wrapped instanceof TokenString;
+			return false;
 		}
 
 		@Override
@@ -67,7 +120,7 @@ public class LangTree extends JTree{
 
 		@Override
 		public String toString(){
-			return (isLeaf() || wrapped instanceof TokenSeries) ? wrapped.value() : String.valueOf(wrapped.head());
+			return String.valueOf(wrapped.head());
 		}
 
 		@Override

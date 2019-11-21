@@ -2,9 +2,9 @@ package localgoat.lang.compiler.omega;
 
 import localgoat.lang.compiler.IndentParser;
 import localgoat.lang.compiler.ValidationException;
+import localgoat.lang.compiler.token.StringToken;
 import localgoat.lang.compiler.token.Token;
 import localgoat.lang.compiler.token.TokenSeries;
-import localgoat.lang.compiler.token.TokenString;
 import localgoat.util.ESupplier;
 
 import java.util.Arrays;
@@ -16,9 +16,9 @@ import java.util.function.Function;
 public class OmegaValidators{
 
 	public static final Function<TokenSeries, Consumer<TokenSeries>> TAIL_VALIDATORS = head -> {
-		final Function<ESupplier<Token>, TokenString> seeker = supplier -> {
+		final Function<ESupplier<Token>, StringToken> seeker = supplier -> {
 			return supplier
-				.mapOrNull(t -> (TokenString)t)
+				.mapOrNull(t -> (StringToken)t)
 				.find(t -> !t.hasFlag(IndentParser.IGNORED));
 		};
 

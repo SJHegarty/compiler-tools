@@ -5,15 +5,15 @@ import localgoat.lang.compiler.automata.ReadMode;
 import localgoat.lang.compiler.automata.expression.Converter;
 import localgoat.lang.compiler.automata.expression.ExpressionParser;
 import localgoat.lang.compiler.automata.operation.Convert;
+import localgoat.lang.compiler.token.StringToken;
 import localgoat.lang.compiler.token.Symbol;
 import localgoat.lang.compiler.token.Token;
-import localgoat.lang.compiler.token.TokenString;
 import localgoat.util.ESupplier;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class AutomatonUtils implements Parser<Symbol, TokenString>{
+public class AutomatonUtils implements Parser<Symbol, StringToken>{
 	public static void main(String...args){
 
 		final var converter = new Converter();
@@ -63,11 +63,11 @@ public class AutomatonUtils implements Parser<Symbol, TokenString>{
 		this.a = new Convert().apply(a);
 	}
 
-	public TokenString read(final ReadMode mode, Token...tokens){
+	public StringToken read(final ReadMode mode, Symbol...tokens){
 		return read(mode, 0, Arrays.asList(tokens));
 	}
 
-	public boolean accepts(Token...tokens){
+	public boolean accepts(Symbol...tokens){
 		var state = a.node(0);
 		for(Token token: tokens){
 			final var transition = state.transition(token);
@@ -80,7 +80,7 @@ public class AutomatonUtils implements Parser<Symbol, TokenString>{
 	}
 
 	@Override
-	public List<TokenString> parse(List<Symbol> values){
+	public List<StringToken> parse(List<Symbol> values){
 		return tokenise(values).toStream().collect(Collectors.toList());
 	}
 
@@ -94,7 +94,7 @@ public class AutomatonUtils implements Parser<Symbol, TokenString>{
 		}
 	}
 
-	public TokenString read(final ReadMode mode, final int index, final List<? extends Token> tokens){
+	public StringToken read(final ReadMode mode, final int index, final List<Symbol> tokens){
 		if(index == tokens.size()){
 			throw new IllegalArgumentException();
 		}
@@ -117,44 +117,44 @@ public class AutomatonUtils implements Parser<Symbol, TokenString>{
 			}
 		}
 		if(t != null){
-			final var result = new ArrayList<Token>();
+			final var result = new ArrayList<Symbol>();
 			for(int i = index; i < t.index; i++){
 				result.add(tokens.get(i));
 			}
-			return new TokenString(t.state.types(), result);
+			return new StringToken(result, t.state.types());
 		}
 		if(depth == index){
-			return new TokenString(Collections.emptySet(), Collections.singletonList(tokens.get(index)));
+			return new StringToken(Collections.singletonList(tokens.get(index)));
 		}
 		else{
-			final var list = new ArrayList<Token>();
+			final var list = new ArrayList<Symbol>();
 			for(int i = index; i < depth; i++){
 				list.add(tokens.get(i));
 			}
-			return new TokenString(Collections.emptySet(), list);
+			return new StringToken(list);
 		}
 	}
 
-	public ESupplier<TokenString> tokenise(Symbol...symbols){
+	public ESupplier<StringToken> tokenise(Symbol...symbols){
 		return tokenise(Arrays.asList(symbols));
 	}
 
-	public ESupplier<TokenString> tokenise(List<Symbol> input){
+	public ESupplier<StringToken> tokenise(List<Symbol> input){
 		if(accepts()){
 			throw new UnsupportedOperationException("Cannot tokenise if the empty String is accepted.");
 		}
 		return new ESupplier<>(){
 			int index = 0;
 			@Override
-			public TokenString get(){
+			public StringToken get(){
 				if(index < input.size()){
 					final var result = read(ReadMode.GREEDY, index, input);
 					if(result == null){
-						final List<Token> tokens = new ArrayList<>();
+						final List<Symbol> tokens = new ArrayList<>();
 						for(int i = index; i < input.size(); i++){
 							tokens.add(input.get(i));
 							index = input.size();
-							return new TokenString(Collections.emptySet(), tokens);
+							return new StringToken(tokens);
 						}
 					}
 					final int size = a.tokens.size();
@@ -162,7 +162,7 @@ public class AutomatonUtils implements Parser<Symbol, TokenString>{
 						index = input.size();
 					}
 					else{
-						index += result.children().size();
+						index += result.length();
 					}
 					return result;
 				}

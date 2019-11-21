@@ -3,9 +3,9 @@ package localgoat.lang.ui;
 import localgoat.lang.compiler.IndentParser;
 import localgoat.lang.compiler.omega.OmegaTokens;
 import localgoat.lang.compiler.omega.OmegaValidators;
+import localgoat.lang.compiler.token.StringToken;
 import localgoat.lang.compiler.token.Symbol;
 import localgoat.lang.compiler.token.Token;
-import localgoat.lang.compiler.token.TokenString;
 import localgoat.lang.compiler.token.TokenTree;
 import localgoat.util.ESupplier;
 import localgoat.util.ui.document.InsertRemoveListener;
@@ -138,9 +138,9 @@ public class LangPane extends JTextPane{
 							.interleave(IndentParser.LINE_FEED_TOKEN)
 							.branchDepthFirst(
 								false,
-								t -> (t instanceof TokenString) ? null : ((TokenTree)t).tokens()
+								t -> (t instanceof TokenTree) ? ((TokenTree)t).tokens() : null
 							)
-							.mapOrNull(t -> (TokenString)t);
+							.mapOrNull(t -> (StringToken)t);
 
 						int index = 0;
 						final UnaryOperator<String> op = s -> s.replaceAll("\r", "\\\\r").replaceAll("\n", "\\\\n").replaceAll("\t", "\\\\t");
@@ -156,7 +156,7 @@ public class LangPane extends JTextPane{
 											String.format(
 												"Extracted Token \"%s\" of name %s does not match text \"%s\" at text index %s",
 												token.value(),
-												token.classes(),
+												token.types(),
 												extract,
 												index
 											)
@@ -167,7 +167,7 @@ public class LangPane extends JTextPane{
 									throw new IllegalStateException(e);
 								}
 								final AttributeSet attributes;
-								final var classes = token.classes().stream()
+								final var classes = token.types().stream()
 									.map(c -> c.name())
 									.collect(Collectors.toSet());
 

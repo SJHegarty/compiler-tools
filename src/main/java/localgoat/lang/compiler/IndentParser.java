@@ -25,15 +25,16 @@ public class IndentParser implements Parser<Symbol, TokenTree>{
 	private static final Map<String, String> EXPRESSIONS = new TreeMap<>();
 	private static final Automaton AUTOMATON;
 
-	public static final TokenString LINE_FEED_TOKEN = new TokenString(
+	public static final StringToken LINE_FEED_TOKEN = new StringToken(
+		Collections.singletonList(
+			new Symbol('\n')
+		),
 		Collections.singleton(
 			new Type(
 				"line-feed",
+				TokenLayer.SEMANTIC,
 				new HashSet<>(Arrays.asList(WHITE_SPACE, IGNORED))
 			)
-		),
-		Collections.singletonList(
-			new Symbol('\n')
 		)
 	);
 
@@ -94,7 +95,7 @@ public class IndentParser implements Parser<Symbol, TokenTree>{
 		private final int depth;
 		private final TokenSeries value;
 
-		public Line(TokenString[] values){
+		public Line(StringToken[] values){
 			this.value = new TokenSeries(Arrays.asList(values));
 			if(values.length == 0){
 				depth = Integer.MAX_VALUE;
@@ -222,7 +223,7 @@ public class IndentParser implements Parser<Symbol, TokenTree>{
 
 		final var lines = ESupplier.from(utils.parse(values))
 			.split(t -> t.hasClass(LINE_FEED))
-			.map(tokens -> new Line(tokens.toArray(TokenString[]::new)))
+			.map(tokens -> new Line(tokens.toArray(StringToken[]::new)))
 			.toStream()
 			.collect(Collectors.toCollection(ArrayDeque::new));
 

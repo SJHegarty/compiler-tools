@@ -1,6 +1,7 @@
 package localgoat.lang.compiler.token;
 
 import localgoat.lang.compiler.automata.expression.WhitespaceExpression;
+import localgoat.util.ESupplier;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,4 +60,5 @@ public class TokenSeries implements TokenTree{
 		}
 		return new TokenSeries(tokens);
 	}
+
 }

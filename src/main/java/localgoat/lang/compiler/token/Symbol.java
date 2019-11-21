@@ -1,8 +1,11 @@
 package localgoat.lang.compiler.token;
 
+import localgoat.lang.compiler.automata.structure.Type;
 import localgoat.lang.compiler.token.Token;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.IntStream;
 
 public class Symbol implements Token{
@@ -48,6 +51,16 @@ public class Symbol implements Token{
 
 	public String value(){
 		return Character.toString(c);
+	}
+
+	@Override
+	public Set<Type> types(){
+		return Collections.emptySet();
+	}
+
+	@Override
+	public TokenLayer layer(){
+		return TokenLayer.SEMANTIC;
 	}
 
 	public char charValue(){
