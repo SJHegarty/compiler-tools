@@ -26,9 +26,9 @@ public class GradientImage implements Image{
 				);
 				final var g1 = new GradientImage(
 					width * 2/3, height * 2/3,
-					0xff0080ff,
+					0x80ffff00,
 					0xff000000,
-					0xffff8000,
+					0xffff0000,
 					0xffffffff
 				);
 				final var gc = new CompositeImage.Builder(width, height)

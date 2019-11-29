@@ -1,8 +1,10 @@
 package localgoat.image.images;
 
+import localgoat.image.Colour;
 import localgoat.image.Image;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class CompositeImage implements Image{
@@ -28,29 +30,32 @@ public class CompositeImage implements Image{
 		}
 	}
 
-	private final ImageTree tree;
+	//private final ImageTree tree;
+	private final List<OffsetImage> images;
+	private final int width;
+	private final int height;
 
 	private CompositeImage(List<OffsetImage> images, int width, int height){
-		this.tree = new ImageTree(0, 0, width, height);
-		for(var i: images){
-			tree.addImage(i);
-		}
+		this.images = Collections.unmodifiableList(images);
+		this.width = width;
+		this.height = height;
 	}
 
 	@Override
 	public int width(){
-		return tree.width();
+		return width;
 	}
 
 	@Override
 	public int height(){
-		return tree.height();
+		return height;
 	}
 
 	@Override
 	public int colourAt(int x, int y){
-		final var images = tree.images(x, y);
-		//System.err.println(new Exception().getStackTrace()[0] + " - Warning! partial implementation.");
-		return images.size() == 0 ? 0 : images.get(0).colourAt(x, y);
+		return images.stream()
+			.filter(i -> i.region().contains(x, y))
+			.mapToInt(i -> i.colourAt(x, y))
+			.reduce(0, (i0, i1) -> Colour.merge(i1, i0));
 	}
 }

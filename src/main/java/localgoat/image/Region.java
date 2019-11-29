@@ -50,4 +50,8 @@ public class Region{
 			}
 		};
 	}
+
+	public boolean contains(int x, int y){
+		return x >= this.x && y >= this.y && x < (this.x + width) && y < (this.y + height);
+	}
 }
