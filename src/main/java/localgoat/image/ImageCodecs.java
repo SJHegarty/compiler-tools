@@ -1,5 +1,7 @@
 package localgoat.image;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -7,14 +9,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
 
-
-@Configuration
 @ComponentScan
 public class ImageCodecs{
 	private static final ApplicationContext CONTEXT = new AnnotationConfigApplicationContext(ImageCodecs.class);
-	private static final ImageCodecs INSTANCE = CONTEXT.getBean(ImageCodecs.class);
+	public static final ImageCodecs INSTANCE = CONTEXT.getBean(ImageCodecs.class);
 
 	private final Map<Integer, ImageCodec> codecs = new TreeMap<>();
 
@@ -35,9 +34,14 @@ public class ImageCodecs{
 		codecs.put(codec.type(), codec);
 	}
 
+	public Image decode(InputStream stream){
+		return decode(new ImageData(stream));
+	}
+
 	public Image decode(ImageData data){
 		return codecs.get(data.type()).decode(data);
 	}
+
 	public static void main(String...args){
 		for(var v: INSTANCE.codecs.values()){
 			System.err.println(v);

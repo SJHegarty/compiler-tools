@@ -11,21 +11,36 @@ import java.io.InputStream;
 public class GradientImage implements Image{
 	public static void main(String...args){
 		final var frame = new JFrame();
+
 		final var panel = new JPanel(){
 			@Override
 			public void paint(Graphics g){
-				final var gradient = new GradientImage(
-					getWidth(), getHeight(),
+				final int width = getWidth();
+				final int height = getHeight();
+				final var g0 = new GradientImage(
+					width * 2/3, height * 2/3,
 					0xff0080ff,
-					0x80000000,
-					0x000000ff,
+					0xff000000,
+					0xffff8000,
 					0xffffffff
 				);
-				g.drawImage(gradient.toBufferedImage(), 0, 0, this);
+				final var g1 = new GradientImage(
+					width * 2/3, height * 2/3,
+					0xff0080ff,
+					0xff000000,
+					0xffff8000,
+					0xffffffff
+				);
+				final var gc = new CompositeImage.Builder(width, height)
+					.addImage(g0, 0, 0)
+					.addImage(g1, width * 1/3, height * 1/3)
+					.build();
+
+				g.drawImage(gc.toBufferedImage(), 0, 0, this);
 			}
 		};
 		frame.getContentPane().add(panel);
-		frame.setSize(800, 600);
+		frame.setSize(100, 100);
 		frame.setVisible(true);
 	}
 	private static final float ALPHA_MUL = 1/255f;

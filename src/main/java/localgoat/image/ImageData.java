@@ -20,30 +20,32 @@ public class ImageData{
 		this.data = data.clone();
 	}
 
-	public ImageData(InputStream stream) throws IOException{
+	public ImageData(InputStream stream){
 		final var reader = new IntReader(stream, 2);
+
+		this.type = reader.getAsInt();
+		this.width = reader.getAsInt();
+		this.height = reader.getAsInt();
+
 		try{
-			this.type = reader.getAsInt();
-			this.width = reader.getAsInt();
-			this.height = reader.getAsInt();
+			this.data = stream.readAllBytes();
 		}
-		catch(UncheckedIOException e){
-			throw e.getCause();
+		catch(IOException e){
+			throw new UncheckedIOException(e);
 		}
-		this.data = stream.readAllBytes();
 	}
 
-	public void writeTo(OutputStream stream) throws IOException{
+	public void writeTo(OutputStream stream){
 		final var writer = new IntWriter(stream, 2);
+		writer.accept(type);
+		writer.accept(width);
+		writer.accept(height);
 		try{
-			writer.accept(type);
-			writer.accept(width);
-			writer.accept(height);
+			dataStream().transferTo(stream);
 		}
-		catch(UncheckedIOException e){
-			throw e.getCause();
+		catch(IOException e){
+			throw new UncheckedIOException(e);
 		}
-		dataStream().transferTo(stream);
 	}
 
 	public final int type(){
