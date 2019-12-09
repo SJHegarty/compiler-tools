@@ -1,10 +1,8 @@
 package localgoat.image;
 
-import java.awt.Graphics;
+import localgoat.image.images.ScaledImage;
+
 import java.awt.image.BufferedImage;
-import java.awt.image.ImageObserver;
-import java.awt.image.ImageProducer;
-import java.io.InputStream;
 
 public interface Image{
 	int width();
@@ -12,6 +10,9 @@ public interface Image{
 	int colourAt(int x, int y);
 
 	default BufferedImage toBufferedImage(){
+		if((width() | height()) < 0){
+			throw new IllegalStateException();
+		}
 		final var rv = new BufferedImage(
 			width(),
 			height(),
@@ -19,6 +20,41 @@ public interface Image{
 		);
 		drawTo(rv, 0, 0);
 		return rv;
+	}
+
+	default boolean isBlank(){
+		final int width = width();
+		final int height = height();
+		for(int x = 0; x < width; x++){
+			for(int y = 0; y < height; y++){
+				if((colourAt(x, y) & 0xff000000) != 0){
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+	default Image withBackground(BackGroundCalculator calculator){
+		return new Image(){
+			@Override
+			public int width(){
+				return Image.this.width();
+			}
+
+			@Override
+			public int height(){
+				return Image.this.height();
+			}
+
+			@Override
+			public int colourAt(int x, int y){
+				return calculator.getColour(Image.this.colourAt(x, y), x, y);
+			}
+		};
+	}
+
+	default Image subImage(int width, int height){
+		return subImage(0, 0, width, height);
 	}
 
 	default Image subImage(int x0, int y0, int width, int height){
@@ -40,7 +76,7 @@ public interface Image{
 				public int colourAt(int x, int y){
 					final int xw = x + x0;
 					final int yw = y + y0;
-					if((xw|yw) < 0 || xw >= width || yw >= height){
+					if((xw|yw) < 0 || xw >= Image.this.width() || yw >= Image.this.height()){
 						return 0;
 					}
 					return Image.this.colourAt(xw, yw);
@@ -68,7 +104,6 @@ public interface Image{
 	default void drawTo(BufferedImage destination, int offsetx, int offsety){
 		final int xmax = Math.min(width(), destination.getWidth() - offsetx);
 		final int ymax = Math.min(height(), destination.getHeight() - offsety);
-
 		for(int x = 0; x < xmax; x++){
 			for(int y = 0; y < ymax; y++){
 				destination.setRGB(
@@ -80,4 +115,11 @@ public interface Image{
 		}
 	}
 
+	default Image scale(int factor){
+		return scale(factor, factor);
+	}
+
+	default Image scale(int xfactor,  int yfactor){
+		return new ScaledImage(this, xfactor, yfactor);
+	}
 }

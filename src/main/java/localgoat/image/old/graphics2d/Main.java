@@ -62,7 +62,7 @@ public class Main{
 				pg.setFilter((Filter) new PaintBrush(pg, chooser0.getSelectedColour(), chooser1.getSelectedColour(), 50), 1);
 			}
 		};
-		pg.setFilter((Filter) new FunctionFilter(pg, BrushGenerator.getCircle(-16777216, -16777216, 60), Function.ERASE), 3);
+		pg.setFilter((Filter) new FunctionFilter(pg, BrushGenerator.getCircle(-16777216, -16777216, 60), Function2.ERASE), 3);
 
 		chooser0.addColourChangeListener(ccl);
 		chooser1.addColourChangeListener(ccl);

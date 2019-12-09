@@ -4,7 +4,7 @@ import localgoat.lang.compiler.token.Token;
 import localgoat.lang.compiler.automata.structure.*;
 import localgoat.lang.compiler.automata.utility.Builder;
 import localgoat.lang.compiler.automata.utility.NodeBuilder;
-import localgoat.util.ESupplier;
+import localgoat.util.streaming.ESupplier;
 import localgoat.util.ValueCache;
 
 import java.util.*;

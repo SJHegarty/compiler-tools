@@ -21,12 +21,19 @@ public class CompositeImage implements Image{
 		}
 
 		public Builder addImage(Image i, int offsetx, int offsety){
+			if(i == null){
+				throw new IllegalArgumentException();
+			}
 			images.add(new OffsetImage(i, images.size(), offsetx, offsety));
 			return this;
 		}
 
 		public CompositeImage build(){
-			return new CompositeImage(this.images, width, height);
+			return new CompositeImage(width, height, this.images);
+		}
+
+		public int size(){
+			return images.size();
 		}
 	}
 
@@ -35,10 +42,26 @@ public class CompositeImage implements Image{
 	private final int width;
 	private final int height;
 
-	private CompositeImage(List<OffsetImage> images, int width, int height){
+	private CompositeImage(int width, int height, List<OffsetImage> images){
 		this.images = Collections.unmodifiableList(images);
-		this.width = width;
-		this.height = height;
+		if((width|height) < 0){
+			this.width = images.stream()
+				.mapToInt(i -> i.offsetx + i.image.width())
+				.max()
+				.orElseThrow(() -> new IllegalArgumentException());
+
+			this.height = images.stream()
+				.mapToInt(i -> i.offsety + i.image.height())
+				.max()
+				.orElseThrow(() -> new IllegalArgumentException());
+		}
+		else{
+			this.width = width;
+			this.height = height;
+		}
+		if((width|height) < 0){
+			throw new IllegalStateException();
+		}
 	}
 
 	@Override
@@ -53,6 +76,7 @@ public class CompositeImage implements Image{
 
 	@Override
 	public int colourAt(int x, int y){
+		final int mask = -(1 & ((x ^ y) >> 3));
 		return images.stream()
 			.filter(i -> i.region().contains(x, y))
 			.mapToInt(i -> i.colourAt(x, y))

@@ -2,7 +2,7 @@ package localgoat.lang.compiler.automata.utility;
 
 import localgoat.lang.compiler.token.Token;
 import localgoat.lang.compiler.automata.structure.*;
-import localgoat.util.ESupplier;
+import localgoat.util.streaming.ESupplier;
 
 import java.util.*;
 import java.util.function.UnaryOperator;

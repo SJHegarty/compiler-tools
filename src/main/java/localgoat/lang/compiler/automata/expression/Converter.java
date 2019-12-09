@@ -6,7 +6,7 @@ import localgoat.lang.compiler.automata.expression.handlers.FunctionHandler;
 import localgoat.lang.compiler.automata.expression.handlers.LiteralHandler;
 import localgoat.lang.compiler.automata.expression.handlers.SeriesHandler;
 import localgoat.lang.compiler.automata.expression.handlers.SymbolHandler;
-import localgoat.util.ESupplier;
+import localgoat.util.streaming.ESupplier;
 import localgoat.util.functional.CharPredicate;
 
 import java.util.*;

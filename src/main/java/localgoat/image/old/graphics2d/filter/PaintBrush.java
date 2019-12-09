@@ -3,16 +3,16 @@ package localgoat.image.old.graphics2d.filter;
 
 import localgoat.image.old.graphics2d.Filter;
 import localgoat.image.old.graphics2d.PixelGrid6;
-import localgoat.image.old.graphics2d.image.Image;
-import localgoat.image.old.graphics2d.image.ImageGenerator;
+import localgoat.image.images.GridImage;
+import localgoat.image.ImageGenerator;
 
 
 public class PaintBrush
   extends Filter
 {
-  private final Image image;
+  private final GridImage image;
 
-  public PaintBrush(PixelGrid6 pg, Image image) {
+  public PaintBrush(PixelGrid6 pg, GridImage image) {
     super(pg);
     this.image = image;
   }

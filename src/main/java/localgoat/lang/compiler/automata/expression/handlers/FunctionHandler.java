@@ -11,8 +11,7 @@ import localgoat.lang.compiler.automata.operation.Naming;
 import localgoat.lang.compiler.automata.operation.Not;
 import localgoat.lang.compiler.automata.operation.Or;
 import localgoat.lang.compiler.automata.structure.Type;
-import localgoat.lang.compiler.token.TokenLayer;
-import localgoat.util.ESupplier;
+import localgoat.util.streaming.ESupplier;
 
 import java.util.*;
 import java.util.function.Function;

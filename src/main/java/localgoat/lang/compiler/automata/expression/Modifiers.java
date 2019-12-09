@@ -2,12 +2,10 @@ package localgoat.lang.compiler.automata.expression;
 
 import localgoat.lang.compiler.automata.structure.Type;
 import localgoat.lang.compiler.token.*;
-import localgoat.util.ESupplier;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 public class Modifiers implements TokenTree{
 	private static final Type TYPE = new Type(

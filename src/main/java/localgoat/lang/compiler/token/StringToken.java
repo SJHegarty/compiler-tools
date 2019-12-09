@@ -1,9 +1,8 @@
 package localgoat.lang.compiler.token;
 
 import localgoat.lang.compiler.automata.structure.Type;
-import localgoat.util.ESupplier;
+import localgoat.util.streaming.ESupplier;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -43,7 +42,7 @@ public class StringToken implements Token{
 	@Override
 	public boolean equals(Object o){
 		return null != ESupplier.of(o)
-			.mapOrNull(e -> (StringToken)o)
+			.map(e -> (StringToken)o, m -> m.orNull())
 			.retain(t -> value.equals(t.value))
 			.get();
 	}

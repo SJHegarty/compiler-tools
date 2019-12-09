@@ -3,8 +3,13 @@ package localgoat.image.old.graphics2d;
 
 import localgoat.image.Colour;
 
+import java.util.function.IntUnaryOperator;
+
 public class Gradient{
 	public static int[] getGradient(int c0, int c1, int length){
+		if(length == 0){
+			throw new IllegalArgumentException();
+		}
 		int[] c = new int[length];
 		int rm = length - 1;
 		for(int i = 0; i < length; i++){
@@ -13,6 +18,15 @@ public class Gradient{
 		return c;
 	}
 
+	public static int[][] getGradient(int c00, int cw0, int cwh, int c0h, int width, int height){
+		final int[] gradt = getGradient(c00, cw0, width);
+		final int[] gradb = getGradient(c0h, cwh, width);
+		final int[][] rv = new int[width][];
+		for(int x = 0; x < width; x++){
+			rv[x] = getGradient(gradt[x], gradb[x], height);
+		}
+		return rv;
+	}
 
 	public static int getColour(int c0, int c1){
 		return getColour(c0, c1, 1, 1);
@@ -20,7 +34,16 @@ public class Gradient{
 
 
 	public static int getColour(int colour_one, int colour_two, int split_one, int split_two){
+		if((split_one | split_two) == 0){
+			throw new IllegalArgumentException();
+		}
 		int return_value = 0;
+		if((colour_one & 0xff000000) == 0){
+			colour_one = 0;
+		}
+		if((colour_two & 0xff000000) == 0){
+			colour_two = 0;
+		}
 
 		int r_one = Colour.getR(colour_one);
 		int g_one = Colour.getG(colour_one);
@@ -35,7 +58,6 @@ public class Gradient{
 		int mult_two = split_two * a_two;
 		int divi_rgb = mult_one + mult_two;
 		int hdiv_rgb = divi_rgb >> 1;
-
 		if(a_two == a_one){
 			if(a_two == 0){
 				return 0;
@@ -51,7 +73,14 @@ public class Gradient{
 		else{
 
 			int divi_a = split_one + split_two;
-			return_value |= (divi_rgb + (divi_a >> 1)) / divi_a << 24;
+			try{
+				return_value |= (divi_rgb + (divi_a >> 1)) / divi_a << 24;
+			}
+			catch(ArithmeticException e){
+				System.err.println(split_one + " " + split_two);
+				System.err.println(new Exception().getStackTrace()[0] + " " + Integer.toHexString(colour_one) + " " + Integer.toHexString(colour_two));
+				throw e;
+			}
 		}
 		if(return_value == 0){
 			return 0;

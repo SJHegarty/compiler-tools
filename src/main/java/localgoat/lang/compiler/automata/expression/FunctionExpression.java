@@ -1,13 +1,12 @@
 package localgoat.lang.compiler.automata.expression;
 
 import localgoat.lang.compiler.token.*;
-import localgoat.util.ESupplier;
+import localgoat.util.streaming.ESupplier;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Filter;
 
 public class FunctionExpression implements TokenTree{
 	private static final Token DELIMITOR = new IgnoredToken(",");

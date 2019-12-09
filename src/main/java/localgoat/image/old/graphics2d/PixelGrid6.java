@@ -2,8 +2,9 @@
 package localgoat.image.old.graphics2d;
 /*     */
 
+import localgoat.image.BackGroundCalculator;
 import localgoat.image.Colour;
-import localgoat.image.old.graphics2d.image.Image;
+import localgoat.image.images.GridImage;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -40,15 +41,6 @@ public class PixelGrid6{
 	private static final int CHECK_TWO = -16744193;
 	public static final int L_BUTTON = 1;
 	public static final int R_BUTTON = 3;
-
-	@FunctionalInterface
-	public interface BackGroundCalculator{
-		public abstract int getColour(int param1Int1, int param1Int2);
-
-		default int getColour(int c, int x, int y){
-			return Colour.merge(c, getColour(x, y));
-		}
-	}
 
 
 	public PixelGrid6(int width, int height){
@@ -337,22 +329,22 @@ public class PixelGrid6{
 		if(layerz >= split || layero <= split){
 			return compile(layerz, layero, tlayer);
 		}
-		return Image.merge(compile(split, layero, tlayer), compile(layerz, split, tlayer), this.width, this.height);
+		return GridImage.merge(compile(split, layero, tlayer), compile(layerz, split, tlayer), this.width, this.height);
 	}
 
 
-	public void mergeImageAtCentre(int x, int y, Image i){
+	public void mergeImageAtCentre(int x, int y, GridImage i){
 		mergeImageAt(x - (i.width >> 1), y - (i.height >> 1), i);
 	}
 
 
-	public void mergeImageAt(int x, int y, Image i){
+	public void mergeImageAt(int x, int y, GridImage i){
 		mergeImageAtp(x, y, i);
 		update_thumb(x, y, i);
 	}
 
 
-	private void update_thumb(int x, int y, Image i){
+	private void update_thumb(int x, int y, GridImage i){
 		int d = 1 << this.thumbbits;
 		int xmax = Math.min(x + i.width, this.width);
 		int ymax = Math.min(y + i.height, this.height);
@@ -368,7 +360,7 @@ public class PixelGrid6{
 	}
 
 
-	private void mergeImageAtp(int x, int y, Image i){
+	private void mergeImageAtp(int x, int y, GridImage i){
 		int xmax = Math.min(this.width, x + i.width);
 		int ymax = Math.min(this.height, y + i.height);
 		if(this.hlayer != null){
@@ -442,13 +434,13 @@ public class PixelGrid6{
 	}
 
 
-	public void applyFunctionAt(int x, int y, Function f, Image i){
+	public void applyFunctionAt(int x, int y, Function2 f, GridImage i){
 		applyFunctionAtp(x, y, f, i);
 		update_thumb(x, y, i);
 	}
 
 
-	private void applyFunctionAtp(int x, int y, Function f, Image i){
+	private void applyFunctionAtp(int x, int y, Function2 f, GridImage i){
 		int xmax = Math.min(this.width, x + i.width);
 		int ymax = Math.min(this.height, y + i.height);
 		if(this.hlayer != null){
@@ -508,8 +500,8 @@ public class PixelGrid6{
 	}
 
 
-	public Image getImage(int x, int y, int width, int height){
-		Image rv = new Image(width, height);
+	public GridImage getImage(int x, int y, int width, int height){
+		GridImage rv = new GridImage(width, height);
 		int xs = (x < 0) ? -x : 0;
 		int ys = (y < 0) ? -y : 0;
 		int xf = x + width;

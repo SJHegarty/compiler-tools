@@ -1,7 +1,5 @@
 package localgoat.image;
 
-import localgoat.util.NYI;
-
 import java.util.Random;
 import java.util.stream.IntStream;
 
@@ -48,10 +46,11 @@ public class Colour{
 	}
 
 	public static int composite(int... colour){
-		final int alpha = switch(colour.length){
-			case 3 -> 0xff;
-			case 4 -> colour[0];
-			default -> throw new UnsupportedOperationException("Supports RGB and ARGB only.");
+		final int alpha;
+		switch(colour.length){
+			case 3: alpha = 0xff; break;
+			case 4: alpha = colour[0]; break;
+			default: throw new UnsupportedOperationException("Supports RGB and ARGB only.");
 		};
 		int rv = alpha << 0x18;
 		for(int channel = 0; channel < 3; channel++){

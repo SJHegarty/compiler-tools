@@ -4,7 +4,7 @@ import localgoat.lang.compiler.omega.OmegaValidators;
 import localgoat.lang.compiler.token.*;
 import localgoat.lang.ui.LangPane;
 import localgoat.lang.ui.LangTree;
-import localgoat.util.ESupplier;
+import localgoat.util.streaming.ESupplier;
 import localgoat.util.ui.document.InsertRemoveListener;
 
 import javax.swing.*;
@@ -38,7 +38,7 @@ public class Main{
 					false,
 					t -> (t instanceof StringToken) ? null : ((TokenTree)t).tokens()
 				)
-				.mapOrNull(t -> (StringToken)t);
+				.map(t -> (StringToken)t, m -> m.orNull());
 
 			for(var token: supplier){
 				System.err.print(token.value());

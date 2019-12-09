@@ -7,12 +7,11 @@ import localgoat.lang.compiler.automata.structure.AutomatonUtils;
 import localgoat.lang.compiler.automata.structure.Type;
 import localgoat.lang.compiler.token.*;
 import localgoat.util.CachingSupplier;
-import localgoat.util.ESupplier;
+import localgoat.util.streaming.ESupplier;
 
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class IndentParser implements Parser<Symbol, TokenSeries>{

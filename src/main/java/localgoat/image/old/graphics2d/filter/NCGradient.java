@@ -1,7 +1,7 @@
 package localgoat.image.old.graphics2d.filter;
 
 
-import localgoat.image.old.graphics2d.image.Image;
+import localgoat.image.images.GridImage;
 
 public class NCGradient{
 	public static void main(String[] args){
@@ -19,9 +19,9 @@ public class NCGradient{
 		return rv;
 	}
 
-	public static Image getCircle(int[] c, int... bd){
+	public static GridImage getCircle(int[] c, int... bd){
 		int radius = c.length, diameter = radius << 1;
-		Image rv = new Image(diameter, diameter);
+		GridImage rv = new GridImage(diameter, diameter);
 
 		int bg = 0;
 

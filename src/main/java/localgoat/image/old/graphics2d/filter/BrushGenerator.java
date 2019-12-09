@@ -2,21 +2,21 @@ package localgoat.image.old.graphics2d.filter;
 
 
 import localgoat.image.Colour;
-import localgoat.image.old.graphics2d.image.Image;
+import localgoat.image.images.GridImage;
 
 
 public class BrushGenerator{
-	public static Image getCircle(int c, int radius){
+	public static GridImage getCircle(int c, int radius){
 		return getCircle(c, c, radius);
 	}
 
 
-	public static Image getCircle(int c0, int c1, int radius){
+	public static GridImage getCircle(int c0, int c1, int radius){
 		return getCircle(BrushGradient.getGradient(c0, c1, radius));
 	}
 
 
-	public static Image getCircle(int c0, int c1, int ol, int outline, int radius){
+	public static GridImage getCircle(int c0, int c1, int ol, int outline, int radius){
 		int[] c = new int[radius];
 		int rn = radius - outline;
 		if(rn < 0){
@@ -37,8 +37,8 @@ public class BrushGenerator{
 	}
 
 
-	public static Image getRectangle(int width, int height, int c){
-		Image rv = new Image(width, height);
+	public static GridImage getRectangle(int width, int height, int c){
+		GridImage rv = new GridImage(width, height);
 		for(int x = 0; x < width; ){
 			for(int y = 0; y < height; y++){
 				rv.colours[x][y] = c;
@@ -49,8 +49,8 @@ public class BrushGenerator{
 		return rv;
 	}
 
-	public static Image getRectangle(int c0, int c1, int c2, int c3, int width, int height){
-		Image rv = new Image(width, height);
+	public static GridImage getRectangle(int c0, int c1, int c2, int c3, int width, int height){
+		GridImage rv = new GridImage(width, height);
 		int divisor = width * height;
 		for(int x = 0; x < width; ){
 			for(int y = 0; y < height; y++){
@@ -83,9 +83,9 @@ public class BrushGenerator{
 	}
 
 
-	public static Image getCircle(int[] c){
+	public static GridImage getCircle(int[] c){
 		int radius = c.length, diameter = radius << 1;
-		Image rv = new Image(diameter, diameter);
+		GridImage rv = new GridImage(diameter, diameter);
 
 		int bg = 0;
 
@@ -131,11 +131,11 @@ public class BrushGenerator{
 		return rv;
 	}
 
-	public static Image getSquare(int c, int d){
+	public static GridImage getSquare(int c, int d){
 		return getRectangle(c, d, d);
 	}
 
-	public static Image foo(int radius, int div){
+	public static GridImage foo(int radius, int div){
 		int[] c = new int[radius];
 		double area = (radius * radius / div--);
 		double r1 = radius;

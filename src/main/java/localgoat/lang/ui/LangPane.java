@@ -4,7 +4,7 @@ import localgoat.lang.compiler.IndentParser;
 import localgoat.lang.compiler.omega.OmegaTokens;
 import localgoat.lang.compiler.omega.OmegaValidators;
 import localgoat.lang.compiler.token.*;
-import localgoat.util.ESupplier;
+import localgoat.util.streaming.ESupplier;
 import localgoat.util.ui.document.InsertRemoveListener;
 
 import javax.swing.*;
@@ -136,7 +136,7 @@ public class LangPane extends JTextPane{
 								false,
 								t -> (t instanceof TokenTree) ? ((TokenTree)t).tokens() : null
 							)
-							.mapOrNull(t -> (StringToken)t)
+							.map(t -> (StringToken)t, m -> m.orNull())
 							.map(t -> t.hasClass(IndentParser.LINE_FEED) ? IndentParser.LINE_FEED_TOKEN : t);
 
 						int index = 0;

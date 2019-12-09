@@ -3,9 +3,8 @@ package localgoat.lang.compiler.omega;
 import localgoat.lang.compiler.IndentParser;
 import localgoat.lang.compiler.automata.expression.Converter;
 import localgoat.lang.compiler.automata.structure.Automaton;
-import localgoat.lang.compiler.token.StringToken;
 import localgoat.lang.compiler.token.TokenLayer;
-import localgoat.util.ESupplier;
+import localgoat.util.streaming.ESupplier;
 import localgoat.util.functional.CharPredicate;
 
 import java.util.*;

@@ -1,7 +1,7 @@
 package localgoat.lang.compiler.token;
 
 import localgoat.lang.compiler.automata.structure.Type;
-import localgoat.util.ESupplier;
+import localgoat.util.streaming.ESupplier;
 
 import java.util.Objects;
 import java.util.Optional;

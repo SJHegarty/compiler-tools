@@ -1,11 +1,9 @@
 package localgoat.lang.compiler.token;
 
 import localgoat.lang.compiler.automata.structure.Type;
-import localgoat.util.CachingSupplier;
-import localgoat.util.ESupplier;
+import localgoat.util.streaming.ESupplier;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 

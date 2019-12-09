@@ -1,6 +1,6 @@
 package localgoat.util.functional.operation;
 
-import localgoat.util.ESupplier;
+import localgoat.util.streaming.ESupplier;
 
 import java.util.Arrays;
 import java.util.List;

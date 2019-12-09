@@ -2,7 +2,7 @@
 package localgoat.image.old.graphics2d.filter;
 
 
-import localgoat.image.old.graphics2d.Function;
+import localgoat.image.old.graphics2d.Function2;
 
 public interface MonoFunction{
 	public static final MonoFunction NUL = new MonoFunction(){
@@ -24,9 +24,9 @@ public interface MonoFunction{
 	public static class WrappedFunction
 		implements MonoFunction{
 		private final int v;
-		private final Function f;
+		private final Function2 f;
 
-		public WrappedFunction(Function function, int value){
+		public WrappedFunction(Function2 function, int value){
 			this.v = value;
 			this.f = function;
 		}

@@ -5,7 +5,7 @@ import localgoat.lang.compiler.token.Token;
 import localgoat.lang.compiler.automata.expression.Converter;
 import localgoat.lang.compiler.token.TokenSeries;
 import localgoat.lang.compiler.automata.operation.Concatenate;
-import localgoat.util.ESupplier;
+import localgoat.util.streaming.ESupplier;
 
 import java.util.function.Function;
 import java.util.stream.Collectors;
